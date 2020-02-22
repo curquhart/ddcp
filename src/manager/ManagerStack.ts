@@ -1,0 +1,194 @@
+import {Aws, CfnParameter, Construct, Duration, Fn, Stack, StackProps} from '@aws-cdk/core';
+import {Repository} from '@aws-cdk/aws-codecommit';
+import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
+import {Code, Function, Runtime} from '@aws-cdk/aws-lambda';
+import * as s3 from '@aws-cdk/aws-s3';
+import {Bucket} from '@aws-cdk/aws-s3';
+import {
+    CloudFormationCreateReplaceChangeSetAction,
+    CloudFormationExecuteChangeSetAction,
+    CodeCommitSourceAction,
+    CodeCommitTrigger,
+    LambdaInvokeAction,
+    ManualApprovalAction
+} from '@aws-cdk/aws-codepipeline-actions';
+import * as fs from 'fs'
+import {PolicyStatement} from "@aws-cdk/aws-iam";
+import * as targets from '@aws-cdk/aws-events-targets'
+import * as events from '@aws-cdk/aws-events'
+import {CustomResource, CustomResourceProvider} from "@aws-cdk/aws-cloudformation";
+
+export class ManagerStack extends Stack {
+    constructor(scope?: Construct, id?: string, props?: StackProps) {
+        super(scope, id, props);
+
+        const sourceBucketNameParameter = new CfnParameter(this, 'SourceS3BucketName');
+        const localStorageBucketNameParameter = new CfnParameter(this, 'LocalStorageS3BucketName');
+        const sourceBucketKeyParameter = new CfnParameter(this, 'SourceS3Key');
+        const repositoryNameParameter = new CfnParameter(this, 'RepositoryName');
+        const synthPipelineNameParameter = new CfnParameter(this, 'SynthPipelineName');
+
+        const pipelineName = synthPipelineNameParameter.valueAsString;
+        const pipelineArn = `arn:aws:codepipeline:${Aws.REGION}:${Aws.ACCOUNT_ID}:${pipelineName}`
+        const stackUuid = Fn.select(2, Fn.split('/', Aws.STACK_ID))
+
+        const inputRepo = Repository.fromRepositoryName(this, 'Repo', repositoryNameParameter.valueAsString);
+        const pipeline = new Pipeline(this, 'Pipeline', { pipelineName });
+        const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketNameParameter.valueAsString);
+        const localBucket = Bucket.fromBucketName(this, 'S3Bucket', localStorageBucketNameParameter.valueAsString);
+
+        // TODO: use custom event bus once https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/44 is completed.
+        const eventBus = events.EventBus.fromEventBusArn(this, 'CustomEventBus', `arn:aws:events:${Aws.REGION}:${Aws.ACCOUNT_ID}:event-bus/default`)
+        new events.CfnEventBusPolicy(this, 'EventBusPolicy', {
+            action: 'events:PutEvents',
+            principal: Aws.ACCOUNT_ID,
+            statementId: `ddcp-events-${stackUuid}`,
+            eventBusName: eventBus.eventBusName
+        })
+
+        const s3resolver = new Function(this, 'S3Resolver', {
+            runtime: Runtime.NODEJS_12_X,
+            code: Code.fromInline(fs.readFileSync(`${__dirname}/../../dist/s3resolver/index.js`).toString()),
+            handler: 'index.handler',
+            initialPolicy: [
+                new PolicyStatement({
+                    resources: [ sourceBucket.arnForObjects(sourceBucketKeyParameter.valueAsString) ],
+                    actions: [
+                        's3:GetObject'
+                    ],
+                }),
+                new PolicyStatement({
+                    resources: [
+                        localBucket.arnForObjects(`${stackUuid}/*`),
+                    ],
+                    actions: [
+                        's3:PutObject',
+                        's3:DeleteObject'
+                    ],
+                })
+            ]
+        })
+        const resolverCr = new CustomResource(this, 'ResolveSynthesizer', {
+            provider: CustomResourceProvider.fromLambda(s3resolver),
+            properties: {
+                SourceBucketName: sourceBucketNameParameter.valueAsString,
+                SourceKey: sourceBucketKeyParameter.valueAsString,
+                DestBucketName: localBucket.bucketName,
+                StackUuid: stackUuid,
+            },
+        })
+
+        const handlerFunction = new Function(this, 'DDCpMainHandler', {
+            code: Code.fromBucket(localBucket, resolverCr.getAtt('DestKey').toString()),
+            handler: "dist/synthesis/index.handle",
+            runtime: Runtime.NODEJS_12_X,
+            timeout: Duration.minutes(5),
+            initialPolicy: [
+                // Might want to deploy a single version of this lambda. Its events are constructed to support that,
+                // but if doing so, we will need to * the resources.
+                new PolicyStatement({
+                    actions: ['codecommit:GetDifferences'],
+                    resources: [inputRepo.repositoryArn],
+                }),
+                new PolicyStatement({
+                    actions: ['codepipeline:StartPipelineExecution'],
+                    resources: [pipelineArn],
+                }),
+                new PolicyStatement({
+                    actions: ['events:PutEvents'],
+                    resources: [eventBus.eventBusArn],
+                }),
+            ]
+        })
+
+        inputRepo.onCommit('EventRule', {
+            target: new targets.LambdaFunction(handlerFunction, {
+                event: events.RuleTargetInput.fromObject({
+                    detail: {
+                        oldCommitId: events.EventField.fromPath('$.detail.oldCommitId'),
+                        commitId: events.EventField.fromPath('$.detail.commitId'),
+                        repositoryName: inputRepo.repositoryName,
+                        repositoryArn: inputRepo.repositoryArn,
+                        pipelineName,
+                        pipelineArn,
+                        eventBusName: eventBus.eventBusName,
+                        inputFile: 'pipeline-config.yaml'
+                    },
+                })
+            }),
+            branches: ['master'],
+        });
+
+        const sourceArtifact = new Artifact()
+        const synthesizedPipeline = new Artifact('synthesized')
+
+        pipeline.addStage({
+            stageName: 'Source',
+            actions: [
+                new CodeCommitSourceAction({
+                    actionName: 'Source',
+                    repository: inputRepo,
+                    output: sourceArtifact,
+                    trigger: CodeCommitTrigger.NONE
+                })
+            ]
+        })
+
+        const stackName = 'CPStack'
+
+        pipeline.addStage({
+            stageName: 'PreparePipeline',
+            actions: [
+                new LambdaInvokeAction({
+                    lambda: handlerFunction,
+                    actionName: 'SynthesizePipeline',
+                    inputs: [
+                        sourceArtifact
+                    ],
+                    outputs: [
+                        synthesizedPipeline,
+                    ],
+                    userParameters: {
+                        scratchDir: '/tmp/',
+                        scratchDirCleanup: true,
+                        synthPipeline: {
+                            arn: pipelineArn,
+                            sourceType: 'CodeCommit',
+                            sourceRepoName: inputRepo.repositoryName,
+                            eventBusArn: eventBus.eventBusArn,
+                        }
+                    },
+                    runOrder: 1
+                }),
+                new CloudFormationCreateReplaceChangeSetAction({
+                    actionName: "CreateChangeSet",
+                    changeSetName: 'CPChangeSet',
+                    templatePath: synthesizedPipeline.atPath('template.json'),
+                    adminPermissions: true,
+                    stackName,
+                    runOrder: 2
+                })
+            ]
+        })
+
+        pipeline.addStage({
+            stageName: 'ApprovePipeline',
+            actions: [
+                new ManualApprovalAction({
+                    actionName: "Approval"
+                }),
+            ]
+        })
+
+        pipeline.addStage({
+            stageName: 'UpdatePipeline',
+            actions: [
+                new CloudFormationExecuteChangeSetAction({
+                    stackName,
+                    actionName: "ExecuteChangeSet",
+                    changeSetName: 'CPChangeSet'
+                })
+            ]
+        })
+    }
+}

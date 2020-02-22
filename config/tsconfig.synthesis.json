@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig",
+  "files": [
+    "../src/synthesis/index.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "../dist/synthesis"
+  }
+}
