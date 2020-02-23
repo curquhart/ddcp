@@ -34,6 +34,7 @@ new class PublisherPipelineInitStack extends Stack {
                 SourceS3Key: `${assetsPrefix}ddcp.zip`,
                 RepositoryName: repo.repositoryName,
                 SynthPipelineName: 'ddcp-synth',
+                StackName: 'ddcp-pipeline',
             }
         })
         managerStack.node.addDependency(deployment)

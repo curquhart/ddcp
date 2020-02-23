@@ -27,10 +27,13 @@ export class ManagerStack extends Stack {
         const sourceBucketKeyParameter = new CfnParameter(this, 'SourceS3Key');
         const repositoryNameParameter = new CfnParameter(this, 'RepositoryName');
         const synthPipelineNameParameter = new CfnParameter(this, 'SynthPipelineName');
+        const stackNameParameter = new CfnParameter(this, 'StackName');
 
         const pipelineName = synthPipelineNameParameter.valueAsString;
         const pipelineArn = `arn:aws:codepipeline:${Aws.REGION}:${Aws.ACCOUNT_ID}:${pipelineName}`
         const stackUuid = Fn.select(2, Fn.split('/', Aws.STACK_ID))
+        const stackName = stackNameParameter.valueAsString
+        const changeSetName = `${stackName}-${stackUuid}`
 
         const inputRepo = Repository.fromRepositoryName(this, 'Repo', repositoryNameParameter.valueAsString);
         const pipeline = new Pipeline(this, 'Pipeline', { pipelineName });
@@ -134,8 +137,6 @@ export class ManagerStack extends Stack {
             ]
         })
 
-        const stackName = 'CPStack'
-
         pipeline.addStage({
             stageName: 'PreparePipeline',
             actions: [
@@ -162,7 +163,7 @@ export class ManagerStack extends Stack {
                 }),
                 new CloudFormationCreateReplaceChangeSetAction({
                     actionName: "CreateChangeSet",
-                    changeSetName: 'CPChangeSet',
+                    changeSetName,
                     templatePath: synthesizedPipeline.atPath('template.json'),
                     adminPermissions: true,
                     stackName,
@@ -186,7 +187,7 @@ export class ManagerStack extends Stack {
                 new CloudFormationExecuteChangeSetAction({
                     stackName,
                     actionName: "ExecuteChangeSet",
-                    changeSetName: 'CPChangeSet'
+                    changeSetName
                 })
             ]
         })
