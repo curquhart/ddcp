@@ -1,0 +1,33 @@
+{
+  "name": "@ddcp/s3-resolver",
+  "private": true,
+  "version": "1.0.0",
+  "main": "dist/index.min.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc && cat dist/node_modules/**/*.js dist/src/index.js | sed 's#require(\"cfn-response\")#exports#' | jsmin > dist/index.min.js",
+    "clean": "rm -rf node_modules dist",
+    "lint": "eslint --ext .ts src/",
+    "pack": "npm run build"
+  },
+  "engines": {
+    "node": ">=11.13.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "../../.eslintrc"
+    ]
+  },
+  "dependencies": {
+    "aws-lambda": "1.0.5",
+    "aws-sdk": "2.624.0",
+    "cfn-response": "1.0.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.44",
+    "@types/cfn-response": "1.0.1",
+    "eslint": "6.8.0",
+    "jsmin": "1.0.1",
+    "typescript": "3.8.2"
+  }
+}

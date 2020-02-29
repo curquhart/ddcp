@@ -1,0 +1,62 @@
+{
+  "name": "@ddcp/synthesizer",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf node_modules dist",
+    "deploy": "npm run pack",
+    "lint": "eslint --ext .ts src/",
+    "pack": "rm -rf dist && npm run build && npm-pack-zip --dst dist/"
+  },
+  "bundledDependencies": [
+    "@aws-cdk/aws-cloudformation",
+    "@aws-cdk/aws-codecommit",
+    "@aws-cdk/aws-codepipeline",
+    "@aws-cdk/aws-codepipeline-actions",
+    "@aws-cdk/aws-iam",
+    "@aws-cdk/aws-lambda",
+    "@aws-cdk/core",
+    "adm-zip",
+    "js-yaml",
+    "tmp"
+  ],
+  "engines": {
+    "node": ">=11.13.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "../../.eslintrc"
+    ]
+  },
+  "dependencies": {
+    "@aws-cdk/cx-api": "1.25.0",
+    "@aws-cdk/aws-cloudformation": "1.25.0",
+    "@aws-cdk/aws-codebuild": "1.25.0",
+    "@aws-cdk/aws-codecommit": "1.25.0",
+    "@aws-cdk/aws-codepipeline": "1.25.0",
+    "@aws-cdk/aws-codepipeline-actions": "1.25.0",
+    "@aws-cdk/aws-events": "1.25.0",
+    "@aws-cdk/aws-events-targets": "1.25.0",
+    "@aws-cdk/aws-iam": "1.25.0",
+    "@aws-cdk/aws-lambda": "1.25.0",
+    "@aws-cdk/aws-s3": "1.25.0",
+    "@aws-cdk/core": "1.25.0",
+    "adm-zip": "0.4.14",
+    "aws-lambda": "1.0.5",
+    "aws-sdk": "2.624.0",
+    "js-yaml": "3.13.1",
+    "npm-pack-zip": "1.2.7",
+    "tmp": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.44",
+    "@types/adm-zip": "0.4.32",
+    "@types/tmp": "0.1.0",
+    "@types/js-yaml": "3.12.2",
+    "eslint": "6.8.0",
+    "typescript": "3.8.2"
+  }
+}

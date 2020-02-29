@@ -15,10 +15,11 @@ new class PublisherPipelineInitStack extends Stack {
         const repo = new Repository(this, 'Repo', {
             repositoryName: 'ddcp',
         });
+
         const privateBucket = new Bucket(this, 'PrivateBucket', { removalPolicy: RemovalPolicy.DESTROY });
         const deployment = new BucketDeployment(this, 'DeployArtifacts', {
             sources: [
-                Source.asset(`${__dirname}/../../dist.zip`),
+                Source.asset(`${__dirname}/../dist/dist.zip`),
             ],
             destinationBucket: privateBucket,
             destinationKeyPrefix: assetsPrefix
@@ -29,9 +30,9 @@ new class PublisherPipelineInitStack extends Stack {
             parameters: {
                 SourceS3BucketName: privateBucket.bucketName,
                 LocalStorageS3BucketName: privateBucket.bucketName,
-                SourceS3Key: `${assetsPrefix}ddcp.zip`,
+                SourceS3Key: `${assetsPrefix}@ddcpsynthesizer.zip`,
                 RepositoryName: repo.repositoryName,
-                SynthPipelineName: 'ddcp-synth',
+                SynthPipelineName: 'synthesizer',
                 StackName: 'ddcp-pipeline',
             }
         });

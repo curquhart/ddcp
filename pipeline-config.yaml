@@ -25,42 +25,10 @@ Pipelines:
                       - gem install cfn-nag
                       - pip install cfn-lint
                       - npm install
+                      - lerna bootstrap
                   build:
                     commands:
-                      - npm run synth-manager
+                      - lerna run build
                   post_build:
                     commands:
-                      - cfn-lint -i W3005 -- dist/cfn/manager.yaml
-                      - cfn_nag_scan --fail-on-warnings --input-path dist/cfn/manager.yaml
-          - Name: BuildS3Resolver
-            Type: CodeBuild
-            Order: 1
-            SourceName: source
-            BuildSpec:
-              Inline:
-                version: 0.2
-                phases:
-                  install:
-                    runtime-versions:
-                      nodejs: 10
-                    commands:
-                      - npm install
-                  build:
-                    commands:
-                      - npm run build-s3resolver
-          - Name: Build
-            Type: CodeBuild
-            Order: 1
-            SourceName: source
-            BuildSpec:
-              Inline:
-                version: 0.2
-                phases:
-                  install:
-                    runtime-versions:
-                      nodejs: 10
-                    commands:
-                      - npm install
-                  build:
-                    commands:
-                      - npm run build
+                      - lerna run cfn-lint

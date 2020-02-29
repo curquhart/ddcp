@@ -56,7 +56,7 @@ export class ManagerStack extends Stack {
 
         const s3resolver = new Function(this, 'S3Resolver', {
             runtime: Runtime.NODEJS_12_X,
-            code: Code.fromInline(fs.readFileSync(`${__dirname}/../../dist/s3resolver/index.js`).toString()),
+            code: Code.fromInline(fs.readFileSync(`${__dirname}/../node_modules/@ddcp/s3-resolver/dist/index.min.js`).toString()),
             handler: 'index.handler',
             initialPolicy: [
                 new PolicyStatement({
@@ -102,7 +102,7 @@ export class ManagerStack extends Stack {
 
         const handlerFunction = new Function(this, 'DDCpMainHandler', {
             code: Code.fromBucket(localBucket, resolverCr.getAtt('DestKey').toString()),
-            handler: 'dist/synthesis/index.handle',
+            handler: 'dist/index.handle',
             runtime: Runtime.NODEJS_12_X,
             timeout: Duration.minutes(5),
             initialPolicy: [

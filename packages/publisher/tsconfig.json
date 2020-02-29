@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig",
+  "files": [
+    "src/PublishPipelineStack.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "dist"
+  }
+}

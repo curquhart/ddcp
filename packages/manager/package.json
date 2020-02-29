@@ -1,0 +1,65 @@
+{
+  "name": "@ddcp/manager",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "cdk -o dist/cdk.out synth --path-metadata false --version-reporting false --app \"npx ts-node src/index.ts\" | ts-node bin/write.ts dist/manager.yaml",
+    "clean": "rm -rf node_modules dist",
+    "pack": "npm run build",
+    "lint": "eslint --ext .ts src/",
+    "cfn-lint": "cfn-lint -i W3005 -- dist/manager.yaml && cfn_nag_scan --fail-on-warnings --input-path dist/manager.yaml"
+  },
+  "bundledDependencies": [
+    "@aws-cdk/cx-api",
+    "@aws-cdk/aws-cloudformation",
+    "@aws-cdk/aws-codebuild",
+    "@aws-cdk/aws-codecommit",
+    "@aws-cdk/aws-codepipeline",
+    "@aws-cdk/aws-codepipeline-actions",
+    "@aws-cdk/aws-events",
+    "@aws-cdk/aws-events-targets",
+    "@aws-cdk/aws-iam",
+    "@aws-cdk/aws-lambda",
+    "@aws-cdk/aws-s3",
+    "@aws-cdk/core",
+    "aws-cdk",
+    "js-yaml",
+    "tmp"
+  ],
+  "engines": {
+    "node": ">=11.13.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "../../.eslintrc"
+    ]
+  },
+  "dependencies": {
+    "@aws-cdk/cx-api": "1.25.0",
+    "@aws-cdk/aws-cloudformation": "1.25.0",
+    "@aws-cdk/aws-codebuild": "1.25.0",
+    "@aws-cdk/aws-codecommit": "1.25.0",
+    "@aws-cdk/aws-codepipeline": "1.25.0",
+    "@aws-cdk/aws-codepipeline-actions": "1.25.0",
+    "@aws-cdk/aws-events": "1.25.0",
+    "@aws-cdk/aws-events-targets": "1.25.0",
+    "@aws-cdk/aws-iam": "1.25.0",
+    "@aws-cdk/aws-lambda": "1.25.0",
+    "@aws-cdk/aws-s3": "1.25.0",
+    "@aws-cdk/core": "1.25.0",
+    "aws-cdk": "1.25.0",
+    "js-yaml": "3.13.1",
+    "tmp": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "13.7.4",
+    "@types/tmp": "0.1.0",
+    "@types/js-yaml": "3.12.1",
+    "eslint": "6.8.0",
+    "ts-node": "8.6.2",
+    "typescript": "3.8.2",
+    "@ddcp/s3-resolver": "1.0.0"
+  }
+}
