@@ -8,7 +8,8 @@
     "publish-stack": "npm run synth-manager && npm run pack && zip -jr dist.zip ddcp.zip dist/cfn/manager.yaml && cdk deploy --path-metadata false --version-reporting false --app \"npx ts-node src/publish/PublishPipelineStack.ts\"",
     "build-s3resolver": "npx tsc -p config/tsconfig.s3resolver.json && cat dist/s3resolver/node_modules/**/*.js dist/s3resolver/src/s3resolver/index.js | sed 's#require(\"cfn-response\")#exports#' | jsmin > dist/s3resolver/index.js",
     "build": "npx tsc -p config/tsconfig.synthesis.json",
-    "pack": "rm -rf dist/synthesis && npm run build && npx npm-pack-zip"
+    "pack": "rm -rf dist/synthesis && npm run build && npx npm-pack-zip",
+    "lint": "eslint --ext .js,.ts src/"
   },
   "bundledDependencies": [
     "@aws-cdk/aws-cloudformation",
@@ -22,17 +23,26 @@
     "js-yaml",
     "tmp"
   ],
+  "engines": {
+    "node": ">=11.13.0"
+  },
+  "type": "module",
   "dependencies": {
     "@aws-cdk/aws-cloudformation": "1.25.0",
+    "@aws-cdk/aws-codebuild": "1.25.0",
     "@aws-cdk/aws-codecommit": "1.25.0",
     "@aws-cdk/aws-codepipeline": "1.25.0",
     "@aws-cdk/aws-codepipeline-actions": "1.25.0",
-    "@aws-cdk/aws-s3-deployment": "1.25.0",
+    "@aws-cdk/aws-events": "1.25.0",
+    "@aws-cdk/aws-events-targets": "1.25.0",
     "@aws-cdk/aws-iam": "1.25.0",
     "@aws-cdk/aws-lambda": "1.25.0",
+    "@aws-cdk/aws-s3": "1.25.0",
+    "@aws-cdk/aws-s3-deployment": "1.25.0",
     "@aws-cdk/core": "1.25.0",
     "adm-zip": "0.4.14",
     "aws-cdk": "1.25.0",
+    "aws-lambda": "1.0.5",
     "aws-sdk": "2.624.0",
     "cfn-response": "1.0.1",
     "js-yaml": "3.13.1",
@@ -46,6 +56,10 @@
     "@types/cfn-response": "1.0.1",
     "@types/tmp": "0.1.0",
     "@types/js-yaml": "3.12.2",
+    "@typescript-eslint/eslint-plugin": "2.21.0",
+    "@typescript-eslint/parser": "2.21.0",
+    "eslint": "6.8.0",
+    "eslint-plugin-node": "11.0.0",
     "jsmin": "1.0.1",
     "parcel": "1.12.4",
     "ts-node": "8.6.2",

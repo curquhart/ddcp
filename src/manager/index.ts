@@ -1,5 +1,5 @@
-import {App} from "@aws-cdk/core";
-import {ManagerStack} from "./ManagerStack";
+import {App} from '@aws-cdk/core';
+import {ManagerStack} from './ManagerStack';
 
 const app = new App();
 

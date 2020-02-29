@@ -1,16 +1,15 @@
-import {CloudWatchEvents, CodeCommit, CodePipeline} from "aws-sdk";
-import {Context} from "aws-lambda";
-import {ICodeCommitEvent} from "./ICodeCommitEvent";
-import {tOrDefault} from "./SynthesisStack";
+import {CloudWatchEvents, CodeCommit, CodePipeline} from 'aws-sdk';
+import {CodeCommitEvent} from './CodeCommitEvent';
+import {tOrDefault} from './SynthesisStack';
 
 export class SelectorHandler {
-    async handle(event: ICodeCommitEvent, context: Context) {
+    async handle(event: CodeCommitEvent): Promise<void> {
         const cc = new CodeCommit();
 
-        const inputFile = event.detail.inputFile
+        const inputFile = event.detail.inputFile;
 
-        let isPipelineInputChange = false
-        let nextToken: string | undefined = undefined
+        let isPipelineInputChange = false;
+        let nextToken: string | undefined = undefined;
         do {
             const diff: CodeCommit.GetDifferencesOutput = await cc.getDifferences({
                 repositoryName: event.detail.repositoryName,
@@ -22,19 +21,19 @@ export class SelectorHandler {
             nextToken = diff.NextToken;
             if (diff.differences !== undefined) {
                 for (const difference of diff.differences) {
-                    const beforePath = difference.beforeBlob !== undefined ? difference["beforeBlob"]["path"] : null;
-                    const afterPath = difference.afterBlob !== undefined ? difference["afterBlob"]["path"] : null;
+                    const beforePath = difference.beforeBlob !== undefined ? difference['beforeBlob']['path'] : null;
+                    const afterPath = difference.afterBlob !== undefined ? difference['afterBlob']['path'] : null;
 
                     if (beforePath !== inputFile && afterPath !== inputFile) {
-                        continue
+                        continue;
                     }
 
                     if (beforePath !== null && beforePath !== afterPath) {
-                        console.warn(`WARN: ${inputFile} was renamed from ${beforePath} to ${afterPath}`)
+                        console.warn(`WARN: ${inputFile} was renamed from ${beforePath} to ${afterPath}`);
                     }
 
                     if (afterPath === inputFile) {
-                        isPipelineInputChange = true
+                        isPipelineInputChange = true;
                     }
                 }
             }
@@ -46,7 +45,7 @@ export class SelectorHandler {
             await cp.startPipelineExecution({
                 name: event.detail.pipelineName,
                 clientRequestToken: event.detail.commitId
-            }).promise()
+            }).promise();
         }
         else {
             const cw = new CloudWatchEvents();
@@ -65,11 +64,11 @@ export class SelectorHandler {
                         state: 'SUCCEEDED'
                     })
                 }],
-            }).promise()
+            }).promise();
 
             for (const resItem of tOrDefault(res.Entries, [])) {
                 if (resItem.ErrorCode !== undefined) {
-                    console.error(`Failed to publish event: errno=${resItem.ErrorCode} err=${resItem.ErrorMessage}`)
+                    console.error(`Failed to publish event: errno=${resItem.ErrorCode} err=${resItem.ErrorMessage}`);
                 }
             }
         }

@@ -1,4 +1,4 @@
-export interface ICodeCommitEvent {
+export interface CodeCommitEvent {
     detail: {
         repositoryName: string;
         repositoryArn: string;
@@ -7,6 +7,6 @@ export interface ICodeCommitEvent {
         pipelineName: string;
         pipelineArn: string;
         inputFile: string;
-        eventBusName: string
+        eventBusName: string;
     };
 }

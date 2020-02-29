@@ -2,7 +2,6 @@ import {Aws, CfnParameter, Construct, Duration, Fn, Stack, StackProps} from '@aw
 import {Repository} from '@aws-cdk/aws-codecommit';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
 import {Code, Function, Runtime} from '@aws-cdk/aws-lambda';
-import * as s3 from '@aws-cdk/aws-s3';
 import {Bucket} from '@aws-cdk/aws-s3';
 import {
     CloudFormationCreateReplaceChangeSetAction,
@@ -12,11 +11,11 @@ import {
     LambdaInvokeAction,
     ManualApprovalAction
 } from '@aws-cdk/aws-codepipeline-actions';
-import * as fs from 'fs'
-import {PolicyStatement} from "@aws-cdk/aws-iam";
-import * as targets from '@aws-cdk/aws-events-targets'
-import * as events from '@aws-cdk/aws-events'
-import {CustomResource, CustomResourceProvider} from "@aws-cdk/aws-cloudformation";
+import * as fs from 'fs';
+import {PolicyStatement} from '@aws-cdk/aws-iam';
+import * as targets from '@aws-cdk/aws-events-targets';
+import * as events from '@aws-cdk/aws-events';
+import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
 
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
@@ -30,10 +29,10 @@ export class ManagerStack extends Stack {
         const stackNameParameter = new CfnParameter(this, 'StackName');
 
         const pipelineName = synthPipelineNameParameter.valueAsString;
-        const pipelineArn = `arn:aws:codepipeline:${Aws.REGION}:${Aws.ACCOUNT_ID}:${pipelineName}`
-        const stackUuid = Fn.select(2, Fn.split('/', Aws.STACK_ID))
-        const stackName = stackNameParameter.valueAsString
-        const changeSetName = `${stackName}-${stackUuid}`
+        const pipelineArn = `arn:aws:codepipeline:${Aws.REGION}:${Aws.ACCOUNT_ID}:${pipelineName}`;
+        const stackUuid = Fn.select(2, Fn.split('/', Aws.STACK_ID));
+        const stackName = stackNameParameter.valueAsString;
+        const changeSetName = `${stackName}-${stackUuid}`;
 
         const inputRepo = Repository.fromRepositoryName(this, 'Repo', repositoryNameParameter.valueAsString);
         const pipeline = new Pipeline(this, 'Pipeline', { pipelineName });
@@ -41,13 +40,13 @@ export class ManagerStack extends Stack {
         const localBucket = Bucket.fromBucketName(this, 'S3Bucket', localStorageBucketNameParameter.valueAsString);
 
         // TODO: use custom event bus once https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/44 is completed.
-        const eventBus = events.EventBus.fromEventBusArn(this, 'CustomEventBus', `arn:aws:events:${Aws.REGION}:${Aws.ACCOUNT_ID}:event-bus/default`)
+        const eventBus = events.EventBus.fromEventBusArn(this, 'CustomEventBus', `arn:aws:events:${Aws.REGION}:${Aws.ACCOUNT_ID}:event-bus/default`);
         new events.CfnEventBusPolicy(this, 'EventBusPolicy', {
             action: 'events:PutEvents',
             principal: Aws.ACCOUNT_ID,
             statementId: `ddcp-events-${stackUuid}`,
             eventBusName: eventBus.eventBusName
-        })
+        });
 
         const s3resolver = new Function(this, 'S3Resolver', {
             runtime: Runtime.NODEJS_12_X,
@@ -70,7 +69,7 @@ export class ManagerStack extends Stack {
                     ],
                 })
             ]
-        })
+        });
         const resolverCr = new CustomResource(this, 'ResolveSynthesizer', {
             provider: CustomResourceProvider.fromLambda(s3resolver),
             properties: {
@@ -79,11 +78,11 @@ export class ManagerStack extends Stack {
                 DestBucketName: localBucket.bucketName,
                 StackUuid: stackUuid,
             },
-        })
+        });
 
         const handlerFunction = new Function(this, 'DDCpMainHandler', {
             code: Code.fromBucket(localBucket, resolverCr.getAtt('DestKey').toString()),
-            handler: "dist/synthesis/index.handle",
+            handler: 'dist/synthesis/index.handle',
             runtime: Runtime.NODEJS_12_X,
             timeout: Duration.minutes(5),
             initialPolicy: [
@@ -102,7 +101,7 @@ export class ManagerStack extends Stack {
                     resources: [eventBus.eventBusArn],
                 }),
             ]
-        })
+        });
 
         inputRepo.onCommit('EventRule', {
             target: new targets.LambdaFunction(handlerFunction, {
@@ -122,8 +121,8 @@ export class ManagerStack extends Stack {
             branches: ['master'],
         });
 
-        const sourceArtifact = new Artifact()
-        const synthesizedPipeline = new Artifact('synthesized')
+        const sourceArtifact = new Artifact();
+        const synthesizedPipeline = new Artifact('synthesized');
 
         pipeline.addStage({
             stageName: 'Source',
@@ -135,7 +134,7 @@ export class ManagerStack extends Stack {
                     trigger: CodeCommitTrigger.NONE
                 })
             ]
-        })
+        });
 
         pipeline.addStage({
             stageName: 'PreparePipeline',
@@ -162,7 +161,7 @@ export class ManagerStack extends Stack {
                     runOrder: 1
                 }),
                 new CloudFormationCreateReplaceChangeSetAction({
-                    actionName: "CreateChangeSet",
+                    actionName: 'CreateChangeSet',
                     changeSetName,
                     templatePath: synthesizedPipeline.atPath('template.json'),
                     adminPermissions: true,
@@ -170,26 +169,26 @@ export class ManagerStack extends Stack {
                     runOrder: 2
                 })
             ]
-        })
+        });
 
         pipeline.addStage({
             stageName: 'ApprovePipeline',
             actions: [
                 new ManualApprovalAction({
-                    actionName: "Approval"
+                    actionName: 'Approval'
                 }),
             ]
-        })
+        });
 
         pipeline.addStage({
             stageName: 'UpdatePipeline',
             actions: [
                 new CloudFormationExecuteChangeSetAction({
                     stackName,
-                    actionName: "ExecuteChangeSet",
+                    actionName: 'ExecuteChangeSet',
                     changeSetName
                 })
             ]
-        })
+        });
     }
 }
