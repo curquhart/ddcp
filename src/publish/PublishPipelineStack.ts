@@ -1,12 +1,12 @@
 import {App, Construct, RemovalPolicy, Stack, StackProps} from '@aws-cdk/core';
 import {Repository} from '@aws-cdk/aws-codecommit';
 import {Bucket} from '@aws-cdk/aws-s3';
-import {BucketDeployment, Source} from "@aws-cdk/aws-s3-deployment";
-import {CfnStack} from "@aws-cdk/aws-cloudformation";
+import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
+import {CfnStack} from '@aws-cdk/aws-cloudformation';
 
 const app = new App();
 
-const assetsPrefix = 'managerassets/'
+const assetsPrefix = 'managerassets/';
 
 new class PublisherPipelineInitStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
@@ -14,10 +14,8 @@ new class PublisherPipelineInitStack extends Stack {
 
         const repo = new Repository(this, 'Repo', {
             repositoryName: 'ddcp',
-        })
+        });
         const privateBucket = new Bucket(this, 'PrivateBucket', { removalPolicy: RemovalPolicy.DESTROY });
-        const publicBucket = new Bucket(this, 'PublicBucket', { removalPolicy: RemovalPolicy.DESTROY });
-
         const deployment = new BucketDeployment(this, 'DeployArtifacts', {
             sources: [
                 Source.asset(`${__dirname}/../../dist.zip`),
@@ -36,7 +34,7 @@ new class PublisherPipelineInitStack extends Stack {
                 SynthPipelineName: 'ddcp-synth',
                 StackName: 'ddcp-pipeline',
             }
-        })
-        managerStack.node.addDependency(deployment)
+        });
+        managerStack.node.addDependency(deployment);
     }
 }(app, 'ddcp');
