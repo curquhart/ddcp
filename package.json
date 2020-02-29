@@ -26,7 +26,6 @@
   "engines": {
     "node": ">=11.13.0"
   },
-  "type": "module",
   "dependencies": {
     "@aws-cdk/cx-api": "1.25.0",
     "@aws-cdk/aws-cloudformation": "1.25.0",
