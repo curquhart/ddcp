@@ -1,7 +1,8 @@
 import {Aws, CfnParameter, Construct, Duration, Fn, Stack, StackProps} from '@aws-cdk/core';
 import {Repository} from '@aws-cdk/aws-codecommit';
+import {DISABLE_METADATA_STACK_TRACE} from '@aws-cdk/cx-api';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
-import {Code, Function, Runtime} from '@aws-cdk/aws-lambda';
+import {CfnFunction, Code, Function, Runtime} from '@aws-cdk/aws-lambda';
 import {Bucket} from '@aws-cdk/aws-s3';
 import {
     CloudFormationCreateReplaceChangeSetAction,
@@ -12,7 +13,7 @@ import {
     ManualApprovalAction
 } from '@aws-cdk/aws-codepipeline-actions';
 import * as fs from 'fs';
-import {PolicyStatement} from '@aws-cdk/aws-iam';
+import {CfnPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
@@ -20,6 +21,8 @@ import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformatio
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
         super(scope, id, props);
+
+        this.node.setContext(DISABLE_METADATA_STACK_TRACE, true);
 
         const sourceBucketNameParameter = new CfnParameter(this, 'SourceS3BucketName');
         const localStorageBucketNameParameter = new CfnParameter(this, 'LocalStorageS3BucketName');
@@ -35,9 +38,12 @@ export class ManagerStack extends Stack {
         const changeSetName = `${stackName}-${stackUuid}`;
 
         const inputRepo = Repository.fromRepositoryName(this, 'Repo', repositoryNameParameter.valueAsString);
-        const pipeline = new Pipeline(this, 'Pipeline', { pipelineName });
-        const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketNameParameter.valueAsString);
+
         const localBucket = Bucket.fromBucketName(this, 'S3Bucket', localStorageBucketNameParameter.valueAsString);
+
+        const pipeline = new Pipeline(this, 'Pipeline', { pipelineName, artifactBucket: localBucket });
+
+        const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketNameParameter.valueAsString);
 
         // TODO: use custom event bus once https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/44 is completed.
         const eventBus = events.EventBus.fromEventBusArn(this, 'CustomEventBus', `arn:aws:events:${Aws.REGION}:${Aws.ACCOUNT_ID}:event-bus/default`);
@@ -70,6 +76,20 @@ export class ManagerStack extends Stack {
                 })
             ]
         });
+        const s3resolverNode = s3resolver.node.defaultChild as CfnFunction;
+        s3resolverNode.node.addInfo('cfn_nag disabled.');
+        s3resolverNode
+            .addOverride('Metadata', {
+                'cfn_nag': {
+                    'rules_to_suppress': [
+                        {
+                            id: 'W58',
+                            reason: 'AWSLambdaBasicExecutionRole is applied which provides CloudWatch write.',
+                        },
+                    ]
+                }
+            });
+
         const resolverCr = new CustomResource(this, 'ResolveSynthesizer', {
             provider: CustomResourceProvider.fromLambda(s3resolver),
             properties: {
@@ -102,6 +122,33 @@ export class ManagerStack extends Stack {
                 }),
             ]
         });
+        const handlerFunctionNode = handlerFunction.node.defaultChild as CfnFunction;
+        handlerFunctionNode.node.addInfo('cfn_nag disabled.');
+        handlerFunctionNode
+            .addOverride('Metadata', {
+                'cfn_nag': {
+                    'rules_to_suppress': [
+                        {
+                            id: 'W58',
+                            reason: 'AWSLambdaBasicExecutionRole is applied which provides CloudWatch write.',
+                        },
+                    ]
+                }
+            });
+
+        const handlerDefaultPolicy = handlerFunction?.role?.node.findChild('DefaultPolicy').node.findChild('Resource') as CfnPolicy;
+        handlerDefaultPolicy.node.addInfo('cfn_nag disabled.');
+        handlerDefaultPolicy
+            .addOverride('Metadata', {
+                'cfn_nag': {
+                    'rules_to_suppress': [
+                        {
+                            id: 'W12',
+                            reason: 'CodePipeline PutJobSuccessResult and PutJobFailureResult both require *.',
+                        },
+                    ]
+                }
+            });
 
         inputRepo.onCommit('EventRule', {
             target: new targets.LambdaFunction(handlerFunction, {
@@ -136,40 +183,82 @@ export class ManagerStack extends Stack {
             ]
         });
 
+        const synthAction = new LambdaInvokeAction({
+            lambda: handlerFunction,
+            actionName: 'SynthesizePipeline',
+            inputs: [
+                sourceArtifact
+            ],
+            outputs: [
+                synthesizedPipeline,
+            ],
+            userParameters: {
+                scratchDir: '/tmp/',
+                scratchDirCleanup: true,
+                synthPipeline: {
+                    arn: pipelineArn,
+                    sourceType: 'CodeCommit',
+                    sourceRepoName: inputRepo.repositoryName,
+                    eventBusArn: eventBus.eventBusArn,
+                }
+            },
+            runOrder: 1
+        });
+
+        const changeSetAction = new CloudFormationCreateReplaceChangeSetAction({
+            actionName: 'CreateChangeSet',
+            changeSetName,
+            templatePath: synthesizedPipeline.atPath('template.json'),
+            adminPermissions: true,
+            stackName,
+            runOrder: 2
+        });
+
+
         pipeline.addStage({
             stageName: 'PreparePipeline',
             actions: [
-                new LambdaInvokeAction({
-                    lambda: handlerFunction,
-                    actionName: 'SynthesizePipeline',
-                    inputs: [
-                        sourceArtifact
-                    ],
-                    outputs: [
-                        synthesizedPipeline,
-                    ],
-                    userParameters: {
-                        scratchDir: '/tmp/',
-                        scratchDirCleanup: true,
-                        synthPipeline: {
-                            arn: pipelineArn,
-                            sourceType: 'CodeCommit',
-                            sourceRepoName: inputRepo.repositoryName,
-                            eventBusArn: eventBus.eventBusArn,
-                        }
-                    },
-                    runOrder: 1
-                }),
-                new CloudFormationCreateReplaceChangeSetAction({
-                    actionName: 'CreateChangeSet',
-                    changeSetName,
-                    templatePath: synthesizedPipeline.atPath('template.json'),
-                    adminPermissions: true,
-                    stackName,
-                    runOrder: 2
-                })
+                synthAction,
+                changeSetAction
             ]
         });
+
+        const synthDefaultPolicy = pipeline.node.findChild('PreparePipeline').node.findChild('SynthesizePipeline').node.findChild('CodePipelineActionRole').node.findChild('DefaultPolicy').node.findChild('Resource') as CfnPolicy;
+        synthDefaultPolicy.node.addInfo('cfn_nag disabled.');
+        synthDefaultPolicy
+            .addOverride('Metadata', {
+                'cfn_nag': {
+                    'rules_to_suppress': [
+                        {
+                            id: 'W12',
+                            reason: 'Lambda invoke action requires ListFunctions.',
+                        },
+                    ]
+                }
+            });
+
+        // TODO: re-write the policy CodeBuild creates with one much more restrictive.
+        const changeSetDefaultPolicy = changeSetAction.deploymentRole.node.findChild('DefaultPolicy').node.findChild('Resource') as CfnPolicy;
+        changeSetDefaultPolicy.node.addWarning('cfn_nag disabled.');
+        changeSetDefaultPolicy
+            .addOverride('Metadata', {
+                'cfn_nag': {
+                    'rules_to_suppress': [
+                        {
+                            id: 'F4',
+                            reason: 'DDCP is still under initial development and the specific requirements are not decided yet.',
+                        },
+                        {
+                            id: 'F39',
+                            reason: 'DDCP is still under initial development and the specific requirements are not decided yet.',
+                        },
+                        {
+                            id: 'W12',
+                            reason: 'DDCP is still under initial development and the specific requirements are not decided yet.',
+                        },
+                    ]
+                }
+            });
 
         pipeline.addStage({
             stageName: 'ApprovePipeline',
