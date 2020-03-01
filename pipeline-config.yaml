@@ -25,10 +25,10 @@ Pipelines:
                       - gem install cfn-nag
                       - pip install cfn-lint
                       - npm install
-                      - lerna bootstrap
+                      - npx --no-install lerna bootstrap
                   build:
                     commands:
-                      - lerna run build
+                      - npx --no-install lerna run build
                   post_build:
                     commands:
-                      - lerna run cfn-lint
+                      - npx --no-install lerna run cfn-lint
