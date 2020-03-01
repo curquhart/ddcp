@@ -105,6 +105,7 @@ export class ManagerStack extends Stack {
             handler: 'dist/index.handle',
             runtime: Runtime.NODEJS_12_X,
             timeout: Duration.minutes(5),
+            memorySize: 512,
             initialPolicy: [
                 // Might want to deploy a single version of this lambda. Its events are constructed to support that,
                 // but if doing so, we will need to * the resources.
