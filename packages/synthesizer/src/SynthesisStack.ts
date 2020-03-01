@@ -3,7 +3,6 @@ import {BuildSpec, Project, Source} from '@aws-cdk/aws-codebuild';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
 import {CodeBuildAction, CodeCommitSourceAction, CodeCommitTrigger} from '@aws-cdk/aws-codepipeline-actions';
 import {Construct, Stack, Aws} from '@aws-cdk/core';
-import * as yaml from 'js-yaml';
 import {PipelineConfigs, isCodeBuildAction} from './PipelineConfig';
 import {ManagerResources} from './SynthesisHandler';
 import * as targets from '@aws-cdk/aws-events-targets';
@@ -13,10 +12,9 @@ export const tOrDefault = <T>(input: T | undefined, defaultValue: T): T => {
 };
 
 export class SynthesisStack extends Stack {
-    constructor(scope: Construct, id: string, managerResources: ManagerResources, pipelineConfigYaml: string) {
+    constructor(scope: Construct, id: string, managerResources: ManagerResources, pipelineConfig: PipelineConfigs) {
         super(scope, id);
 
-        const pipelineConfig = yaml.safeLoad(pipelineConfigYaml) as PipelineConfigs;
         const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', managerResources.arn);
 
         let counter = 0;

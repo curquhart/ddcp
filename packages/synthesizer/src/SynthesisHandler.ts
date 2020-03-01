@@ -5,6 +5,9 @@ import * as AdmZip from 'adm-zip';
 import {CodePipelineEvent, Context} from 'aws-lambda';
 import * as tmp from 'tmp';
 import {EMPTY_VOID_FN} from './helpers';
+import {Resolver} from './Resolver';
+import * as yaml from 'js-yaml';
+import {PipelineConfigs} from './PipelineConfig';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
@@ -27,7 +30,7 @@ const getArtifactS3Client = (event: CodePipelineEvent): S3 => {
 };
 
 export class SynthesisHandler {
-    async handle(synthPipeline: ManagerResources, cdkOutDir: string, event: CodePipelineEvent): Promise<void> {
+    async handle(synthPipeline: ManagerResources, cdkOutDir: string, event: CodePipelineEvent, resolver: Resolver): Promise<void> {
         const app = new App({
             outdir: cdkOutDir,
         });
@@ -40,7 +43,8 @@ export class SynthesisHandler {
         }).promise();
 
         const inZip = new AdmZip(inputArtifact.Body as Buffer);
-        const pipelineConfig = inZip.readAsText('pipeline-config.yaml');
+        const pipelineConfigYaml = inZip.readAsText('pipeline-config.yaml');
+        const pipelineConfig = resolver.resolve(yaml.safeLoad(pipelineConfigYaml)) as PipelineConfigs;
 
         new SynthesisStack(app, STACK_ID, synthPipeline, pipelineConfig);
         const template = app.synth().getStackArtifact(STACK_ID).template;
@@ -55,7 +59,7 @@ export class SynthesisHandler {
         }).promise();
     }
 
-    async safeHandle(event: CodePipelineEvent, context: Context): Promise<void> {
+    async safeHandle(event: CodePipelineEvent, context: Context, resolver: Resolver): Promise<void> {
         let cleanupCb = EMPTY_VOID_FN;
         const cp = new CodePipeline();
 
@@ -84,7 +88,7 @@ export class SynthesisHandler {
                 cleanupCb = cdkOutDir.removeCallback;
             }
 
-            await this.handle(synthPipeline, cdkOutDir.name, event);
+            await this.handle(synthPipeline, cdkOutDir.name, event, resolver);
             await cp.putJobSuccessResult({jobId: event['CodePipeline.job'].id}).promise();
         }
         catch (err) {
