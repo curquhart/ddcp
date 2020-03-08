@@ -7,11 +7,13 @@ import {Join} from './fn/resolvers/Join';
 import {Path} from './fn/resolvers/Path';
 import {PathForAlias} from './fn/resolvers/PathForAlias';
 import {Base} from './fn/Base';
+import {Import} from './fn/resolvers/Import';
 
 const allResolvers: Record<string, Base<unknown, Array<unknown>>> = {};
 new Join(allResolvers).init();
 new Path(allResolvers).init();
 new PathForAlias(allResolvers).init();
+new Import(allResolvers).init();
 
 const resolver = new Resolver(allResolvers);
 

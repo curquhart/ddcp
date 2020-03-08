@@ -1,17 +1,17 @@
 Pipelines:
   - Name: ddcp-build
     Sources:
-      - Name: source
+      - Name: Source
         Type: CodeCommit
         RepositoryName: ddcp
         BranchName: master
     Stages:
       - Name: BuildStage
         Actions:
-          - Name: ManagerSynth
+          - Name: Build
             Type: CodeBuild
             Order: 1
-            SourceName: source
+            SourceName: Source
             BuildSpec:
               Inline:
                 version: 0.2
@@ -28,7 +28,38 @@ Pipelines:
                       - npx --no-install lerna bootstrap
                   build:
                     commands:
+                      - npx --no-install lerna run lint
                       - npx --no-install lerna run build
+                      - npx --no-install lerna run pack
                   post_build:
                     commands:
                       - npx --no-install lerna run cfn-lint
+                artifacts:
+                  secondary-artifacts:
+                    Manager:
+                      files:
+                        - packages/manager/dist/manager.yaml
+                      discard-paths: yes
+                    Synthesizer:
+                      files:
+                        - packages/synthesizer/dist/@ddcpsynthesizer.zip
+                      discard-paths: yes
+      - Name: PublishStage
+        Actions:
+          - Name: Manager
+            Type: S3Publish
+            Order: 1
+            SourceName: Manager
+            Extract: true
+            BucketArn:
+              '!Import': PublicBucketArn
+            AccessControl: PublicRead
+            CacheControl:
+              - max-age: 86400
+          - Name: Synthesizer
+            Type: S3Publish
+            Order: 1
+            SourceName: Synthesizer
+            Extract: true
+            BucketArn:
+              '!Import': PrivateBucketArn
