@@ -36,7 +36,11 @@ export const handler = async (event: CloudFormationCustomResourceEvent, context:
             await s3.deleteObject({
                 Bucket: destBucketName,
                 Key: destKey,
-            }).promise();
+            }).promise().catch((err) => {
+                if (err.code !== 'AccessDenied' && err.code !== 'NotFound') {
+                    throw err;
+                }
+            });
         }
         else {
             await s3.copyObject({
