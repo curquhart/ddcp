@@ -7,11 +7,11 @@
     "deploy": "lerna run clean && lerna bootstrap && lerna run pack && npm --prefix=packages/publisher run deploy"
   },
   "dependencies": {
-    "lerna": "^3.20.2",
-    "eslint": "6.8.0",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
+    "eslint": "6.8.0",
     "eslint-plugin-node": "11.0.0",
+    "lerna": "^3.20.2",
     "typescript": "3.8.2"
   }
 }
