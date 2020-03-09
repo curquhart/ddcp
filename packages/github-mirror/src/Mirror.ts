@@ -46,7 +46,7 @@ export class Mirror {
         if (isWebhookPayloadPush(event) && event.ref.indexOf('refs/heads/') === 0) {
             const tmpDir = mkTempDir();
             try {
-                await this.mirrorBranch(event.ref.replace(/^refs\/heads\//, ''), event.created, tmpDir);
+                await this.mirrorBranch(event.ref.replace(/^refs\/heads\//, ''), !event.deleted, tmpDir);
             }
             finally {
                 rimraf.sync(tmpDir);
