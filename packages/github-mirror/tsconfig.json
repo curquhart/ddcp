@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig",
+  "files": [
+    "src/index.ts",
+    "src/git-credentials-helper.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "dist/"
+  }
+}

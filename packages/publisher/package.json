@@ -7,9 +7,9 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf node_modules dist",
-    "deploy": "npm run pack && cdk -o dist/cdk.out deploy --path-metadata false --version-reporting false --app \"npx ts-node src/PublishPipelineStack.ts\"",
+    "deploy": "npm run pack && cdk -o dist/cdk.out deploy --path-metadata false --version-reporting false",
     "lint": "eslint --ext .ts src/",
-    "pack": "rm -rf dist && npm run build && zip -jr dist/dist.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/manager/dist/manager.yaml"
+    "pack": "rm -rf dist && npm run build && zip -jr dist/dist.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/manager/dist/manager.yaml"
   },
   "engines": {
     "node": ">=11.13.0"
@@ -30,13 +30,15 @@
     "@aws-cdk/aws-s3-deployment": "1.25.0",
     "@aws-cdk/core": "1.25.0",
     "aws-cdk": "1.25.0",
-    "npm-pack-zip": "1.2.7"
+    "npm-pack-zip": "1.2.7",
+    "@aws-cdk/aws-apigateway": "1.25.0"
   },
   "devDependencies": {
     "eslint": "6.8.0",
     "ts-node": "8.6.2",
     "typescript": "3.8.2",
     "@ddcp/manager": "1.0.0",
-    "@ddcp/synthesizer": "1.0.0"
+    "@ddcp/synthesizer": "1.0.0",
+    "@ddcp/github-mirror": "1.0.0"
   }
 }

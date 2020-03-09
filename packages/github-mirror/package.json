@@ -1,0 +1,46 @@
+{
+  "name": "@ddcp/github-mirror",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "bundledDependencies": [
+    "aws4",
+    "rimraf",
+    "shell-escape",
+    "github-webhook-validators",
+    "tmp"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist node_modules",
+    "lint": "eslint --ext .ts src/",
+    "pack": "rm -rf dist && npm run build && npx npm-pack-zip --dst dist/"
+  },
+  "engines": {
+    "node": ">=11.13.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "../../.eslintrc"
+    ]
+  },
+  "dependencies": {
+    "@octokit/webhooks": "7.1.0",
+    "@types/aws4": "1.5.1",
+    "@types/rimraf": "2.0.3",
+    "@types/shell-escape": "0.2.0",
+    "aws4": "1.9.1",
+    "github-webhook-validators": "1.0.3",
+    "npm-pack-zip": "1.2.7",
+    "rimraf": "3.0.2",
+    "shell-escape": "0.2.0",
+    "tmp": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "13.7.4",
+    "@types/tmp": "0.1.0",
+    "eslint": "6.8.0",
+    "typescript": "3.8.2"
+  }
+}
