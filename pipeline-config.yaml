@@ -1,5 +1,6 @@
 Pipelines:
   - Name: ddcp-build
+    Orchestrator: CodePipeline
     Sources:
       - Name: Source
         Type: CodeCommit
@@ -13,6 +14,7 @@ Pipelines:
             Order: 1
             SourceName: Source
             BuildSpec:
+              Alias: BuildSpec
               Inline:
                 version: 0.2
                 phases:
@@ -63,3 +65,31 @@ Pipelines:
             Extract: true
             BucketArn:
               '!Import': PrivateBucketArn
+  - Name: ddcp-branch-build
+    Orchestrator: CloudWatch
+    Sources:
+      - Name: Source
+        Type: CodeCommit
+        RepositoryName: ddcp
+        NotBranchName: master
+    Stages:
+      - Name: BuildStage
+        Actions:
+          - Name: Build
+            Type: CodeBuild
+            Order: 1
+            SourceName: Source
+            BuildSpec:
+              Inline:
+                version:
+                  '!Path':
+                    '!Join':
+                      - '!PathForAlias': BuildSpec
+                      - - Inline
+                        - version
+                phases:
+                  '!Path':
+                    '!Join':
+                      - '!PathForAlias': BuildSpec
+                      - - Inline
+                        - phases

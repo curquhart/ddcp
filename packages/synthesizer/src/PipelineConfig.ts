@@ -16,7 +16,7 @@ interface Source {
     BranchName?: string;
 }
 
-interface Action {
+export interface Action {
     Name: string;
     Order?: number;
     Type?: string;
@@ -24,19 +24,20 @@ interface Action {
     Inputs?: Array<string>;
 }
 
-type CodeBuildBuildSpec = Record<string, unknown> & {
+export type CodeBuildBuildSpec = Record<string, unknown> & {
     artifacts?: {
         'secondary-artifacts'?: Record<string, unknown>;
     };
 }
 
-interface CodeBuildAction extends Action {
+export interface CodeBuildAction extends Action {
     BuildSpec: {
         Inline?: CodeBuildBuildSpec;
     };
     Type: ActionType.CODE_BUILD;
 }
-interface S3PublishAction extends Action {
+
+export interface S3PublishAction extends Action {
     Type: ActionType.S3_PUBLISH;
     AccessControl?: s3.BucketAccessControl;
     BucketName?: string;
@@ -54,12 +55,13 @@ export const isS3PublishAction = (action: Action): action is S3PublishAction => 
     return action.Type === ActionType.S3_PUBLISH;
 };
 
-interface Stage {
+export interface Stage {
     Name?: string;
     Actions?: Array<Action>;
 }
 
-interface Pipeline {
+export interface Pipeline {
+    Orchestrator: string;
     Name?: string;
     Sources?: Array<Source>;
     Stages?: Array<Stage>;
