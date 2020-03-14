@@ -10,7 +10,7 @@
     "deploy": "cdk deploy",
     "lint": "eslint --ext .ts src/",
     "pack": "zip -jr dist/dist.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/manager/dist/manager.yaml",
-    "artifact-lint": "[[ \"$(unzip -l dist/dist.zip | grep -v Archive: | grep 'yaml\\|zip' | wc -l | tr -d ' ')\" == \"3\" ]] || (echo Expected 3 files in archive; exit 1)"
+    "artifact-lint": "[ \"$(unzip -l dist/dist.zip | grep -v Archive: | grep 'yaml\\|zip' | wc -l | tr -d ' ')\" == \"3\" ] || (echo Expected 3 files in archive; exit 1)"
   },
   "engines": {
     "node": ">=10.0.0"
