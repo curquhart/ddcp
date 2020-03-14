@@ -15,6 +15,7 @@ import {ManagerResources} from './SynthesisHandler';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as s3 from '@aws-cdk/aws-s3';
 import {throwError} from './helpers';
+import {Topic} from '@aws-cdk/aws-sns';
 
 export const tOrDefault = <T>(input: T | undefined, defaultValue: T): T => {
     return input !== undefined ? input : defaultValue;
@@ -93,7 +94,7 @@ export class SynthesisStack extends Stack {
                             action.BuildSpec.Inline :
                             throwError(new Error('BuildSpec.Inline is required.'));
 
-                        const codePipelineProject = new Project(codePipeline, `${action.Name}Project`, {
+                        const codeBuildProject = new Project(codePipeline, `${action.Name}Project`, {
                             projectName: `${action.Name}Project`,
                             buildSpec: BuildSpec.fromObject(buildSpec),
                             source: action.SourceName !== undefined ? Source.codeCommit({
@@ -101,11 +102,20 @@ export class SynthesisStack extends Stack {
                             }) : undefined
                         });
 
+                        const buildStateSnsTopic = Topic.fromTopicArn(
+                            this,
+                            `ImportSnsTopic${counter++}`,
+                            managerResources.buildStateSnsTopicArn
+                        );
+                        codeBuildProject.onEvent('OnEvent', {
+                            target: new targets.SnsTopic(buildStateSnsTopic),
+                        });
+
                         const cbOutputs: Array<Artifact> = [];
                         if (buildSpec.artifacts && buildSpec.artifacts['secondary-artifacts'] !== undefined) {
                             for (const artifactName of Object.keys(buildSpec.artifacts['secondary-artifacts'])) {
                                 artifacts[artifactName] = new Artifact(artifactName);
-                                codePipelineProject.addSecondaryArtifact(Artifacts.s3({
+                                codeBuildProject.addSecondaryArtifact(Artifacts.s3({
                                     bucket: codePipeline.artifactBucket,
                                     path: `cb/${artifactName}`,
                                     identifier: artifactName,
@@ -117,7 +127,7 @@ export class SynthesisStack extends Stack {
                         const cbAction = new CodeBuildAction({
                             actionName: action.Name,
                             input: artifacts[action.SourceName !== undefined ? action.SourceName : throwError(new Error('SourceName is required.'))],
-                            project: codePipelineProject,
+                            project: codeBuildProject,
                             runOrder: action.Order,
                             outputs: cbOutputs,
                         });
