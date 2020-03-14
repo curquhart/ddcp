@@ -3,16 +3,18 @@ import * as childProcess from 'child_process';
 import {dirSync} from 'tmp';
 import * as rimraf from 'rimraf';
 import * as shellEscape from 'shell-escape';
+import {Context} from 'aws-lambda';
 
 const GITHUB_PR_BRANCH_PREFIX = 'github_pr_';
 const GITHUB_PR_BRANCH_REGEXP = new RegExp(`^refs/heads/${GITHUB_PR_BRANCH_PREFIX}(\\d+)$`);
 
-const gitSync = (gitDir: string, ...cmd: Array<string>): void => {
+const gitSync = (gitDir: string, context: Context, ...cmd: Array<string>): void => {
     const escapedCommand = shellEscape(['git', ...cmd]);
 
     childProcess.execSync(escapedCommand, {
         cwd: gitDir,
         stdio: 'inherit',
+        timeout: Math.floor(context.getRemainingTimeInMillis() - 2000),
     });
 };
 
@@ -33,32 +35,32 @@ interface MirrorParams {
 }
 
 export class Mirror {
-    async mirrorBranch(params: MirrorParams): Promise<void> {
+    async mirrorBranch(params: MirrorParams, context: Context): Promise<void> {
         const { remoteCommitId, remoteRepositoryCloneUrl, localBranchName, remoteBranchName, exists, gitDir } = params;
 
         const codeCommitUrl = 'https://git-codecommit.us-west-1.amazonaws.com/v1/repos/ddcp';
         const githubUrl = remoteRepositoryCloneUrl !== undefined ? remoteRepositoryCloneUrl : 'https://github.com/curquhart/ddcp.git';
 
         console.info(`Mirroring ${githubUrl}@${remoteBranchName} to ${codeCommitUrl}@${localBranchName}`);
-        gitSync(gitDir, 'version');
-        gitSync(gitDir, 'init');
-        gitSync(gitDir, 'remote', 'add', 'aws', codeCommitUrl);
+        gitSync(gitDir, context, 'version');
+        gitSync(gitDir, context, 'init');
+        gitSync(gitDir, context, 'remote', 'add', 'aws', codeCommitUrl);
 
-        gitSync(gitDir, 'config', `credential.${codeCommitUrl}.helper`, '!/var/task/bin/git-credentials-helper $@');
-        gitSync(gitDir, 'config', `credential.${codeCommitUrl}.UseHttpPath`, 'true');
+        gitSync(gitDir, context, 'config', `credential.${codeCommitUrl}.helper`, '!/var/task/bin/git-credentials-helper $@');
+        gitSync(gitDir, context, 'config', `credential.${codeCommitUrl}.UseHttpPath`, 'true');
 
         if (exists) {
-            gitSync(gitDir, 'remote', 'add', 'github', githubUrl);
-            gitSync(gitDir, 'fetch', 'github', remoteBranchName);
-            gitSync(gitDir, 'reset', '--hard', remoteCommitId !== undefined ? remoteCommitId : `github/${remoteBranchName}`);
-            gitSync(gitDir, 'push', 'aws', `HEAD:${localBranchName}`);
+            gitSync(gitDir, context, 'remote', 'add', 'github', githubUrl);
+            gitSync(gitDir, context, 'fetch', 'github', remoteBranchName);
+            gitSync(gitDir, context, 'reset', '--hard', remoteCommitId !== undefined ? remoteCommitId : `github/${remoteBranchName}`);
+            gitSync(gitDir, context, 'push', 'aws', `HEAD:${localBranchName}`);
         }
         else {
-            gitSync(gitDir, 'push', 'aws', `:${localBranchName}`);
+            gitSync(gitDir, context, 'push', 'aws', `:${localBranchName}`);
         }
     }
 
-    async handle(event: unknown): Promise<void> {
+    async handle(event: unknown, context: Context): Promise<void> {
         if (isWebhookPayloadPush(event) && event.ref.indexOf('refs/heads/') === 0  && event.ref.match(GITHUB_PR_BRANCH_REGEXP) === null) {
             const tmpDir = mkTempDir();
             const branchName = event.ref.replace(/^refs\/heads\//, '');
@@ -69,7 +71,7 @@ export class Mirror {
                     remoteBranchName: branchName,
                     exists: !event.deleted,
                     gitDir: tmpDir
-                });
+                }, context);
             }
             finally {
                 rimraf.sync(tmpDir);
@@ -90,7 +92,7 @@ export class Mirror {
                     remoteCommitId,
                     exists: ['opened', 'edited', 'reopened'].indexOf(event.action) !== -1,
                     gitDir: tmpDir
-                });
+                }, context);
             }
             finally {
                 rimraf.sync(tmpDir);

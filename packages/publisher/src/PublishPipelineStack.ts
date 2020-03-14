@@ -65,7 +65,7 @@ class PublisherPipelineInitStack extends Stack {
                 })
             ],
             memorySize: 512,
-            timeout: Duration.seconds(30),
+            timeout: Duration.seconds(60),
             layers: [
                 // https://github.com/lambci/git-lambda-layer
                 LayerVersion.fromLayerVersionArn(this, 'GitLayer', `arn:aws:lambda:${Aws.REGION}:553035198032:layer:git-lambda2:4`),
