@@ -28,6 +28,7 @@ Pipelines:
                       - npx lerna bootstrap
                   build:
                     commands:
+                      - npx lerna-audit
                       - npx lerna run lint
                       - npx lerna run build
                       - npx lerna run pack

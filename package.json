@@ -4,5 +4,8 @@
   "license": "MIT",
   "dependencies": {
     "lerna": "3.20.2"
+  },
+  "devDependencies": {
+    "lerna-audit": "1.1.1"
   }
 }
