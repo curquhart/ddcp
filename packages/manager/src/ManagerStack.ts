@@ -17,7 +17,7 @@ import {CfnPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
-import {Topic} from '@aws-cdk/aws-sns';
+import {CfnTopic, Topic} from '@aws-cdk/aws-sns';
 
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
@@ -47,6 +47,19 @@ export class ManagerStack extends Stack {
         const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketNameParameter.valueAsString);
 
         const buildStateSnsTopic = new Topic(this, 'CodeBuildEventsSnsTopic');
+        const buildStateSnsTopicNode = buildStateSnsTopic.node.defaultChild as CfnTopic;
+        buildStateSnsTopicNode.node.addInfo('cfn_nag disabled.');
+        buildStateSnsTopicNode
+            .addOverride('Metadata', {
+                'cfn_nag': {
+                    'rules_to_suppress': [
+                        {
+                            id: 'W47',
+                            reason: 'CodeBuildEventsSnsTopic does not contain any sensitive information and does not need encryption.',
+                        },
+                    ]
+                }
+            });
 
         new CfnOutput(this, 'CodeBuildEventsSnsTopicArn', {
             value: buildStateSnsTopic.topicArn,

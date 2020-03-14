@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node src/PublishPipelineStack.ts",
+  "app": "npx ts-node src/index.ts",
   "output": "dist/cdk.out",
   "path-metadata": false,
   "version-reporting": false

@@ -7,16 +7,17 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf node_modules dist",
-    "deploy": "npm run pack && cdk -o dist/cdk.out deploy --path-metadata false --version-reporting false",
+    "deploy": "cdk deploy",
     "lint": "eslint --ext .ts src/",
-    "pack": "rm -rf dist && npm run build && zip -jr dist/dist.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/manager/dist/manager.yaml"
+    "pack": "zip -jr dist/dist.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/manager/dist/manager.yaml",
+    "artifact-lint": "[[ \"$(unzip -l dist/dist.zip | grep -v Archive: | grep 'yaml\\|zip' | wc -l | tr -d ' ')\" == \"3\" ]] || (echo Expected 3 files in archive; exit 1)"
   },
   "engines": {
-    "node": ">=11.13.0"
+    "node": ">=10.0.0"
   },
   "eslintConfig": {
     "extends": [
-      "../../.eslintrc"
+      "@ddcp/eslint-config"
     ]
   },
   "dependencies": {
@@ -37,8 +38,13 @@
     "eslint": "6.8.0",
     "ts-node": "8.6.2",
     "typescript": "3.8.2",
+    "@typescript-eslint/eslint-plugin": "2.21.0",
+    "@typescript-eslint/parser": "2.21.0",
+    "eslint-plugin-node": "11.0.0",
     "@ddcp/manager": "1.0.0",
     "@ddcp/synthesizer": "1.0.0",
-    "@ddcp/github-mirror": "1.0.0"
+    "@ddcp/github-mirror": "1.0.0",
+    "@ddcp/eslint-config": "1.0.0",
+    "@ddcp/typescript-config": "1.0.0"
   }
 }

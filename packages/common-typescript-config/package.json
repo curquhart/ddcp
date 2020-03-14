@@ -1,0 +1,11 @@
+{
+  "name": "@ddcp/typescript-config",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf node_modules"
+  },
+  "peerDependencies": {
+    "typescript": ">= 3.8.2"
+  }
+}

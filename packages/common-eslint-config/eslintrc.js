@@ -1,0 +1,24 @@
+module.exports = {
+  'extends': [
+    'eslint:recommended',
+    'plugin:node/recommended',
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended'
+  ],
+  'parserOptions': {
+    'ecmaVersion': 2020
+  },
+  'rules': {
+    'semi': [2, 'always'],
+    'quotes': ['error', 'single'],
+    'node/no-missing-import': ['error', {
+      'allowModules': [],
+      'tryExtensions': ['.js', '.json', '.ts']
+    }],
+    'node/no-unsupported-features/es-syntax': ['error', {
+      'ignores': [
+        'modules'
+      ]
+    }]
+  }
+};

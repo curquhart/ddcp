@@ -13,16 +13,16 @@
   ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist node_modules",
+    "clean": "rm -rf node_modules dist",
     "lint": "eslint --ext .ts src/",
-    "pack": "rm -rf dist && npm run build && npx npm-pack-zip --dst dist/"
+    "pack": "npm-pack-zip --dst dist/"
   },
   "engines": {
-    "node": ">=11.13.0"
+    "node": ">=10.0.0"
   },
   "eslintConfig": {
     "extends": [
-      "../../.eslintrc"
+      "@ddcp/eslint-config"
     ]
   },
   "dependencies": {
@@ -41,6 +41,11 @@
     "@types/node": "13.7.4",
     "@types/tmp": "0.1.0",
     "eslint": "6.8.0",
-    "typescript": "3.8.2"
+    "typescript": "3.8.2",
+    "@typescript-eslint/eslint-plugin": "2.21.0",
+    "@typescript-eslint/parser": "2.21.0",
+    "eslint-plugin-node": "11.0.0",
+    "@ddcp/eslint-config": "1.0.0",
+    "@ddcp/typescript-config": "1.0.0"
   }
 }

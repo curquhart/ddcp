@@ -1,0 +1,16 @@
+{
+  "name": "@ddcp/eslint-config",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "eslintrc.js",
+  "scripts": {
+    "clean": "rm -rf node_modules"
+  },
+  "peerDependencies": {
+    "eslint": ">= 6.8.0",
+    "typescript": ">= 3.8.2",
+    "@typescript-eslint/eslint-plugin": "2.21.0",
+    "@typescript-eslint/parser": "2.21.0",
+    "eslint-plugin-node": "11.0.0"
+  }
+}

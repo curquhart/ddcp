@@ -5,11 +5,10 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "cdk -o dist/cdk.out synth --path-metadata false --version-reporting false --app \"npx ts-node src/index.ts\" | ts-node bin/write.ts dist/manager.yaml",
+    "build": "mkdir -p dist && cdk synth > dist/manager.yaml",
     "clean": "rm -rf node_modules dist",
-    "pack": "npm run build",
     "lint": "eslint --ext .ts src/",
-    "cfn-lint": "cfn-lint -i W3005 -- dist/manager.yaml && cfn_nag_scan --fail-on-warnings --input-path dist/manager.yaml"
+    "artifact-lint": "cfn-lint -i W3005 -- dist/manager.yaml && cfn_nag_scan --fail-on-warnings --input-path dist/manager.yaml"
   },
   "bundledDependencies": [
     "@aws-cdk/cx-api",
@@ -29,11 +28,11 @@
     "tmp"
   ],
   "engines": {
-    "node": ">=11.13.0"
+    "node": ">=10.0.0"
   },
   "eslintConfig": {
     "extends": [
-      "../../.eslintrc"
+      "@ddcp/eslint-config"
     ]
   },
   "dependencies": {
@@ -61,6 +60,11 @@
     "eslint": "6.8.0",
     "ts-node": "8.6.2",
     "typescript": "3.8.2",
-    "@ddcp/s3-resolver": "1.0.0"
+    "@typescript-eslint/eslint-plugin": "2.21.0",
+    "@typescript-eslint/parser": "2.21.0",
+    "eslint-plugin-node": "11.0.0",
+    "@ddcp/s3-resolver": "1.0.0",
+    "@ddcp/eslint-config": "1.0.0",
+    "@ddcp/typescript-config": "1.0.0"
   }
 }

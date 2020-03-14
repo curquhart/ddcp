@@ -25,15 +25,13 @@ Pipelines:
                       - gem install cfn-nag
                       - pip install cfn-lint
                       - npm install
-                      - npx --no-install lerna bootstrap
+                      - npx lerna bootstrap
                   build:
                     commands:
-                      - npx --no-install lerna run lint
-                      - npx --no-install lerna run build
-                      - npx --no-install lerna run pack
-                  post_build:
-                    commands:
-                      - npx --no-install lerna run cfn-lint
+                      - npx lerna run lint
+                      - npx lerna run build
+                      - npx lerna run pack
+                      - npx lerna run artifact-lint
                 artifacts:
                   secondary-artifacts:
                     Manager:
