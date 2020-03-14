@@ -1,5 +1,11 @@
 Pipelines:
   - Name: ddcp-build
+    Notifications:
+      Slack:
+        - Channel: '#builds'
+          UserName: buildbot
+          WebHookUrl:
+            '!SsmString': SlackWebHookUrl
     Sources:
       - Name: Source
         Type: CodeCommit
