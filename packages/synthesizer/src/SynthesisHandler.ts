@@ -8,8 +8,6 @@ import {EMPTY_VOID_FN} from './helpers';
 import {Resolver} from './Resolver';
 import * as yaml from 'js-yaml';
 import {PipelineConfigs} from './PipelineConfig';
-import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
-import {Counter} from './Counter';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
@@ -32,14 +30,7 @@ const getArtifactS3Client = (event: CodePipelineEvent): S3 => {
 };
 
 export class SynthesisHandler {
-    async handle(
-        synthPipeline: ManagerResources,
-        cdkOutDir: string,
-        event: CodePipelineEvent,
-        resolver: Resolver,
-        orchestrators: Record<string, BaseOrchestratorFactory>,
-        counter: Counter
-    ): Promise<void> {
+    async handle(synthPipeline: ManagerResources, cdkOutDir: string, event: CodePipelineEvent, resolver: Resolver): Promise<void> {
         const app = new App({
             outdir: cdkOutDir,
         });
@@ -55,7 +46,7 @@ export class SynthesisHandler {
         const pipelineConfigYaml = inZip.readAsText('pipeline-config.yaml');
         const pipelineConfig = resolver.resolve(yaml.safeLoad(pipelineConfigYaml)) as PipelineConfigs;
 
-        new SynthesisStack(app, STACK_ID, synthPipeline, pipelineConfig, orchestrators, counter);
+        new SynthesisStack(app, STACK_ID, synthPipeline, pipelineConfig);
         const template = app.synth().getStackArtifact(STACK_ID).template;
 
         const outZip = new AdmZip();
@@ -68,13 +59,7 @@ export class SynthesisHandler {
         }).promise();
     }
 
-    async safeHandle(
-        event: CodePipelineEvent,
-        context: Context,
-        resolver: Resolver,
-        orchestrators: Record<string, BaseOrchestratorFactory>,
-        counter: Counter
-    ): Promise<void> {
+    async safeHandle(event: CodePipelineEvent, context: Context, resolver: Resolver): Promise<void> {
         let cleanupCb = EMPTY_VOID_FN;
         const cp = new CodePipeline();
 
@@ -103,7 +88,7 @@ export class SynthesisHandler {
                 cleanupCb = cdkOutDir.removeCallback;
             }
 
-            await this.handle(synthPipeline, cdkOutDir.name, event, resolver, orchestrators, counter);
+            await this.handle(synthPipeline, cdkOutDir.name, event, resolver);
             await cp.putJobSuccessResult({jobId: event['CodePipeline.job'].id}).promise();
         }
         catch (err) {
