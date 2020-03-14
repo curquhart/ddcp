@@ -1,4 +1,4 @@
-import {Aws, CfnParameter, Construct, Duration, Fn, Stack, StackProps} from '@aws-cdk/core';
+import {Aws, CfnOutput, CfnParameter, Construct, Duration, Fn, Stack, StackProps} from '@aws-cdk/core';
 import {Repository} from '@aws-cdk/aws-codecommit';
 import {DISABLE_METADATA_STACK_TRACE} from '@aws-cdk/cx-api';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
@@ -17,6 +17,7 @@ import {CfnPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
+import {Topic} from '@aws-cdk/aws-sns';
 
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
@@ -44,6 +45,12 @@ export class ManagerStack extends Stack {
         const pipeline = new Pipeline(this, 'Pipeline', { pipelineName, artifactBucket: localBucket });
 
         const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketNameParameter.valueAsString);
+
+        const buildStateSnsTopic = new Topic(this, 'CodeBuildEventsSnsTopic');
+
+        new CfnOutput(this, 'CodeBuildEventsSnsTopicArn', {
+            value: buildStateSnsTopic.topicArn,
+        });
 
         // TODO: use custom event bus once https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/44 is completed.
         const eventBus = events.EventBus.fromEventBusArn(this, 'CustomEventBus', `arn:aws:events:${Aws.REGION}:${Aws.ACCOUNT_ID}:event-bus/default`);
@@ -198,6 +205,7 @@ export class ManagerStack extends Stack {
                 scratchDirCleanup: true,
                 synthPipeline: {
                     arn: pipelineArn,
+                    buildStateSnsTopicArn: buildStateSnsTopic.topicArn,
                     sourceType: 'CodeCommit',
                     sourceRepoName: inputRepo.repositoryName,
                     eventBusArn: eventBus.eventBusArn,

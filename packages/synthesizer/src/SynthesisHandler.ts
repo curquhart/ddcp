@@ -12,6 +12,7 @@ const STACK_ID = 'generated';
 
 export interface ManagerResources {
     arn: string;
+    buildStateSnsTopicArn: string;
     sourceType: string;
     sourceRepoName: string;
     eventBusArn: string;
