@@ -26,6 +26,7 @@ Pipelines:
                       - pip install cfn-lint
                       - npm install
                       - npx lerna bootstrap
+                      - npx lerna run build --scope @ddcp/tools
                   build:
                     commands:
                       - npx lerna-audit

@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc && cat dist/node_modules/**/*.js dist/src/index.js | sed 's#require(\"cfn-response\")#exports#' | jsmin > dist/index.min.js",
     "clean": "rm -rf node_modules dist",
-    "lint": "eslint --ext .ts src/"
+    "lint": "eslint --ext .ts src/",
+    "artifact-lint": "check-filesize dist/index.min.js min=1024 max=4096"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -32,6 +33,7 @@
     "@typescript-eslint/parser": "2.21.0",
     "eslint-plugin-node": "11.0.0",
     "@ddcp/eslint-config": "1.0.0",
-    "@ddcp/typescript-config": "1.0.0"
+    "@ddcp/typescript-config": "1.0.0",
+    "@ddcp/tools": "1.0.0"
   }
 }
