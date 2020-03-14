@@ -13,7 +13,7 @@ import {
     ManualApprovalAction
 } from '@aws-cdk/aws-codepipeline-actions';
 import * as fs from 'fs';
-import {CfnPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
+import {CfnPolicy, PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
@@ -47,6 +47,12 @@ export class ManagerStack extends Stack {
         const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketNameParameter.valueAsString);
 
         const buildStateSnsTopic = new Topic(this, 'CodeBuildEventsSnsTopic');
+        buildStateSnsTopic.addToResourcePolicy(new PolicyStatement({
+            actions: ['sns:Publish'],
+            principals: [new ServicePrincipal('events')],
+            resources: [buildStateSnsTopic.topicArn]
+        }));
+
         const buildStateSnsTopicNode = buildStateSnsTopic.node.defaultChild as CfnTopic;
         buildStateSnsTopicNode.node.addInfo('cfn_nag disabled.');
         buildStateSnsTopicNode

@@ -12,6 +12,7 @@ import {
 import {Aws, Construct, Stack} from '@aws-cdk/core';
 import {isCodeBuildAction, isS3PublishAction, PipelineConfigs} from './PipelineConfig';
 import {ManagerResources} from './SynthesisHandler';
+import * as events from '@aws-cdk/aws-events';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as s3 from '@aws-cdk/aws-s3';
 import {throwError} from './helpers';
@@ -94,12 +95,16 @@ export class SynthesisStack extends Stack {
                             action.BuildSpec.Inline :
                             throwError(new Error('BuildSpec.Inline is required.'));
 
+                        const repository = repositories[ action.SourceName ?? throwError(new Error('SourceName cannot be null.')) ];
+                        const branchName = 'master';
+
                         const codeBuildProject = new Project(codePipeline, `${action.Name}Project`, {
                             projectName: `${action.Name}Project`,
                             buildSpec: BuildSpec.fromObject(buildSpec),
-                            source: action.SourceName !== undefined ? Source.codeCommit({
-                                repository: repositories[ action.SourceName ]
-                            }) : undefined
+                            source: Source.codeCommit({
+                                repository,
+                                branchOrRef: branchName
+                            })
                         });
 
                         const buildStateSnsTopic = Topic.fromTopicArn(
@@ -107,8 +112,14 @@ export class SynthesisStack extends Stack {
                             `ImportSnsTopic${counter++}`,
                             managerResources.buildStateSnsTopicArn
                         );
-                        codeBuildProject.onEvent('OnEvent', {
-                            target: new targets.SnsTopic(buildStateSnsTopic),
+                        codeBuildProject.onStateChange('OnStateChange', {
+                            target: new targets.SnsTopic(buildStateSnsTopic, {
+                                message: events.RuleTargetInput.fromObject({
+                                    repositoryName: repository.repositoryName,
+                                    repositoryBranch: branchName,
+                                    buildStatus: events.EventField.fromPath('$.detail.build-status'),
+                                })
+                            }),
                         });
 
                         const cbOutputs: Array<Artifact> = [];
