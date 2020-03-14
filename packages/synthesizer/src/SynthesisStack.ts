@@ -1,20 +1,12 @@
 import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
-import {PolicyDocument, PolicyStatement, Role, ServicePrincipal} from '@aws-cdk/aws-iam';
-import {Artifacts, BuildSpec, Project, Source} from '@aws-cdk/aws-codebuild';
+import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
+import {BuildSpec, Project, Source} from '@aws-cdk/aws-codebuild';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
-import {
-    CacheControl,
-    CodeBuildAction,
-    CodeCommitSourceAction,
-    CodeCommitTrigger,
-    S3DeployAction
-} from '@aws-cdk/aws-codepipeline-actions';
-import {Aws, Construct, Duration, Stack} from '@aws-cdk/core';
+import {Construct, Duration, Stack} from '@aws-cdk/core';
 import {isCodeBuildAction, isS3PublishAction, PipelineConfigs} from './PipelineConfig';
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
 import * as targets from '@aws-cdk/aws-events-targets';
-import * as s3 from '@aws-cdk/aws-s3';
 import {throwError} from './helpers';
 import {CfnTopic, Topic} from '@aws-cdk/aws-sns';
 import {Resolver} from './Resolver';
@@ -22,6 +14,8 @@ import {Code, Function, IFunction, Runtime} from '@aws-cdk/aws-lambda';
 import {SnsEventSource} from '@aws-cdk/aws-lambda-event-sources';
 import {createHash} from 'crypto';
 import {Bucket} from '@aws-cdk/aws-s3';
+import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
+import {Uniquifier} from './Uniquifier';
 
 export const tOrDefault = <T>(input: T | undefined, defaultValue: T): T => {
     return input !== undefined ? input : defaultValue;
@@ -33,7 +27,9 @@ export class SynthesisStack extends Stack {
         id: string,
         managerResources: ManagerResources,
         resolver: Resolver,
-        unresolvedPipelineConfig: Record<string, unknown>
+        unresolvedPipelineConfig: Record<string, unknown>,
+        orchestrators: Record<string, BaseOrchestratorFactory>,
+        uniquifier: Uniquifier
     ) {
         super(scope, id);
 
@@ -42,17 +38,27 @@ export class SynthesisStack extends Stack {
         const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', managerResources.arn);
         const funcs: Record<string, Function> = {};
 
-        let counter = 0;
-
         for (const pipeline of tOrDefault(pipelineConfig.Pipelines, [])) {
             const artifacts: Record<string, Artifact> = {};
             const repositories: Record<string, IRepository> = {};
-            const codePipeline = new Pipeline(this, `Pipeline${counter++}`, {
-                pipelineName: pipeline.Name
+
+            if (pipeline.Orchestrator === undefined) {
+                pipeline.Orchestrator = 'CodePipeline';
+            }
+
+            if (orchestrators[pipeline.Orchestrator] === undefined) {
+                throw new Error(`Invalid orchestrator: ${pipeline.Orchestrator}`);
+            }
+            const orchestratedPipeline = orchestrators[pipeline.Orchestrator].new({
+                scope: this,
+                managerPipeline: codePipelineSynthPipeline,
+                managerResources,
+                pipeline,
+                uniquifier
             });
 
             const slackSettings = pipeline.Notifications?.Slack !== undefined && pipeline.Notifications?.Slack.length > 0 ? pipeline.Notifications?.Slack : undefined;
-            const slackSnsTopic = slackSettings !== undefined ? new Topic(this, `SlackSns${counter++}`) : undefined;
+            const slackSnsTopic = slackSettings !== undefined ? new Topic(this, uniquifier.next('SlackSns')) : undefined;
             if (slackSnsTopic !== undefined) {
                 slackSnsTopic.addToResourcePolicy(new PolicyStatement({
                     actions: ['sns:Publish'],
@@ -77,9 +83,7 @@ export class SynthesisStack extends Stack {
                 webhookLambda.addEventSource(new SnsEventSource(slackSnsTopic));
             }
 
-            const sourceStage = codePipeline.addStage({
-                stageName: 'Sources'
-            });
+            const sourceStage = orchestratedPipeline.addStage('Sources');
             for (const source of tOrDefault(pipeline.Sources, [])) {
                 if (source.Name === undefined) {
                     throw new Error('Name is required.');
@@ -88,33 +92,16 @@ export class SynthesisStack extends Stack {
                     throw new Error('RepositoryName is required.');
                 }
                 artifacts[ source.Name ] = new Artifact(source.Name);
-                repositories[ source.Name ] = Repository.fromRepositoryName(codePipeline, `Repo${source.RepositoryName}${source.BranchName}`, source.RepositoryName);
+                repositories[ source.Name ] = Repository.fromRepositoryName(this, uniquifier.next(`Repo${source.RepositoryName}${source.BranchName}`), source.RepositoryName);
 
-                const isSameSourceAsSynth = source.RepositoryName === managerResources.sourceRepoName && source.Type === managerResources.sourceType;
-                sourceStage.addAction(new CodeCommitSourceAction({
-                    actionName: source.Name,
-                    repository: repositories[ source.Name ],
-                    branch: source.BranchName,
-                    output: artifacts[ source.Name ],
-                    trigger: isSameSourceAsSynth ? CodeCommitTrigger.NONE : CodeCommitTrigger.EVENTS
-                }));
-                if (isSameSourceAsSynth) {
-                    codePipelineSynthPipeline.onStateChange('SynthSuccess', {
-                        target: new targets.CodePipeline(codePipeline),
-                        eventPattern: {
-                            detailType: [
-                                'CodePipeline Pipeline Execution State Change',
-                                'CodePipeline Pipeline Skipped'
-                            ],
-                            source: ['aws.codepipeline', 'synth.codepipeline'],
-                            region: [Aws.REGION],
-                            detail: {
-                                pipeline: [codePipelineSynthPipeline.pipelineName],
-                                state: ['SUCCEEDED']
-                            }
-                        }
-                    });
-                }
+                sourceStage.addCodeCommitSourceAction(
+                    source.Name,
+                    source.RepositoryName,
+                    {
+                        BranchName: source.BranchName,
+                        BranchPattern: source.BranchPattern,
+                    },
+                );
             }
 
             for (const stage of tOrDefault(pipeline.Stages, [])) {
@@ -122,9 +109,7 @@ export class SynthesisStack extends Stack {
                     throw new Error('Name is required.');
                 }
 
-                const codePipelineStage = codePipeline.addStage({
-                    stageName: stage.Name
-                });
+                const orchestratedStage = orchestratedPipeline.addStage(stage.Name);
 
                 for (const action of tOrDefault(stage.Actions, [])) {
                     if (action.Name === undefined) {
@@ -138,8 +123,8 @@ export class SynthesisStack extends Stack {
                         const repository = repositories[ action.SourceName ?? throwError(new Error('SourceName cannot be null.')) ];
                         const branchName = 'master';
 
-                        const codeBuildProject = new Project(codePipeline, `${action.Name}Project`, {
-                            projectName: `${action.Name}Project`,
+                        const codeBuildProject = new Project(this, uniquifier.next('Project'), {
+                            projectName: `${pipeline.Name}${stage.Name}${action.Name}Project`,
                             buildSpec: BuildSpec.fromObject(buildSpec),
                             source: Source.codeCommit({
                                 repository,
@@ -171,65 +156,15 @@ export class SynthesisStack extends Stack {
                             });
                         }
 
-                        const cbOutputs: Array<Artifact> = [];
-                        if (buildSpec.artifacts && buildSpec.artifacts['secondary-artifacts'] !== undefined) {
-                            for (const artifactName of Object.keys(buildSpec.artifacts['secondary-artifacts'])) {
-                                artifacts[artifactName] = new Artifact(artifactName);
-                                codeBuildProject.addSecondaryArtifact(Artifacts.s3({
-                                    bucket: codePipeline.artifactBucket,
-                                    path: `cb/${artifactName}`,
-                                    identifier: artifactName,
-                                    name: artifactName,
-                                }));
-                                cbOutputs.push(artifacts[artifactName]);
-                            }
-                        }
-                        const cbAction = new CodeBuildAction({
-                            actionName: action.Name,
-                            input: artifacts[action.SourceName !== undefined ? action.SourceName : throwError(new Error('SourceName is required.'))],
+                        orchestratedStage.addCodeBuildAction({
+                            action,
                             project: codeBuildProject,
-                            runOrder: action.Order,
-                            outputs: cbOutputs,
                         });
-                        codePipelineStage.addAction(cbAction);
                     }
                     else if (isS3PublishAction(action)) {
-                        const bucket = action.BucketArn !== undefined ?
-                            s3.Bucket.fromBucketArn(this, `Bucket${counter++}`, action.BucketArn) :
-                            action.BucketName !== undefined ?
-                                s3.Bucket.fromBucketName(this, `Bucket${counter++}`, action.BucketName) :
-                                throwError(new Error('BucketArn or BucketName is required.'));
-
-                        codePipelineStage.addAction(new S3DeployAction({
-                            actionName: action.Name,
-                            input: action.SourceName !== undefined && artifacts[action.SourceName] !== undefined ?
-                                artifacts[action.SourceName] :
-                                throwError(new Error('SourceName is required and must be a valid artifact name.')),
-                            bucket,
-                            objectKey: action.ObjectKey,
-                            extract: action.Extract,
-                            accessControl: action.AccessControl,
-                            runOrder: action.Order,
-                            cacheControl: action.CacheControl !== undefined ?
-                                action.CacheControl.map((entry) => CacheControl.fromString(entry)) :
-                                undefined,
-                            role: new Role(this, `Role${counter++}`, {
-                                assumedBy: codePipeline.role,
-                                inlinePolicies: {
-                                    'Default': new PolicyDocument({
-                                        statements: [
-                                            new PolicyStatement({
-                                                actions: [
-                                                    's3:PutObject',
-                                                    's3:PutObjectAcl'
-                                                ],
-                                                resources: [ bucket.arnForObjects('*') ],
-                                            })
-                                        ],
-                                    }),
-                                },
-                            })
-                        }));
+                        orchestratedStage.addS3PublishAction({
+                            action,
+                        });
                     }
                 }
             }
