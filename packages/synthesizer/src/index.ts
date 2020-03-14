@@ -8,12 +8,21 @@ import {Path} from './fn/resolvers/Path';
 import {PathForAlias} from './fn/resolvers/PathForAlias';
 import {Base} from './fn/Base';
 import {Import} from './fn/resolvers/Import';
+import {CodePipelineOrchestratorFactory} from './orchestrator/CodePipelineOrchestratorFactory';
+import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
+import {Counter} from './Counter';
+import {CloudWatchOrchestratorFactory} from './orchestrator/CloudWatchOrchestratorFactory';
 
 const allResolvers: Record<string, Base<unknown, Array<unknown>>> = {};
 new Join(allResolvers).init();
 new Path(allResolvers).init();
 new PathForAlias(allResolvers).init();
 new Import(allResolvers).init();
+
+const counter = new Counter();
+const allOrchestrators: Record<string, BaseOrchestratorFactory> = {};
+new CloudWatchOrchestratorFactory(allOrchestrators).init();
+new CodePipelineOrchestratorFactory(allOrchestrators).init();
 
 const resolver = new Resolver(allResolvers);
 
@@ -23,7 +32,7 @@ const isCodePipelineEvent = (event: unknown): event is CodePipelineEvent => {
 
 export const handle = async (event: CodePipelineEvent | CodeCommitEvent, context: Context): Promise<void> => {
     if (isCodePipelineEvent(event)) {
-        return new SynthesisHandler().safeHandle(event, context, resolver);
+        return new SynthesisHandler().safeHandle(event, context, resolver, allOrchestrators, counter);
     }
     else {
         return new SelectorHandler().handle(event);
