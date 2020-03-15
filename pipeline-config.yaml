@@ -4,6 +4,15 @@ Pipelines:
       Slack:
         - Channel: '#builds'
           UserName: buildbot
+          Statuses:
+            IN_PROGRESS:
+              emoji: ':cold_sweat:'
+            SUCCEEDED:
+              emoji: ':aw_yeah:'
+            FAILED:
+              emoji: ':homer:'
+            STOPPED:
+              emoji: ':i_dunno:'
           WebHookUrl:
             '!SsmString': SlackWebHookUrl
     Sources:
