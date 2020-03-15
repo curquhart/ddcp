@@ -13,14 +13,20 @@ interface StatusSetting {
     emoji?: string;
 }
 
+interface EnvVar {
+    name?: string;
+    value?: string;
+}
+
 interface Payload {
     buildStatus: Status;
     projectName: string;
     repositoryName: string;
-    branchName: string;
+    branchName?: string;
     buildId: string;
     region: string;
     icon: string;
+    buildEnvironment?: Array<EnvVar>;
     slackSettings: Array<{
         uri: string;
         channel: string;
@@ -61,8 +67,10 @@ export const handler = async (event: SNSEvent): Promise<void> => {
                 },
             };
 
+            const branchName = payload.branchName ?? payload.buildEnvironment?.find((envVar) => envVar.name === 'SOURCE_BRANCH_NAME')?.value;
+
             const prefix = 'https://' + payload.region + '.console.aws.amazon.com/codesuite/';
-            const codeCommitLink = prefix + 'codecommit/repositories/' + payload.repositoryName + '/browse/refs/heads/' + payload.branchName + '?region=' + payload.region;
+            const codeCommitLink = prefix + 'codecommit/repositories/' + payload.repositoryName + '/browse/refs/heads/' + branchName + '?region=' + payload.region;
             const codeBuildLink = prefix + 'codebuild/projects/' + payload.projectName + '/build/' + payload.buildId.split('/').pop() + '/log?region=' + payload.region;
 
             const normalizedStatus = toWords(payload.buildStatus);

@@ -53,7 +53,7 @@ export class Mirror {
             gitSync(gitDir, context, 'remote', 'add', 'github', githubUrl);
             gitSync(gitDir, context, 'fetch', 'github', remoteBranchName);
             gitSync(gitDir, context, 'reset', '--hard', remoteCommitId !== undefined ? remoteCommitId : `github/${remoteBranchName}`);
-            gitSync(gitDir, context, 'push', 'aws', `HEAD:${localBranchName}`);
+            gitSync(gitDir, context, 'push', 'aws', `HEAD:${localBranchName}`, '--force');
         }
         else {
             gitSync(gitDir, context, 'push', 'aws', `:${localBranchName}`);
