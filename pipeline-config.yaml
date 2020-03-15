@@ -78,3 +78,30 @@ Pipelines:
             Extract: true
             BucketArn:
               '!Import': PrivateBucketArn
+  - Name: ddcp-branch-build
+    Orchestrator: CloudWatch
+    Sources:
+      - Name: Source
+        Type: CodeCommit
+        RepositoryName: ddcp
+    Stages:
+      - Name: BuildStage
+        Actions:
+          - Name: Build
+            Type: CodeBuild
+            Order: 1
+            SourceName: Source
+            BuildSpec:
+              Inline:
+                version:
+                  '!Path':
+                    '!Join':
+                      - '!PathForAlias': BuildSpec
+                      - - Inline
+                        - version
+                phases:
+                  '!Path':
+                    '!Join':
+                      - '!PathForAlias': BuildSpec
+                      - - Inline
+                        - phases
