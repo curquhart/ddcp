@@ -41,6 +41,7 @@ export class SynthesisStack extends Stack {
         for (const pipeline of tOrDefault(pipelineConfig.Pipelines, [])) {
             const artifacts: Record<string, Artifact> = {};
             const repositories: Record<string, IRepository> = {};
+            const branchNames: Record<string, string | null> = {};
 
             if (pipeline.Orchestrator === undefined) {
                 pipeline.Orchestrator = 'CodePipeline';
@@ -93,6 +94,7 @@ export class SynthesisStack extends Stack {
                 }
                 artifacts[ source.Name ] = new Artifact(source.Name);
                 repositories[ source.Name ] = Repository.fromRepositoryName(this, uniquifier.next(`Repo${source.RepositoryName}${source.BranchName}`), source.RepositoryName);
+                branchNames[ source.Name ] = source.BranchName ?? null;
 
                 sourceStage.addCodeCommitSourceAction(
                     source.Name,
@@ -120,15 +122,19 @@ export class SynthesisStack extends Stack {
                             action.BuildSpec.Inline :
                             throwError(new Error('BuildSpec.Inline is required.'));
 
-                        const repository = repositories[ action.SourceName ?? throwError(new Error('SourceName cannot be null.')) ];
-                        const branchName = 'master';
+                        const sourceName = action.SourceName ?? throwError(new Error('SourceName cannot be null.'));
+                        const repository = repositories[ sourceName ];
+                        const branchName = branchNames[ sourceName ];
+                        if (branchName === undefined) {
+                            throw new Error('BranchName cannot be undefined.');
+                        }
 
                         const codeBuildProject = new Project(this, uniquifier.next('Project'), {
                             projectName: `${pipeline.Name}${stage.Name}${action.Name}Project`,
                             buildSpec: BuildSpec.fromObject(buildSpec),
                             source: Source.codeCommit({
                                 repository,
-                                branchOrRef: branchName
+                                branchOrRef: branchName !== null ? branchName : undefined,
                             })
                         });
 
@@ -141,7 +147,8 @@ export class SynthesisStack extends Stack {
                                         buildId: events.EventField.fromPath('$.detail.build-id'),
                                         region: events.EventField.fromPath('$.region'),
                                         repositoryName: repository.repositoryName,
-                                        branchName,
+                                        branchName: branchName !== null ? branchName : undefined,
+                                        buildEnvironment: events.EventField.fromPath('$.detail.additional-information.environment.environment-variables'),
                                         slackSettings: slackSettings.map((slackSetting) => {
                                             return {
                                                 // TODO: return a token to resolve from secrets manager and set lambda permissions appropriately for such.

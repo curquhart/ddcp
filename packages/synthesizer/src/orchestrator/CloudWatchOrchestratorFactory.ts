@@ -52,7 +52,13 @@ class CloudWatchOrchestratorStage implements Stage {
             target: new targets.CodeBuildProject(props.project, {
                 event: RuleTargetInput.fromObject({
                     sourceVersion: EventField.fromPath('$.detail.commitId'),
-                    sourceIdentifier: EventField.fromPath('$.detail.referenceName'),
+                    environmentVariablesOverride: [
+                        {
+                            name: 'SOURCE_BRANCH_NAME',
+                            value: EventField.fromPath('$.detail.referenceName'),
+                            type: 'PLAINTEXT',
+                        }
+                    ],
                 })
             }),
             eventPattern: {
