@@ -14,6 +14,7 @@ interface Source {
     Type?: SourceType;
     RepositoryName?: string;
     BranchName?: string;
+    BranchPattern?: string;
 }
 
 interface Action {
@@ -30,13 +31,14 @@ type CodeBuildBuildSpec = Record<string, unknown> & {
     };
 }
 
-interface CodeBuildAction extends Action {
+export interface CodeBuildAction extends Action {
     BuildSpec: {
         Inline?: CodeBuildBuildSpec;
     };
     Type: ActionType.CODE_BUILD;
 }
-interface S3PublishAction extends Action {
+
+export interface S3PublishAction extends Action {
     Type: ActionType.S3_PUBLISH;
     AccessControl?: s3.BucketAccessControl;
     BucketName?: string;
@@ -75,7 +77,8 @@ interface SlackNotification {
     };
 }
 
-interface Pipeline {
+export interface Pipeline {
+    Orchestrator?: string;
     Name?: string;
     Sources?: Array<Source>;
     Stages?: Array<Stage>;

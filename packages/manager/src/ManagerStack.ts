@@ -18,6 +18,8 @@ import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
 
+const MANAGER_BRANCH = 'master';
+
 interface LambdaProps {
     name: string;
     asset: string;
@@ -201,7 +203,7 @@ export class ManagerStack extends Stack {
                     },
                 })
             }),
-            branches: ['master'],
+            branches: [MANAGER_BRANCH],
         });
 
         const sourceArtifact = new Artifact();
@@ -234,6 +236,7 @@ export class ManagerStack extends Stack {
                 synthPipeline: {
                     arn: pipelineArn,
                     sourceType: 'CodeCommit',
+                    sourceBranch: MANAGER_BRANCH,
                     sourceRepoName: inputRepo.repositoryName,
                     eventBusArn: eventBus.eventBusArn,
                     assetBucketName: localStorageBucketNameParameter.valueAsString,

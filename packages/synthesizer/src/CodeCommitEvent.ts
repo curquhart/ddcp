@@ -4,6 +4,8 @@ export interface CodeCommitEvent {
         repositoryArn: string;
         oldCommitId?: string;
         commitId: string;
+        referenceType: string;
+        referenceName: string;
         pipelineName: string;
         pipelineArn: string;
         inputFile: string;

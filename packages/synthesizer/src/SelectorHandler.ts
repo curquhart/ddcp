@@ -61,6 +61,9 @@ export class SelectorHandler {
                     Source: 'synth.codepipeline',
                     Detail: JSON.stringify({
                         pipeline: event.detail.pipelineName,
+                        commitId: event.detail.commitId,
+                        referenceType: event.detail.referenceType,
+                        referenceName: event.detail.referenceName,
                         state: 'SUCCEEDED'
                     })
                 }],

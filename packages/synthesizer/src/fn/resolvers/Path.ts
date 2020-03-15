@@ -25,7 +25,7 @@ export class Path extends Base<unknown, IParameters> {
             }
 
             resolved = Path.resolvePath(value, resolved === undefined ? fullValue : resolved);
-            this.checkResolved(resolved);
+
             if (resolved === undefined) {
                 throw new Error(`Could not resolve path from ${JSON.stringify(parameters)}`);
             }

@@ -7,10 +7,14 @@ import * as tmp from 'tmp';
 import {EMPTY_VOID_FN} from './helpers';
 import {Resolver} from './Resolver';
 import * as yaml from 'js-yaml';
+import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
+import {Uniquifier} from './Uniquifier';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
     arn: string;
+    buildStateSnsTopicArn: string;
+    sourceBranch: string;
     sourceType: string;
     sourceRepoName: string;
     eventBusArn: string;
@@ -31,7 +35,14 @@ const getArtifactS3Client = (event: CodePipelineEvent): S3 => {
 };
 
 export class SynthesisHandler {
-    async handle(synthPipeline: ManagerResources, cdkOutDir: string, event: CodePipelineEvent, resolver: Resolver): Promise<void> {
+    async handle(
+        synthPipeline: ManagerResources,
+        cdkOutDir: string,
+        event: CodePipelineEvent,
+        resolver: Resolver,
+        orchestrators: Record<string, BaseOrchestratorFactory>,
+        uniquifier: Uniquifier
+    ): Promise<void> {
         const app = new App({
             outdir: cdkOutDir,
         });
@@ -46,7 +57,7 @@ export class SynthesisHandler {
         const inZip = new AdmZip(inputArtifact.Body as Buffer);
         const pipelineConfigYaml = inZip.readAsText('pipeline-config.yaml');
 
-        new SynthesisStack(app, STACK_ID, synthPipeline, resolver, yaml.safeLoad(pipelineConfigYaml));
+        new SynthesisStack(app, STACK_ID, synthPipeline, resolver, yaml.safeLoad(pipelineConfigYaml), orchestrators, uniquifier);
         const template = app.synth().getStackArtifact(STACK_ID).template;
 
         const outZip = new AdmZip();
@@ -59,7 +70,13 @@ export class SynthesisHandler {
         }).promise();
     }
 
-    async safeHandle(event: CodePipelineEvent, context: Context, resolver: Resolver): Promise<void> {
+    async safeHandle(
+        event: CodePipelineEvent,
+        context: Context,
+        resolver: Resolver,
+        orchestrators: Record<string, BaseOrchestratorFactory>,
+        uniquifier: Uniquifier
+    ): Promise<void> {
         let cleanupCb = EMPTY_VOID_FN;
         const cp = new CodePipeline();
 
@@ -88,7 +105,7 @@ export class SynthesisHandler {
                 cleanupCb = cdkOutDir.removeCallback;
             }
 
-            await this.handle(synthPipeline, cdkOutDir.name, event, resolver);
+            await this.handle(synthPipeline, cdkOutDir.name, event, resolver, orchestrators, uniquifier);
             await cp.putJobSuccessResult({jobId: event['CodePipeline.job'].id}).promise();
         }
         catch (err) {
