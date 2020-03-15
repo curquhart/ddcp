@@ -1,6 +1,7 @@
 Pipelines:
   - Name: ddcp-build
     Notifications:
+      Alias: Notifications
       Slack:
         - Channel: '#builds'
           UserName: buildbot
@@ -81,6 +82,9 @@ Pipelines:
               '!Import': PrivateBucketArn
   - Name: ddcp-branch-build
     Orchestrator: CloudWatch
+    Notifications:
+      '!Path':
+        '!PathForAlias': Notifications
     Sources:
       - Name: Source
         Type: CodeCommit
