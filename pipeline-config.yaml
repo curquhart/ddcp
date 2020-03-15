@@ -28,6 +28,7 @@ Pipelines:
             Order: 1
             SourceName: Source
             BuildSpec:
+              Alias: BuildSpec
               Inline:
                 version: 0.2
                 phases:
