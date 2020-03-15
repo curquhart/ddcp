@@ -8,7 +8,7 @@
     "build": "tsc",
     "clean": "rm -rf node_modules dist .cache",
     "lint": "eslint --ext .ts src/",
-    "pack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js && npm-pack-zip --dst dist/"
+    "pack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js && parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/git-credentials-helper-bundled.js dist/git-credentials-helper.js && npm-pack-zip --dst dist/"
   },
   "engines": {
     "node": ">=10.0.0"

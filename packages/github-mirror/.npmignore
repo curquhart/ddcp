@@ -1,3 +1,4 @@
 *
 !dist/bundled.js
+!dist/git-credentials-helper-bundled.js
 !bin/git-credentials-helper
