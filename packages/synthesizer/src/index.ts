@@ -8,12 +8,14 @@ import {Path} from './fn/resolvers/Path';
 import {PathForAlias} from './fn/resolvers/PathForAlias';
 import {Base} from './fn/Base';
 import {Import} from './fn/resolvers/Import';
+import {SsmString} from './fn/resolvers/SsmString';
 
 const allResolvers: Record<string, Base<unknown, Array<unknown>>> = {};
 new Join(allResolvers).init();
 new Path(allResolvers).init();
 new PathForAlias(allResolvers).init();
 new Import(allResolvers).init();
+new SsmString(allResolvers).init();
 
 const resolver = new Resolver(allResolvers);
 

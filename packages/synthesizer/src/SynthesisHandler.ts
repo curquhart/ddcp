@@ -7,12 +7,10 @@ import * as tmp from 'tmp';
 import {EMPTY_VOID_FN} from './helpers';
 import {Resolver} from './Resolver';
 import * as yaml from 'js-yaml';
-import {PipelineConfigs} from './PipelineConfig';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
     arn: string;
-    buildStateSnsTopicArn: string;
     sourceType: string;
     sourceRepoName: string;
     eventBusArn: string;
@@ -45,9 +43,8 @@ export class SynthesisHandler {
 
         const inZip = new AdmZip(inputArtifact.Body as Buffer);
         const pipelineConfigYaml = inZip.readAsText('pipeline-config.yaml');
-        const pipelineConfig = resolver.resolve(yaml.safeLoad(pipelineConfigYaml)) as PipelineConfigs;
 
-        new SynthesisStack(app, STACK_ID, synthPipeline, pipelineConfig);
+        new SynthesisStack(app, STACK_ID, synthPipeline, resolver, yaml.safeLoad(pipelineConfigYaml));
         const template = app.synth().getStackArtifact(STACK_ID).template;
 
         const outZip = new AdmZip();

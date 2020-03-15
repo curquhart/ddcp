@@ -1,4 +1,4 @@
-import {Aws, CfnOutput, CfnParameter, Construct, Duration, Fn, Stack, StackProps} from '@aws-cdk/core';
+import {Aws, CfnParameter, Construct, Duration, Fn, Stack, StackProps} from '@aws-cdk/core';
 import {Repository} from '@aws-cdk/aws-codecommit';
 import {DISABLE_METADATA_STACK_TRACE} from '@aws-cdk/cx-api';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
@@ -13,11 +13,10 @@ import {
     ManualApprovalAction
 } from '@aws-cdk/aws-codepipeline-actions';
 import * as fs from 'fs';
-import {CfnPolicy, PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
+import {CfnPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
-import {CfnTopic, Topic} from '@aws-cdk/aws-sns';
 
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
@@ -45,31 +44,6 @@ export class ManagerStack extends Stack {
         const pipeline = new Pipeline(this, 'Pipeline', { pipelineName, artifactBucket: localBucket });
 
         const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketNameParameter.valueAsString);
-
-        const buildStateSnsTopic = new Topic(this, 'CodeBuildEventsSnsTopic');
-        buildStateSnsTopic.addToResourcePolicy(new PolicyStatement({
-            actions: ['sns:Publish'],
-            principals: [new ServicePrincipal('events')],
-            resources: [buildStateSnsTopic.topicArn]
-        }));
-
-        const buildStateSnsTopicNode = buildStateSnsTopic.node.defaultChild as CfnTopic;
-        buildStateSnsTopicNode.node.addInfo('cfn_nag disabled.');
-        buildStateSnsTopicNode
-            .addOverride('Metadata', {
-                'cfn_nag': {
-                    'rules_to_suppress': [
-                        {
-                            id: 'W47',
-                            reason: 'CodeBuildEventsSnsTopic does not contain any sensitive information and does not need encryption.',
-                        },
-                    ]
-                }
-            });
-
-        new CfnOutput(this, 'CodeBuildEventsSnsTopicArn', {
-            value: buildStateSnsTopic.topicArn,
-        });
 
         // TODO: use custom event bus once https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/44 is completed.
         const eventBus = events.EventBus.fromEventBusArn(this, 'CustomEventBus', `arn:aws:events:${Aws.REGION}:${Aws.ACCOUNT_ID}:event-bus/default`);
@@ -224,7 +198,6 @@ export class ManagerStack extends Stack {
                 scratchDirCleanup: true,
                 synthPipeline: {
                     arn: pipelineArn,
-                    buildStateSnsTopicArn: buildStateSnsTopic.topicArn,
                     sourceType: 'CodeCommit',
                     sourceRepoName: inputRepo.repositoryName,
                     eventBusArn: eventBus.eventBusArn,

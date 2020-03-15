@@ -1,5 +1,5 @@
 import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
-import {Role, PolicyDocument, PolicyStatement} from '@aws-cdk/aws-iam';
+import {PolicyDocument, PolicyStatement, Role, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {Artifacts, BuildSpec, Project, Source} from '@aws-cdk/aws-codebuild';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
 import {
@@ -9,24 +9,42 @@ import {
     CodeCommitTrigger,
     S3DeployAction
 } from '@aws-cdk/aws-codepipeline-actions';
-import {Aws, Construct, Stack} from '@aws-cdk/core';
+import {Aws, Construct, Duration, Stack} from '@aws-cdk/core';
 import {isCodeBuildAction, isS3PublishAction, PipelineConfigs} from './PipelineConfig';
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as s3 from '@aws-cdk/aws-s3';
 import {throwError} from './helpers';
-import {Topic} from '@aws-cdk/aws-sns';
+import {CfnTopic, Topic} from '@aws-cdk/aws-sns';
+import {Resolver} from './Resolver';
+import {Code, Function, IFunction, Runtime} from '@aws-cdk/aws-lambda';
+import {SnsEventSource} from '@aws-cdk/aws-lambda-event-sources';
+import {createHash} from 'crypto';
+import * as fs from 'fs';
+
+const MODULES: Record<string, string> = {
+    'sns-to-slack': fs.readFileSync('node_modules/@ddcp/sns-to-slack/dist/index.min.js').toString()
+};
 
 export const tOrDefault = <T>(input: T | undefined, defaultValue: T): T => {
     return input !== undefined ? input : defaultValue;
 };
 
 export class SynthesisStack extends Stack {
-    constructor(scope: Construct, id: string, managerResources: ManagerResources, pipelineConfig: PipelineConfigs) {
+    constructor(
+        scope: Construct,
+        id: string,
+        managerResources: ManagerResources,
+        resolver: Resolver,
+        unresolvedPipelineConfig: Record<string, unknown>
+    ) {
         super(scope, id);
 
+        const pipelineConfig = resolver.resolve(this, unresolvedPipelineConfig) as PipelineConfigs;
+
         const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', managerResources.arn);
+        const funcs: Record<string, Function> = {};
 
         let counter = 0;
 
@@ -36,6 +54,32 @@ export class SynthesisStack extends Stack {
             const codePipeline = new Pipeline(this, `Pipeline${counter++}`, {
                 pipelineName: pipeline.Name
             });
+
+            const slackSettings = pipeline.Notifications?.Slack !== undefined && pipeline.Notifications?.Slack.length > 0 ? pipeline.Notifications?.Slack : undefined;
+            const slackSnsTopic = slackSettings !== undefined ? new Topic(this, `SlackSns${counter++}`) : undefined;
+            if (slackSnsTopic !== undefined) {
+                slackSnsTopic.addToResourcePolicy(new PolicyStatement({
+                    actions: ['sns:Publish'],
+                    principals: [new ServicePrincipal('events')],
+                    resources: [slackSnsTopic.topicArn]
+                }));
+                const slackSnsTopicNode = slackSnsTopic?.node.defaultChild as CfnTopic;
+                slackSnsTopicNode.node.addInfo('cfn_nag disabled.');
+                slackSnsTopicNode
+                    .addOverride('Metadata', {
+                        'cfn_nag': {
+                            'rules_to_suppress': [
+                                {
+                                    id: 'W47',
+                                    reason: 'CodeBuild events do not contain any sensitive information and does not need encryption.',
+                                },
+                            ]
+                        }
+                    });
+
+                const webhookLambda = this.getFunction(this, funcs, 'sns-to-slack', {});
+                webhookLambda.addEventSource(new SnsEventSource(slackSnsTopic));
+            }
 
             const sourceStage = codePipeline.addStage({
                 stageName: 'Sources'
@@ -107,20 +151,29 @@ export class SynthesisStack extends Stack {
                             })
                         });
 
-                        const buildStateSnsTopic = Topic.fromTopicArn(
-                            this,
-                            `ImportSnsTopic${counter++}`,
-                            managerResources.buildStateSnsTopicArn
-                        );
-                        codeBuildProject.onStateChange('OnStateChange', {
-                            target: new targets.SnsTopic(buildStateSnsTopic, {
-                                message: events.RuleTargetInput.fromObject({
-                                    repositoryName: repository.repositoryName,
-                                    repositoryBranch: branchName,
-                                    buildStatus: events.EventField.fromPath('$.detail.build-status'),
-                                })
-                            }),
-                        });
+                        if (slackSettings !== undefined && slackSnsTopic !== undefined) {
+                            codeBuildProject.onStateChange('OnStateChange', {
+                                target: new targets.SnsTopic(slackSnsTopic, {
+                                    message: events.RuleTargetInput.fromObject({
+                                        buildStatus: events.EventField.fromPath('$.detail.build-status'),
+                                        projectName: events.EventField.fromPath('$.detail.project-name'),
+                                        buildId: events.EventField.fromPath('$.detail.build-id'),
+                                        region: events.EventField.fromPath('$.region'),
+                                        repositoryName: repository.repositoryName,
+                                        branchName,
+                                        slackSettings: slackSettings.map((slackSetting) => {
+                                            return {
+                                                // TODO: return a token to resolve from secrets manager and set lambda permissions appropriately for such.
+                                                uri: slackSetting.WebHookUrl,
+                                                channel: slackSetting.Channel ?? throwError(new Error('Channel is required')),
+                                                username: slackSetting.UserName ?? throwError(new Error('UserName is required')),
+                                                statuses: slackSetting.Statuses
+                                            };
+                                        })
+                                    })
+                                }),
+                            });
+                        }
 
                         const cbOutputs: Array<Artifact> = [];
                         if (buildSpec.artifacts && buildSpec.artifacts['secondary-artifacts'] !== undefined) {
@@ -185,5 +238,27 @@ export class SynthesisStack extends Stack {
                 }
             }
         }
+    }
+
+    private getFunction(
+        scope: Stack,
+        funcs: Record<string, Function>,
+        moduleName: string,
+        env: Record<string, string>
+    ): IFunction {
+        const funcId = `${moduleName}-${createHash('md5').update(JSON.stringify(env)).digest('hex')}`;
+        if (funcs[funcId] !== undefined) {
+            return funcs[funcId];
+        }
+
+        funcs[funcId] = new Function(scope, funcId, {
+            code: Code.fromInline(MODULES[moduleName] ?? throwError(new Error(`Invalid module: ${moduleName}`))),
+            runtime: Runtime.NODEJS_12_X,
+            handler: 'index.handler',
+            environment: env,
+            timeout: Duration.seconds(30),
+        });
+
+        return funcs[funcId];
     }
 }

@@ -59,10 +59,29 @@ interface Stage {
     Actions?: Array<Action>;
 }
 
+interface SlackNotificationSetting {
+    emoji?: string;
+}
+
+interface SlackNotification {
+    Channel?: string;
+    UserName?: string;
+    WebHookUrl?: string;
+    Statuses?: {
+        IN_PROGRESS?: SlackNotificationSetting;
+        SUCCEEDED?: SlackNotificationSetting;
+        FAILED?: SlackNotificationSetting;
+        STOPPED?: SlackNotificationSetting;
+    };
+}
+
 interface Pipeline {
     Name?: string;
     Sources?: Array<Source>;
     Stages?: Array<Stage>;
+    Notifications?: {
+        Slack?: Array<SlackNotification>;
+    };
 }
 
 export interface PipelineConfigs {

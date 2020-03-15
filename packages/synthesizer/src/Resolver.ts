@@ -1,5 +1,6 @@
 import {Base} from './fn/Base';
 import {EMPTY_VOID_FN} from './helpers';
+import {Stack} from '@aws-cdk/core';
 
 /**
  * Recursively checks if the provided value has been resolved.
@@ -47,9 +48,10 @@ export class Resolver {
 
     /**
      * Resolve value and anything within value.
+     * @param scope
      * @param value
      */
-    resolve(value: Record<string, unknown>): Record<string, unknown> {
+    resolve(scope: Stack, value: Record<string, unknown>): Record<string, unknown> {
         const toResolve: Array<ResolveJob> = [{value, onPerformedWork: EMPTY_VOID_FN}];
 
         let counter = 0;
@@ -88,7 +90,7 @@ export class Resolver {
                         };
 
                         if (isResolved(this.allResolvers, entry)) {
-                            resolved = this.allResolvers[key].resolve(typeof entry !== 'object' || entry === null ? [entry] : entry, value);
+                            resolved = this.allResolvers[key].withScope(scope).resolve(typeof entry !== 'object' || entry === null ? [entry] : entry, value);
                         }
                         else {
                             toResolve.push({

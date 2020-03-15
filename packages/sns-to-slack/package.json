@@ -1,0 +1,36 @@
+{
+  "name": "@ddcp/sns-to-slack",
+  "private": true,
+  "version": "1.0.0",
+  "main": "dist/index.min.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc && cat dist/index.js | jsmin > dist/index.min.js",
+    "clean": "rm -rf node_modules dist",
+    "lint": "eslint --ext .ts src/",
+    "artifact-lint": "check-filesize dist/index.min.js min=512 max=4096"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@ddcp/eslint-config"
+    ]
+  },
+  "dependencies": {
+    "aws-lambda": "1.0.5"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.44",
+    "eslint": "6.8.0",
+    "jsmin": "1.0.1",
+    "typescript": "3.8.2",
+    "@typescript-eslint/eslint-plugin": "2.21.0",
+    "@typescript-eslint/parser": "2.21.0",
+    "eslint-plugin-node": "11.0.0",
+    "@ddcp/eslint-config": "1.0.0",
+    "@ddcp/typescript-config": "1.0.0",
+    "@ddcp/tools": "1.0.0"
+  }
+}
