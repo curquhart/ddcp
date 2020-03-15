@@ -4,8 +4,8 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc && npm run prepend-shebang-check-zip && npm run prepend-shebang-check-filesize",
-    "prepend-shebang-check-zip": "echo '#!/usr/bin/env node' | cat - dist/check-zip.js > dist/check-zip.js.new && mv dist/check-zip.js.new dist/check-zip.js",
-    "prepend-shebang-check-filesize": "echo '#!/usr/bin/env node' | cat - dist/check-filesize.js > dist/check-filesize.js.new && mv dist/check-filesize.js.new dist/check-filesize.js",
+    "prepend-shebang-check-zip": "echo '#!/usr/bin/env node' | cat - dist/check-zip.js > dist/check-zip.js.new && chmod +x dist/check-zip.js.new && mv dist/check-zip.js.new dist/check-zip.js",
+    "prepend-shebang-check-filesize": "echo '#!/usr/bin/env node' | cat - dist/check-filesize.js > dist/check-filesize.js.new && chmod +x dist/check-filesize.js.new && mv dist/check-filesize.js.new dist/check-filesize.js",
     "clean": "rm -rf node_modules dist"
   },
   "bin": {

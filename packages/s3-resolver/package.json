@@ -2,13 +2,13 @@
   "name": "@ddcp/s3-resolver",
   "private": true,
   "version": "1.0.0",
-  "main": "dist/index.min.js",
+  "main": "dist/bundled.js",
   "license": "MIT",
   "scripts": {
-    "build": "tsc && cat dist/node_modules/**/*.js dist/src/index.js | sed 's#require(\"cfn-response\")#exports#' | jsmin > dist/index.min.js",
+    "build": "tsc && cat dist/node_modules/**/*.js dist/src/index.js | sed 's#require(\"cfn-response\")#exports#' | jsmin > dist/bundled.js",
     "clean": "rm -rf node_modules dist",
     "lint": "eslint --ext .ts src/",
-    "artifact-lint": "check-filesize dist/index.min.js min=1024 max=4096"
+    "artifact-lint": "check-filesize dist/bundled.js min=1024 max=4096"
   },
   "engines": {
     "node": ">=10.0.0"

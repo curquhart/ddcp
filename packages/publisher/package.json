@@ -2,15 +2,14 @@
   "name": "@ddcp/publisher",
   "private": true,
   "version": "1.0.0",
-  "main": "index.js",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf node_modules dist",
     "deploy": "cdk deploy",
     "lint": "eslint --ext .ts src/",
-    "pack": "zip -jr dist/dist.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/manager/dist/manager.yaml",
-    "artifact-lint": "check-zip dist/dist.zip @ddcpsynthesizer.zip @ddcpgithub-mirror.zip manager.yaml"
+    "pack": "zip -jr dist/dist.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/sns-to-slack/dist/@ddcpsns-to-slack.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/manager/dist/manager.yaml",
+    "artifact-lint": "check-zip dist/dist.zip @ddcpsynthesizer.zip @ddcpsns-to-slack.zip @ddcpgithub-mirror.zip manager.yaml"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -44,6 +43,7 @@
     "@ddcp/manager": "1.0.0",
     "@ddcp/synthesizer": "1.0.0",
     "@ddcp/github-mirror": "1.0.0",
+    "@ddcp/sns-to-slack": "1.0.0",
     "@ddcp/eslint-config": "1.0.0",
     "@ddcp/typescript-config": "1.0.0",
     "@ddcp/tools": "1.0.0"

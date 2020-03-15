@@ -2,20 +2,13 @@
   "name": "@ddcp/github-mirror",
   "private": true,
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/bundled.js",
   "license": "MIT",
-  "bundledDependencies": [
-    "aws4",
-    "rimraf",
-    "shell-escape",
-    "github-webhook-validators",
-    "tmp"
-  ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf node_modules dist",
+    "clean": "rm -rf node_modules dist .cache",
     "lint": "eslint --ext .ts src/",
-    "pack": "npm-pack-zip --dst dist/"
+    "pack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js && npm-pack-zip --dst dist/"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -47,6 +40,7 @@
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
     "eslint-plugin-node": "11.0.0",
+    "parcel": "1.12.4",
     "@ddcp/eslint-config": "1.0.0",
     "@ddcp/typescript-config": "1.0.0"
   }

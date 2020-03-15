@@ -34,6 +34,3 @@ params.map((param) => param.split('=')).forEach(([name, val]) => {
         }
     }
 });
-
-
-// min=1024 max=4096 dist/index.min.js

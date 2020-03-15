@@ -21,11 +21,7 @@ import {Resolver} from './Resolver';
 import {Code, Function, IFunction, Runtime} from '@aws-cdk/aws-lambda';
 import {SnsEventSource} from '@aws-cdk/aws-lambda-event-sources';
 import {createHash} from 'crypto';
-import * as fs from 'fs';
-
-const MODULES: Record<string, string> = {
-    'sns-to-slack': fs.readFileSync('node_modules/@ddcp/sns-to-slack/dist/index.min.js').toString()
-};
+import {Bucket} from '@aws-cdk/aws-s3';
 
 export const tOrDefault = <T>(input: T | undefined, defaultValue: T): T => {
     return input !== undefined ? input : defaultValue;
@@ -77,7 +73,7 @@ export class SynthesisStack extends Stack {
                         }
                     });
 
-                const webhookLambda = this.getFunction(this, funcs, 'sns-to-slack', {});
+                const webhookLambda = this.getFunction(this, funcs, managerResources, 'sns-to-slack', {});
                 webhookLambda.addEventSource(new SnsEventSource(slackSnsTopic));
             }
 
@@ -243,6 +239,7 @@ export class SynthesisStack extends Stack {
     private getFunction(
         scope: Stack,
         funcs: Record<string, Function>,
+        managerResources: ManagerResources,
         moduleName: string,
         env: Record<string, string>
     ): IFunction {
@@ -251,10 +248,11 @@ export class SynthesisStack extends Stack {
             return funcs[funcId];
         }
 
+        const assetBucket = Bucket.fromBucketName(scope, `${funcId}Bucket`, managerResources.assetBucketName);
         funcs[funcId] = new Function(scope, funcId, {
-            code: Code.fromInline(MODULES[moduleName] ?? throwError(new Error(`Invalid module: ${moduleName}`))),
+            code: Code.fromBucket(assetBucket, managerResources.assetKeys[moduleName] ?? throwError(new Error(`Invalid module: ${moduleName}`))),
             runtime: Runtime.NODEJS_12_X,
-            handler: 'index.handler',
+            handler: 'dist/bundled.handler',
             environment: env,
             timeout: Duration.seconds(30),
         });

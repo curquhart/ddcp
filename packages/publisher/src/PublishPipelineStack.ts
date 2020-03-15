@@ -46,7 +46,7 @@ class PublisherPipelineInitStack extends Stack {
             parameters: {
                 SourceS3BucketName: privateBucket.bucketName,
                 LocalStorageS3BucketName: privateBucket.bucketName,
-                SourceS3Key: `${assetsPrefix}@ddcpsynthesizer.zip`,
+                SourceS3Prefix: assetsPrefix,
                 RepositoryName: repo.repositoryName,
                 SynthPipelineName: 'synthesizer',
                 StackName: 'ddcp-pipeline',
@@ -57,7 +57,7 @@ class PublisherPipelineInitStack extends Stack {
         const githubMirror = new Function(this, 'GitHubMirror', {
             code: Code.fromBucket(privateBucket, `${assetsPrefix}@ddcpgithub-mirror.zip`),
             runtime: Runtime.NODEJS_12_X,
-            handler: 'dist/index.handle',
+            handler: 'dist/bundled.handler',
             initialPolicy: [
                 new PolicyStatement({
                     actions: [ 'codecommit:GitPush' ],

@@ -18,6 +18,35 @@ import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
 
+interface LambdaProps {
+    name: string;
+    asset: string;
+    destKey: string;
+}
+
+const LAMBDAS: Array<LambdaProps> = [
+    {
+        name: 'synth',
+        asset: '@ddcpsynthesizer.zip',
+        destKey: '',
+    },
+    {
+        name: 'sns-to-slack',
+        asset: '@ddcpsns-to-slack.zip',
+        destKey: '',
+    },
+];
+
+const getLambdaProps = (name: string): LambdaProps => {
+    for (const lambdaProps of LAMBDAS) {
+        if (lambdaProps.name === name) {
+            return lambdaProps;
+        }
+    }
+
+    throw new Error(`${name} could not be found.`);
+};
+
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
         super(scope, id, props);
@@ -26,7 +55,7 @@ export class ManagerStack extends Stack {
 
         const sourceBucketNameParameter = new CfnParameter(this, 'SourceS3BucketName');
         const localStorageBucketNameParameter = new CfnParameter(this, 'LocalStorageS3BucketName');
-        const sourceBucketKeyParameter = new CfnParameter(this, 'SourceS3Key');
+        const sourceBucketPrefixParameter = new CfnParameter(this, 'SourceS3Prefix');
         const repositoryNameParameter = new CfnParameter(this, 'RepositoryName');
         const synthPipelineNameParameter = new CfnParameter(this, 'SynthPipelineName');
         const stackNameParameter = new CfnParameter(this, 'StackName');
@@ -56,11 +85,11 @@ export class ManagerStack extends Stack {
 
         const s3resolver = new Function(this, 'S3Resolver', {
             runtime: Runtime.NODEJS_12_X,
-            code: Code.fromInline(fs.readFileSync(`${__dirname}/../node_modules/@ddcp/s3-resolver/dist/index.min.js`).toString()),
+            code: Code.fromInline(fs.readFileSync(`${__dirname}/../node_modules/@ddcp/s3-resolver/dist/bundled.js`).toString()),
             handler: 'index.handler',
             initialPolicy: [
                 new PolicyStatement({
-                    resources: [ sourceBucket.arnForObjects(sourceBucketKeyParameter.valueAsString) ],
+                    resources: LAMBDAS.map((lambdaOps) => sourceBucket.arnForObjects(`${sourceBucketPrefixParameter.valueAsString}${lambdaOps.asset}`)),
                     actions: [
                         's3:GetObject'
                     ],
@@ -90,19 +119,25 @@ export class ManagerStack extends Stack {
                 }
             });
 
-        const resolverCr = new CustomResource(this, 'ResolveSynthesizer', {
-            provider: CustomResourceProvider.fromLambda(s3resolver),
-            properties: {
-                SourceBucketName: sourceBucketNameParameter.valueAsString,
-                SourceKey: sourceBucketKeyParameter.valueAsString,
-                DestBucketName: localBucket.bucketName,
-                StackUuid: stackUuid,
-            },
+
+        // Copy all required lambdas into local storage. (this in the future will be requester pays which is why we
+        // don't just reference the source bucket directly.)
+        LAMBDAS.forEach((lambdaOpts) => {
+            const resolverCr = new CustomResource(this, `DDCP${lambdaOpts.name}`, {
+                provider: CustomResourceProvider.fromLambda(s3resolver),
+                properties: {
+                    SourceBucketName: sourceBucketNameParameter.valueAsString,
+                    SourceKey: `${sourceBucketPrefixParameter.valueAsString}${lambdaOpts.asset}`,
+                    DestBucketName: localBucket.bucketName,
+                    StackUuid: stackUuid,
+                },
+            });
+            lambdaOpts.destKey = resolverCr.getAtt('DestKey').toString();
         });
 
         const handlerFunction = new Function(this, 'DDCpMainHandler', {
-            code: Code.fromBucket(localBucket, resolverCr.getAtt('DestKey').toString()),
-            handler: 'dist/index.handle',
+            code: Code.fromBucket(localBucket, getLambdaProps('synth').destKey),
+            handler: 'dist/bundled.handler',
             runtime: Runtime.NODEJS_12_X,
             timeout: Duration.minutes(5),
             memorySize: 512,
@@ -201,6 +236,12 @@ export class ManagerStack extends Stack {
                     sourceType: 'CodeCommit',
                     sourceRepoName: inputRepo.repositoryName,
                     eventBusArn: eventBus.eventBusArn,
+                    assetBucketName: localStorageBucketNameParameter.valueAsString,
+                    assetKeys: Object.assign({}, ... LAMBDAS.map((lambdaOpts) => {
+                        return {
+                            [lambdaOpts.name]: lambdaOpts.destKey,
+                        };
+                    })),
                 }
             },
             runOrder: 1

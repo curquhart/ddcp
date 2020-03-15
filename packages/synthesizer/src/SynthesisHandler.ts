@@ -14,6 +14,8 @@ export interface ManagerResources {
     sourceType: string;
     sourceRepoName: string;
     eventBusArn: string;
+    assetBucketName: string;
+    assetKeys: Record<string, string>;
 }
 
 const getArtifactS3Client = (event: CodePipelineEvent): S3 => {
