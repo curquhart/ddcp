@@ -15,7 +15,7 @@ Pipelines:
             STOPPED:
               emoji: ':i_dunno:'
           WebHookUrl:
-            '!SsmString': SlackWebHookUrl
+            '!Secret': SlackWebHookUrl
     Sources:
       - Name: Source
         Type: CodeCommit
