@@ -13,14 +13,19 @@ import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
 import {CodePipelineOrchestratorFactory} from './orchestrator/CodePipelineOrchestratorFactory';
 import {CloudWatchOrchestratorFactory} from './orchestrator/CloudWatchOrchestratorFactory';
 import {Uniquifier} from './Uniquifier';
+import {Secret} from './fn/resolvers/Secret';
+import {Tokenizer} from '@ddcp/tokenizer';
 
 const uniquifier = new Uniquifier();
+const tokenizer = new Tokenizer();
+
 const allResolvers: Record<string, Base<unknown, Array<unknown>>> = {};
 new Join(allResolvers).init();
 new Path(allResolvers).init();
 new PathForAlias(allResolvers).init();
 new Import(allResolvers).init();
 new SsmString(allResolvers, uniquifier).init();
+new Secret(allResolvers, tokenizer).init();
 
 const resolver = new Resolver(allResolvers);
 
@@ -34,7 +39,7 @@ const isCodePipelineEvent = (event: unknown): event is CodePipelineEvent => {
 
 export const handler = async (event: CodePipelineEvent | CodeCommitEvent, context: Context): Promise<void> => {
     if (isCodePipelineEvent(event)) {
-        return new SynthesisHandler().safeHandle(event, context, resolver, allOrchestrators, uniquifier);
+        return new SynthesisHandler().safeHandle(event, context, resolver, allOrchestrators, uniquifier, tokenizer);
     }
     else {
         return new SelectorHandler().handle(event);
