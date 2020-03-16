@@ -1,5 +1,7 @@
 import * as https from 'https';
 import {SNSEvent} from 'aws-lambda';
+import {Tokenizer} from '@ddcp/tokenizer';
+import {SecretsManager} from 'aws-sdk';
 
 // Derived from https://www.scrivito.com/posting-form-content-to-a-slack-channel-via-an-aws-lambda-function-e73e3fb7a95c76f3
 
@@ -48,9 +50,21 @@ const toWords = (value: string): string => {
     }).replace(/[^a-zA-Z0-9]+/, ' ');
 };
 
+const tokenizer = new Tokenizer(JSON.parse(process.env.TOKENS !== undefined ? process.env.TOKENS : '{}') ?? {});
+
 export const handler = async (event: SNSEvent): Promise<void> => {
     for (const record of event.Records) {
         const payload = JSON.parse(record.Sns.Message) as Payload;
+
+        // Resolve from Secrets Manager
+        payload.slackSettings = await tokenizer.resolveAllTokens('secret', payload.slackSettings, async (token: string, value: string) => {
+            const secretsManager = new SecretsManager();
+            const secretValue = await secretsManager.getSecretValue({
+                SecretId: value
+            }).promise();
+
+            return secretValue.SecretString ?? Buffer.from(secretValue.SecretBinary?.toString() ?? '', 'base64').toString();
+        });
 
         for (const slackSettings of payload.slackSettings) {
             const match = slackSettings.uri.match(/^https:\/\/([^/]+)(\/.*)?$/);

@@ -2,7 +2,7 @@ import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {BuildSpec, Project, Source} from '@aws-cdk/aws-codebuild';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
-import {Construct, Duration, Stack} from '@aws-cdk/core';
+import {Aws, Construct, Duration, Stack} from '@aws-cdk/core';
 import {isCodeBuildAction, isS3PublishAction, PipelineConfigs} from './PipelineConfig';
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
@@ -10,12 +10,13 @@ import * as targets from '@aws-cdk/aws-events-targets';
 import {throwError} from './helpers';
 import {CfnTopic, Topic} from '@aws-cdk/aws-sns';
 import {Resolver} from './Resolver';
-import {Code, Function, IFunction, Runtime} from '@aws-cdk/aws-lambda';
+import {Code, Function, Runtime} from '@aws-cdk/aws-lambda';
 import {SnsEventSource} from '@aws-cdk/aws-lambda-event-sources';
 import {createHash} from 'crypto';
 import {Bucket} from '@aws-cdk/aws-s3';
 import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
 import {Uniquifier} from './Uniquifier';
+import {Tokenizer} from '@ddcp/tokenizer';
 
 export const tOrDefault = <T>(input: T | undefined, defaultValue: T): T => {
     return input !== undefined ? input : defaultValue;
@@ -25,17 +26,20 @@ export class SynthesisStack extends Stack {
     constructor(
         scope: Construct,
         id: string,
-        managerResources: ManagerResources,
-        resolver: Resolver,
-        unresolvedPipelineConfig: Record<string, unknown>,
-        orchestrators: Record<string, BaseOrchestratorFactory>,
-        uniquifier: Uniquifier
+        props: {
+            managerResources: ManagerResources;
+            resolver: Resolver;
+            unresolvedPipelineConfig: Record<string, unknown>;
+            orchestrators: Record<string, BaseOrchestratorFactory>;
+            uniquifier: Uniquifier;
+            tokenizer: Tokenizer;
+        }
     ) {
         super(scope, id);
 
-        const pipelineConfig = resolver.resolve(this, unresolvedPipelineConfig) as PipelineConfigs;
+        const pipelineConfig = props.resolver.resolve(this, props.unresolvedPipelineConfig) as PipelineConfigs;
 
-        const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', managerResources.arn);
+        const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', props.managerResources.arn);
         const funcs: Record<string, Function> = {};
 
         for (const pipeline of tOrDefault(pipelineConfig.Pipelines, [])) {
@@ -47,19 +51,19 @@ export class SynthesisStack extends Stack {
                 pipeline.Orchestrator = 'CodePipeline';
             }
 
-            if (orchestrators[pipeline.Orchestrator] === undefined) {
+            if (props.orchestrators[pipeline.Orchestrator] === undefined) {
                 throw new Error(`Invalid orchestrator: ${pipeline.Orchestrator}`);
             }
-            const orchestratedPipeline = orchestrators[pipeline.Orchestrator].new({
+            const orchestratedPipeline = props.orchestrators[pipeline.Orchestrator].new({
                 scope: this,
                 managerPipeline: codePipelineSynthPipeline,
-                managerResources,
+                managerResources: props.managerResources,
                 pipeline,
-                uniquifier
+                uniquifier: props.uniquifier
             });
 
             const slackSettings = pipeline.Notifications?.Slack !== undefined && pipeline.Notifications?.Slack.length > 0 ? pipeline.Notifications?.Slack : undefined;
-            const slackSnsTopic = slackSettings !== undefined ? new Topic(this, uniquifier.next('SlackSns')) : undefined;
+            const slackSnsTopic = slackSettings !== undefined ? new Topic(this, props.uniquifier.next('SlackSns')) : undefined;
             if (slackSnsTopic !== undefined) {
                 slackSnsTopic.addToResourcePolicy(new PolicyStatement({
                     actions: ['sns:Publish'],
@@ -80,7 +84,8 @@ export class SynthesisStack extends Stack {
                         }
                     });
 
-                const webhookLambda = this.getFunction(this, funcs, managerResources, 'sns-to-slack', {});
+                const webhookLambda = this.getFunction(this, funcs, props.managerResources, 'sns-to-slack', {});
+                this.applySecretsManagerPolicyToFunction(webhookLambda, props.tokenizer, slackSettings);
                 webhookLambda.addEventSource(new SnsEventSource(slackSnsTopic));
             }
 
@@ -93,7 +98,7 @@ export class SynthesisStack extends Stack {
                     throw new Error('RepositoryName is required.');
                 }
                 artifacts[ source.Name ] = new Artifact(source.Name);
-                repositories[ source.Name ] = Repository.fromRepositoryName(this, uniquifier.next(`Repo${source.RepositoryName}${source.BranchName}`), source.RepositoryName);
+                repositories[ source.Name ] = Repository.fromRepositoryName(this, props.uniquifier.next(`Repo${source.RepositoryName}${source.BranchName}`), source.RepositoryName);
                 branchNames[ source.Name ] = source.BranchName ?? null;
 
                 sourceStage.addCodeCommitSourceAction(
@@ -129,7 +134,7 @@ export class SynthesisStack extends Stack {
                             throw new Error('BranchName cannot be undefined.');
                         }
 
-                        const codeBuildProject = new Project(this, uniquifier.next('Project'), {
+                        const codeBuildProject = new Project(this, props.uniquifier.next('Project'), {
                             projectName: `${pipeline.Name}${stage.Name}${action.Name}Project`,
                             buildSpec: BuildSpec.fromObject(buildSpec),
                             source: Source.codeCommit({
@@ -184,7 +189,7 @@ export class SynthesisStack extends Stack {
         managerResources: ManagerResources,
         moduleName: string,
         env: Record<string, string>
-    ): IFunction {
+    ): Function {
         const funcId = `${moduleName}-${createHash('md5').update(JSON.stringify(env)).digest('hex')}`;
         if (funcs[funcId] !== undefined) {
             return funcs[funcId];
@@ -200,5 +205,21 @@ export class SynthesisStack extends Stack {
         });
 
         return funcs[funcId];
+    }
+
+    private applySecretsManagerPolicyToFunction(fn: Function, tokenizer: Tokenizer, fnData: unknown): void {
+        const secretTokens = tokenizer.getAllTokens('secret', fnData);
+        if (Object.keys(secretTokens).length > 0) {
+            fn.addToRolePolicy(new PolicyStatement({
+                actions: ['secretsmanager:GetSecretValue'],
+                resources: Object.values(secretTokens).map((secretToken) => `arn:${Aws.PARTITION}:secretsmanager:${Aws.REGION}:${Aws.ACCOUNT_ID}:secret:${secretToken.value}-*`)
+            }));
+            fn.addEnvironment('TOKENS', JSON.stringify(Object.assign({}, ...Object.entries(secretTokens).map(([key, token]) => {
+                return {
+                    [key]: token.token
+                };
+            }))));
+        }
+
     }
 }

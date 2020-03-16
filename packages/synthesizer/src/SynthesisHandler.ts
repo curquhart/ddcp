@@ -9,6 +9,7 @@ import {Resolver} from './Resolver';
 import * as yaml from 'js-yaml';
 import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
 import {Uniquifier} from './Uniquifier';
+import {Tokenizer} from '@ddcp/tokenizer';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
@@ -41,7 +42,8 @@ export class SynthesisHandler {
         event: CodePipelineEvent,
         resolver: Resolver,
         orchestrators: Record<string, BaseOrchestratorFactory>,
-        uniquifier: Uniquifier
+        uniquifier: Uniquifier,
+        tokenizer: Tokenizer
     ): Promise<void> {
         const app = new App({
             outdir: cdkOutDir,
@@ -57,7 +59,14 @@ export class SynthesisHandler {
         const inZip = new AdmZip(inputArtifact.Body as Buffer);
         const pipelineConfigYaml = inZip.readAsText('pipeline-config.yaml');
 
-        new SynthesisStack(app, STACK_ID, synthPipeline, resolver, yaml.safeLoad(pipelineConfigYaml), orchestrators, uniquifier);
+        new SynthesisStack(app, STACK_ID, {
+            managerResources: synthPipeline,
+            resolver,
+            unresolvedPipelineConfig: yaml.safeLoad(pipelineConfigYaml),
+            orchestrators,
+            uniquifier,
+            tokenizer
+        });
         const template = app.synth().getStackArtifact(STACK_ID).template;
 
         const outZip = new AdmZip();
@@ -75,7 +84,8 @@ export class SynthesisHandler {
         context: Context,
         resolver: Resolver,
         orchestrators: Record<string, BaseOrchestratorFactory>,
-        uniquifier: Uniquifier
+        uniquifier: Uniquifier,
+        tokenizer: Tokenizer
     ): Promise<void> {
         let cleanupCb = EMPTY_VOID_FN;
         const cp = new CodePipeline();
@@ -105,7 +115,7 @@ export class SynthesisHandler {
                 cleanupCb = cdkOutDir.removeCallback;
             }
 
-            await this.handle(synthPipeline, cdkOutDir.name, event, resolver, orchestrators, uniquifier);
+            await this.handle(synthPipeline, cdkOutDir.name, event, resolver, orchestrators, uniquifier, tokenizer);
             await cp.putJobSuccessResult({jobId: event['CodePipeline.job'].id}).promise();
         }
         catch (err) {
