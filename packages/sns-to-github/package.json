@@ -18,6 +18,21 @@
       "@ddcp/eslint-config"
     ]
   },
+  "alias": {
+    "@octokit/app": "./node_modules/@octokit/app/dist-node/index.js",
+    "@octokit/auth-app": "./node_modules/@octokit/auth-app/dist-node/index.js",
+    "@octokit/auth-token": "./node_modules/@octokit/auth-token/dist-node/index.js",
+    "@octokit/core": "./node_modules/@octokit/core/dist-node/index.js",
+    "@octokit/endpoint": "./node_modules/@octokit/endpoint/dist-node/index.js",
+    "@octokit/graphql": "./node_modules/@octokit/graphql/dist-node/index.js",
+    "@octokit/plugin-paginate-rest": "./node_modules/@octokit/plugin-paginate-rest/dist-node/index.js",
+    "@octokit/plugin-request-log": "./node_modules/@octokit/plugin-request-log/dist-node/index.js",
+    "@octokit/plugin-rest-endpoint-methods": "./node_modules/@octokit/plugin-rest-endpoint-methods/dist-node/index.js",
+    "@octokit/request": "./node_modules/@octokit/request/dist-node/index.js",
+    "@octokit/request-error": "./node_modules/@octokit/request-error/dist-node/index.js",
+    "@octokit/rest": "./node_modules/@octokit/rest/dist-node/index.js",
+    "universal-github-app-jwt": "./node_modules/universal-github-app-jwt/dist-node/index.js"
+  },
   "dependencies": {
     "@ddcp/secretsmanager": "1.0.0",
     "@ddcp/sns-models": "1.0.0",

@@ -11,7 +11,6 @@ export class Handler {
     async handle(event: SNSEvent): Promise<void> {
         for (const record of event.Records) {
             const payload = JSON.parse(record.Sns.Message) as Payload;
-            console.info(`Payload = ${payload}`);
 
             if (payload.githubSettings?.auth === undefined) {
                 continue;
@@ -75,14 +74,14 @@ export class Handler {
                     throw new Error(`Unrecognized status: ${payload.buildStatus}`);
             }
 
-            const codeBuildLink = `${prefix}codebuild/projects/${payload.projectName}/build/${payload.buildId.split('/').pop()}/log?region=${payload.region}`;
+            const codeBuildLink = `https://${payload.region}.console.aws.amazon.com/codesuite/codebuild/projects/${payload.projectName}/build/${payload.buildId.split('/').pop()}/log?region=${payload.region}`;
 
             console.info(`Creating check on ${owner}/${repo} for ${sha}: status = ${checkStatus} conclusion = ${conclusion} cblink = ${codeBuildLink}`);
             await installationAuthedOctokit.checks.create({
                 owner,
                 repo,
                 'head_sha': sha,
-                'name': 'CodeBuild Status',
+                'name': 'CodeBuild',
                 'status': checkStatus,
                 'conclusion': conclusion,
                 'details_url': codeBuildLink,
