@@ -7,7 +7,7 @@ import {isCodeBuildAction, isS3PublishAction, PipelineConfigs} from './PipelineC
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
 import * as targets from '@aws-cdk/aws-events-targets';
-import {throwError} from './helpers';
+import {throwError} from '@ddcp/errorhandling';
 import {CfnTopic, Topic} from '@aws-cdk/aws-sns';
 import {Resolver} from './Resolver';
 import {Code, Function, Runtime} from '@aws-cdk/aws-lambda';
@@ -17,10 +17,7 @@ import {Bucket} from '@aws-cdk/aws-s3';
 import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
 import {Uniquifier} from './Uniquifier';
 import {Tokenizer} from '@ddcp/tokenizer';
-
-export const tOrDefault = <T>(input: T | undefined, defaultValue: T): T => {
-    return input !== undefined ? input : defaultValue;
-};
+import {tOrDefault} from '@ddcp/typehelpers';
 
 export class SynthesisStack extends Stack {
     constructor(
@@ -63,14 +60,15 @@ export class SynthesisStack extends Stack {
             });
 
             const slackSettings = pipeline.Notifications?.Slack !== undefined && pipeline.Notifications?.Slack.length > 0 ? pipeline.Notifications?.Slack : undefined;
-            const slackSnsTopic = slackSettings !== undefined ? new Topic(this, props.uniquifier.next('SlackSns')) : undefined;
-            if (slackSnsTopic !== undefined) {
-                slackSnsTopic.addToResourcePolicy(new PolicyStatement({
+            const githubSettings = pipeline.GitHub;
+            const snsTopic = slackSettings !== undefined || githubSettings !== undefined ? new Topic(this, props.uniquifier.next('Sns')) : undefined;
+            if (snsTopic !== undefined) {
+                snsTopic.addToResourcePolicy(new PolicyStatement({
                     actions: ['sns:Publish'],
                     principals: [new ServicePrincipal('events')],
-                    resources: [slackSnsTopic.topicArn]
+                    resources: [snsTopic.topicArn]
                 }));
-                const slackSnsTopicNode = slackSnsTopic?.node.defaultChild as CfnTopic;
+                const slackSnsTopicNode = snsTopic?.node.defaultChild as CfnTopic;
                 slackSnsTopicNode.node.addInfo('cfn_nag disabled.');
                 slackSnsTopicNode
                     .addOverride('Metadata', {
@@ -83,10 +81,18 @@ export class SynthesisStack extends Stack {
                             ]
                         }
                     });
+            }
 
-                const webhookLambda = this.getFunction(this, funcs, props.managerResources, 'sns-to-slack', {});
-                this.applySecretsManagerPolicyToFunction(webhookLambda, props.tokenizer, slackSettings);
-                webhookLambda.addEventSource(new SnsEventSource(slackSnsTopic));
+            if (snsTopic !== undefined && slackSettings !== undefined) {
+                const handler = this.getFunction(this, funcs, props.managerResources, 'sns-to-slack', {});
+                this.applySecretsManagerPolicyToFunction(handler, props.tokenizer, slackSettings);
+                handler.addEventSource(new SnsEventSource(snsTopic));
+            }
+
+            if (snsTopic !== undefined && githubSettings !== undefined) {
+                const handler = this.getFunction(this, funcs, props.managerResources, 'sns-to-github', {});
+                this.applySecretsManagerPolicyToFunction(handler, props.tokenizer, githubSettings);
+                handler.addEventSource(new SnsEventSource(snsTopic));
             }
 
             const sourceStage = orchestratedPipeline.addStage('Sources');
@@ -143,9 +149,9 @@ export class SynthesisStack extends Stack {
                             })
                         });
 
-                        if (slackSettings !== undefined && slackSnsTopic !== undefined) {
+                        if (snsTopic !== undefined) {
                             codeBuildProject.onStateChange('OnStateChange', {
-                                target: new targets.SnsTopic(slackSnsTopic, {
+                                target: new targets.SnsTopic(snsTopic, {
                                     message: events.RuleTargetInput.fromObject({
                                         buildStatus: events.EventField.fromPath('$.detail.build-status'),
                                         projectName: events.EventField.fromPath('$.detail.project-name'),
@@ -154,7 +160,7 @@ export class SynthesisStack extends Stack {
                                         repositoryName: repository.repositoryName,
                                         branchName: branchName !== null ? branchName : undefined,
                                         buildEnvironment: events.EventField.fromPath('$.detail.additional-information.environment.environment-variables'),
-                                        slackSettings: slackSettings.map((slackSetting) => {
+                                        slackSettings: slackSettings?.map((slackSetting) => {
                                             return {
                                                 // TODO: return a token to resolve from secrets manager and set lambda permissions appropriately for such.
                                                 uri: slackSetting.WebHookUrl,
@@ -162,7 +168,10 @@ export class SynthesisStack extends Stack {
                                                 username: slackSetting.UserName ?? throwError(new Error('UserName is required')),
                                                 statuses: slackSetting.Statuses
                                             };
-                                        })
+                                        }),
+                                        githubSettings : githubSettings?.Auth !== undefined ? {
+                                            auth: githubSettings.Auth
+                                        } : undefined,
                                     })
                                 }),
                             });

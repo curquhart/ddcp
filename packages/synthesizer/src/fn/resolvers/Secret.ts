@@ -1,7 +1,7 @@
 import {Base} from '../Base';
 import {ResolveResult} from '../../Resolver';
 import {ParameterCountError} from '../errors/ParameterCountError';
-import {Tokenizer} from '@ddcp/tokenizer';
+import {Tokenizer} from '../../../../lib-tokenizer';
 
 type IParameters = Array<string>
 

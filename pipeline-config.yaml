@@ -1,8 +1,5 @@
 Pipelines:
   - Name: ddcp-build
-    GitHub:
-      Auth:
-        '!Secret': GitHubApp
     Notifications:
       Alias: Notifications
       Slack:
@@ -84,6 +81,9 @@ Pipelines:
             BucketArn:
               '!Import': PrivateBucketArn
   - Name: ddcp-branch-build
+    GitHub:
+      Auth:
+        '!Secret': GitHubApp
     Orchestrator: CloudWatch
     Notifications:
       '!Path':

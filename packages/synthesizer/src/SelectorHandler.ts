@@ -1,6 +1,6 @@
 import {CloudWatchEvents, CodeCommit, CodePipeline} from 'aws-sdk';
 import {CodeCommitEvent} from './CodeCommitEvent';
-import {tOrDefault} from './SynthesisStack';
+import {tOrDefault} from '@ddcp/typehelpers';
 
 export class SelectorHandler {
     async handle(event: CodeCommitEvent): Promise<void> {

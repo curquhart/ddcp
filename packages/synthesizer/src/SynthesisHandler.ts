@@ -9,7 +9,7 @@ import {Resolver} from './Resolver';
 import * as yaml from 'js-yaml';
 import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
 import {Uniquifier} from './Uniquifier';
-import {Tokenizer} from '@ddcp/tokenizer';
+import {Tokenizer} from '../../lib-tokenizer';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {

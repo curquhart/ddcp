@@ -1,41 +1,12 @@
 import * as https from 'https';
 import {SNSEvent} from 'aws-lambda';
-import {Tokenizer} from '@ddcp/tokenizer';
-import {SecretsManager} from 'aws-sdk';
+import {Payload} from '@ddcp/sns-models';
+import {Resolver} from '@ddcp/secretsmanager';
+import {toWords} from '@ddcp/stringutils';
 
 // Derived from https://www.scrivito.com/posting-form-content-to-a-slack-channel-via-an-aws-lambda-function-e73e3fb7a95c76f3
 
 // "contactRequest" Lambda (node.js based):
-
-// jsmin corrupts template literals sometimes so we have to just append strings like animals (specifically at L65 at the time of writing). TODO: use better minifier.
-
-type Status = 'IN_PROGRESS' | 'SUCCEEDED' | 'FAILED' | 'STOPPED';
-
-interface StatusSetting {
-    emoji?: string;
-}
-
-interface EnvVar {
-    name?: string;
-    value?: string;
-}
-
-interface Payload {
-    buildStatus: Status;
-    projectName: string;
-    repositoryName: string;
-    branchName?: string;
-    buildId: string;
-    region: string;
-    icon: string;
-    buildEnvironment?: Array<EnvVar>;
-    slackSettings: Array<{
-        uri: string;
-        channel: string;
-        username: string;
-        statuses?: Record<string, StatusSetting>;
-    }>;
-}
 
 const EMOJIS = {
     IN_PROGRESS: ':cold_sweat:',
@@ -44,27 +15,18 @@ const EMOJIS = {
     STOPPED: ':red_circle:',
 };
 
-const toWords = (value: string): string => {
-    return value.replace(/[a-zA-Z0-9]+/g, (match) => {
-        return match[0].toUpperCase() + match.substr(1).toLowerCase();
-    }).replace(/[^a-zA-Z0-9]+/, ' ');
-};
-
-const tokenizer = new Tokenizer(JSON.parse(process.env.TOKENS !== undefined ? process.env.TOKENS : '{}') ?? {});
+const resolver = new Resolver();
 
 export const handler = async (event: SNSEvent): Promise<void> => {
     for (const record of event.Records) {
         const payload = JSON.parse(record.Sns.Message) as Payload;
 
-        // Resolve from Secrets Manager
-        payload.slackSettings = await tokenizer.resolveAllTokens('secret', payload.slackSettings, async (token: string, value: string) => {
-            const secretsManager = new SecretsManager();
-            const secretValue = await secretsManager.getSecretValue({
-                SecretId: value
-            }).promise();
+        if (payload.slackSettings === undefined) {
+            continue;
+        }
 
-            return secretValue.SecretString ?? Buffer.from(secretValue.SecretBinary?.toString() ?? '', 'base64').toString();
-        });
+        // Resolve from Secrets Manager
+        payload.slackSettings = await resolver.resolve(payload.slackSettings);
 
         for (const slackSettings of payload.slackSettings) {
             const match = slackSettings.uri.match(/^https:\/\/([^/]+)(\/.*)?$/);
@@ -83,9 +45,9 @@ export const handler = async (event: SNSEvent): Promise<void> => {
 
             const branchName = payload.branchName ?? payload.buildEnvironment?.find((envVar) => envVar.name === 'SOURCE_BRANCH_NAME')?.value;
 
-            const prefix = 'https://' + payload.region + '.console.aws.amazon.com/codesuite/';
-            const codeCommitLink = prefix + 'codecommit/repositories/' + payload.repositoryName + '/browse/refs/heads/' + branchName + '?region=' + payload.region;
-            const codeBuildLink = prefix + 'codebuild/projects/' + payload.projectName + '/build/' + payload.buildId.split('/').pop() + '/log?region=' + payload.region;
+            const prefix = `https://${payload.region}.console.aws.amazon.com/codesuite/`;
+            const codeCommitLink = `${prefix}codecommit/repositories/${payload.repositoryName}/browse/refs/heads/${branchName}?region=${payload.region}`;
+            const codeBuildLink = `${prefix}codebuild/projects/${payload.projectName}/build/${payload.buildId.split('/').pop()}/log?region=${payload.region}`;
 
             const normalizedStatus = toWords(payload.buildStatus);
 
@@ -98,12 +60,12 @@ export const handler = async (event: SNSEvent): Promise<void> => {
                 emoji = slackSettings.statuses[payload.buildStatus]?.emoji as string;
             }
 
-            const slackPayload = 'payload=' + encodeURIComponent(JSON.stringify({
-                text: emoji + ' Build <' + codeBuildLink + '|' + ' ' + normalizedStatus + '> <' + codeCommitLink + '|' + payload.repositoryName + '>',
+            const slackPayload = `payload=${encodeURIComponent(JSON.stringify({
+                text: `${emoji} Build <${codeBuildLink}|${normalizedStatus}> <${codeCommitLink}|${payload.repositoryName}>`,
                 'icon_emoji': ':gear:',
                 channel: slackSettings.channel,
                 username: slackSettings.username,
-            }));
+            }))}`;
 
             await new Promise((resolve, reject) => {
                 const req = https.request(options, (res) => {
