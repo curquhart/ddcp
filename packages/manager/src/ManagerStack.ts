@@ -26,10 +26,16 @@ interface LambdaProps {
     destKey: string;
 }
 
+// TODO: need a source of truth for these..
 const LAMBDAS: Array<LambdaProps> = [
     {
         name: 'synth',
         asset: '@ddcpsynthesizer.zip',
+        destKey: '',
+    },
+    {
+        name: 'sns-to-github',
+        asset: '@ddcpsns-to-github.zip',
         destKey: '',
     },
     {

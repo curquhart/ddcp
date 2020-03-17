@@ -17,10 +17,10 @@ import {
     S3DeployAction
 } from '@aws-cdk/aws-codepipeline-actions';
 import * as targets from '@aws-cdk/aws-events-targets';
-import {tOrDefault} from '../SynthesisStack';
+import {tOrDefault} from '@ddcp/typehelpers';
 import {ManagerResources} from '../SynthesisHandler';
 import {Artifacts} from '@aws-cdk/aws-codebuild';
-import {throwError} from '../helpers';
+import {throwError} from '@ddcp/errorhandling';
 import {PolicyDocument, PolicyStatement, Role} from '@aws-cdk/aws-iam';
 import * as s3 from '@aws-cdk/aws-s3';
 

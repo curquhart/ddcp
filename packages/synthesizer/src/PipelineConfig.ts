@@ -85,6 +85,12 @@ export interface Pipeline {
     Notifications?: {
         Slack?: Array<SlackNotification>;
     };
+    GitHub?: {
+        Auth?: {
+            APP_ID?: string;
+            PRIVATE_KEY?: string;
+        };
+    };
 }
 
 export interface PipelineConfigs {

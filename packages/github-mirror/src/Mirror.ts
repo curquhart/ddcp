@@ -6,7 +6,7 @@ import * as shellEscape from 'shell-escape';
 import {Context} from 'aws-lambda';
 
 const GITHUB_PR_BRANCH_PREFIX = 'github_pr_';
-const GITHUB_PR_BRANCH_REGEXP = new RegExp(`^refs/heads/${GITHUB_PR_BRANCH_PREFIX}(\\d+)$`);
+const GITHUB_PR_BRANCH_REGEXP = new RegExp(`^refs/heads/${GITHUB_PR_BRANCH_PREFIX}.+/(\\d+)$`);
 
 const gitSync = (gitDir: string, context: Context, ...cmd: Array<string>): void => {
     const escapedCommand = shellEscape(['git', ...cmd]);
@@ -78,7 +78,7 @@ export class Mirror {
             }
         }
         else if (isWebhookPayloadPullRequest(event) && ['opened', 'edited', 'closed', 'reopened'].indexOf(event.action) !== -1) {
-            const localBranchName = `${GITHUB_PR_BRANCH_PREFIX}${event.number}`;
+            const localBranchName = `${GITHUB_PR_BRANCH_PREFIX}${event.pull_request.base.repo.full_name}/${event.number}`;
             const remoteRepositoryCloneUrl = event.pull_request.head.repo.clone_url;
             const remoteBranchName = event.pull_request.head.ref;
             const remoteCommitId = event.pull_request.head.sha;

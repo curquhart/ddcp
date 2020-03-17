@@ -38,7 +38,9 @@
     "aws-sdk": "2.624.0",
     "js-yaml": "3.13.1",
     "tmp": "0.1.0",
-    "@ddcp/tokenizer": "1.0.0"
+    "@ddcp/errorhandling": "1.0.0",
+    "@ddcp/tokenizer": "1.0.0",
+    "@ddcp/typehelpers": "1.0.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.44",
