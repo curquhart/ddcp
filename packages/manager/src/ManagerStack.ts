@@ -309,7 +309,8 @@ export class ManagerStack extends Stack {
             stageName: 'ApprovePipeline',
             actions: [
                 new ManualApprovalAction({
-                    actionName: 'Approval'
+                    actionName: 'Approval',
+                    additionalInformation: 'Changes to pipeline infrastructure require approval before executing.',
                 }),
             ]
         });
