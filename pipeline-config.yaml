@@ -1,5 +1,8 @@
 Pipelines:
   - Name: ddcp-build
+    GitHub:
+      Auth:
+        '!Secret': GitHubApp
     Notifications:
       Alias: Notifications
       Slack:
