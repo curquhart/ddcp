@@ -1,0 +1,10 @@
+{
+  "extends": "@ddcp/typescript-config",
+  "files": [
+    "src/index.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true
+  }
+}

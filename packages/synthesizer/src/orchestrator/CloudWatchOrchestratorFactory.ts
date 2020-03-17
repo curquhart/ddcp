@@ -6,12 +6,12 @@ import {
     Stage
 } from './BaseOrchestratorFactory';
 import { IPipeline} from '@aws-cdk/aws-codepipeline';
-import {tOrDefault} from '../SynthesisStack';
+import {tOrDefault} from '@ddcp/typehelpers';
 import {Uniquifier} from '../Uniquifier';
 import {ManagerResources} from '../SynthesisHandler';
 import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import * as targets from '@aws-cdk/aws-events-targets';
-import {throwError} from '../helpers';
+import {throwError} from '@ddcp/errorhandling';
 import {EventField, RuleTargetInput} from '@aws-cdk/aws-events';
 
 export const NAME = 'CloudWatch';
@@ -54,10 +54,17 @@ class CloudWatchOrchestratorStage implements Stage {
                     sourceVersion: EventField.fromPath('$.detail.commitId'),
                     environmentVariablesOverride: [
                         {
+                            // For whatever raisin, this does not seem to be available in codebuild events, so put
+                            // it in an environment var to allow us to extract it.
+                            name: 'SOURCE_VERSION',
+                            value: EventField.fromPath('$.detail.commitId'),
+                            type: 'PLAINTEXT',
+                        },
+                        {
                             name: 'SOURCE_BRANCH_NAME',
                             value: EventField.fromPath('$.detail.referenceName'),
                             type: 'PLAINTEXT',
-                        }
+                        },
                     ],
                 })
             }),
