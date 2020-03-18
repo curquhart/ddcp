@@ -1,0 +1,39 @@
+{
+  "name": "@ddcp/action-counter",
+  "private": true,
+  "version": "1.0.0",
+  "main": "dist/bundled.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf node_modules dist .cache",
+    "lint": "eslint --ext .ts src/",
+    "pack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js && npm-pack-zip --dst dist/"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@ddcp/eslint-config"
+    ]
+  },
+  "dependencies": {
+    "aws-lambda": "1.0.5",
+    "aws-sdk": "2.641.0",
+    "adm-zip": "0.4.14"
+  },
+  "devDependencies": {
+    "@ddcp/eslint-config": "1.0.0",
+    "@ddcp/typescript-config": "1.0.0",
+    "@types/adm-zip": "0.4.32",
+    "@types/aws-lambda": "8.10.44",
+    "@typescript-eslint/eslint-plugin": "2.21.0",
+    "@typescript-eslint/parser": "2.21.0",
+    "eslint": "6.8.0",
+    "eslint-plugin-node": "11.0.0",
+    "npm-pack-zip": "1.2.7",
+    "parcel": "1.12.4",
+    "typescript": "3.8.2"
+  }
+}

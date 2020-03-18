@@ -8,7 +8,7 @@
     "build": "tsc",
     "clean": "rm -rf node_modules dist .cache",
     "lint": "eslint --ext .ts src/",
-    "pack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js && npm-pack-zip --dst dist/"
+    "pack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js && node ./verify-and-copy-sdk-api-metadata.js && npm-pack-zip --dst dist/"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -25,6 +25,7 @@
     "@aws-cdk/aws-codecommit": "1.25.0",
     "@aws-cdk/aws-codepipeline": "1.25.0",
     "@aws-cdk/aws-codepipeline-actions": "1.25.0",
+    "@aws-cdk/aws-dynamodb": "1.25.0",
     "@aws-cdk/aws-lambda-event-sources": "1.25.0",
     "@aws-cdk/aws-events": "1.25.0",
     "@aws-cdk/aws-events-targets": "1.25.0",
@@ -54,6 +55,7 @@
     "eslint-plugin-node": "11.0.0",
     "npm-pack-zip": "1.2.7",
     "parcel": "1.12.4",
+    "glob": "7.1.6",
     "@ddcp/eslint-config": "1.0.0",
     "@ddcp/typescript-config": "1.0.0"
   }

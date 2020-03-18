@@ -1,8 +1,8 @@
 import {
     BaseOrchestratorFactory, BranchOptions,
-    CodeBuildActionProps,
+    CodeBuildActionProps, CounterActionProps,
     Orchestrator,
-    OrchestratorProps, S3PublishProps,
+    OrchestratorProps, S3PublishActionProps,
     Stage
 } from './BaseOrchestratorFactory';
 import {Pipeline as CodePipeline, IStage as CodePipelineStage, IPipeline, Artifact} from '@aws-cdk/aws-codepipeline';
@@ -13,7 +13,7 @@ import {
     CacheControl,
     CodeBuildAction,
     CodeCommitSourceAction,
-    CodeCommitTrigger,
+    CodeCommitTrigger, LambdaInvokeAction,
     S3DeployAction
 } from '@aws-cdk/aws-codepipeline-actions';
 import * as targets from '@aws-cdk/aws-events-targets';
@@ -78,7 +78,17 @@ class CodePipelineOrchestratorStage implements Stage {
     }
 
     addCodeBuildAction(props: CodeBuildActionProps): void {
+        const cbInputs: Array<Artifact> = [];
         const cbOutputs: Array<Artifact> = [];
+        if (props.action.InputArtifacts !== undefined) {
+            for (const artifactName of props.action.InputArtifacts) {
+                if (this.props.artifacts[artifactName] === undefined) {
+                    this.props.artifacts[artifactName] = new Artifact(artifactName);
+                }
+
+                cbInputs.push(this.props.artifacts[artifactName]);
+            }
+        }
         if (props.action.BuildSpec?.Inline?.artifacts !== undefined && props.action.BuildSpec.Inline.artifacts['secondary-artifacts'] !== undefined) {
             for (const artifactName of Object.keys(props.action.BuildSpec.Inline.artifacts['secondary-artifacts'])) {
                 this.props.artifacts[artifactName] = new Artifact(artifactName);
@@ -93,7 +103,8 @@ class CodePipelineOrchestratorStage implements Stage {
         }
         const cbAction = new CodeBuildAction({
             actionName: props.action.Name,
-            input: this.props.artifacts[props.action.SourceName !== undefined ? props.action.SourceName : throwError(new Error('SourceName is required.'))],
+            input: this.props.artifacts[props.action.SourceName ?? throwError(new Error('SourceName is required.'))],
+            extraInputs: cbInputs,
             project: props.project,
             runOrder: props.action.Order,
             outputs: cbOutputs,
@@ -102,7 +113,7 @@ class CodePipelineOrchestratorStage implements Stage {
         this.stage.addAction(cbAction);
     }
 
-    addS3PublishAction(props: S3PublishProps): void {
+    addS3PublishAction(props: S3PublishActionProps): void {
         const bucket = props.action.BucketArn !== undefined ?
             s3.Bucket.fromBucketArn(this.props.pipeline.props.scope, this.props.uniquifier.next('Bucket'), props.action.BucketArn) :
             props.action.BucketName !== undefined ?
@@ -138,6 +149,29 @@ class CodePipelineOrchestratorStage implements Stage {
                     }),
                 },
             })
+        }));
+    }
+
+    addCounterAction(props: CounterActionProps): void {
+        const artifactName = props.action.OutputArtifactName;
+        if (this.props.artifacts[artifactName] === undefined) {
+            this.props.artifacts[artifactName] = new Artifact(artifactName);
+        }
+
+        props.lambda.addToRolePolicy(props.counter.getOutput('ReadPolicy') as PolicyStatement);
+        props.lambda.addToRolePolicy(props.counter.getOutput('WritePolicy') as PolicyStatement);
+
+        this.stage.addAction(new LambdaInvokeAction({
+            actionName: props.action.Name,
+            lambda: props.lambda,
+            userParameters: {
+                Operation: props.action.Operation,
+                TableName: props.counter.getOutput('TableName'),
+                CounterId: props.counter.getOutput('CounterId'),
+            },
+            outputs: [
+                this.props.artifacts[artifactName]
+            ],
         }));
     }
 }

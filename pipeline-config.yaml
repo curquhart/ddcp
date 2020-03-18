@@ -1,3 +1,7 @@
+Resources:
+  - Type: Counter
+    Name: DdcpBuildNumber
+    Alias: BuildNumberCounter
 Pipelines:
   - Name: ddcp-build
     Notifications:
@@ -24,10 +28,24 @@ Pipelines:
     Stages:
       - Name: BuildStage
         Actions:
+          - Name: IncrementBuildNumber
+            Type: Counter
+            Alias: IncrementCounter
+            Counter:
+              '!Path':
+                '!PathForAlias': BuildNumberCounter
+            Operation: IncrementAndGet
+            Order: 1
+            OutputArtifactName: BuildNumber
           - Name: Build
             Type: CodeBuild
-            Order: 1
+            Order: 2
             SourceName: Source
+            InputArtifacts:
+              - '!Path':
+                  '!Join':
+                    - '!PathForAlias': IncrementCounter
+                    - - OutputArtifactName
             BuildSpec:
               Alias: BuildSpec
               Inline:
@@ -44,6 +62,17 @@ Pipelines:
                       - npm install
                       - npx lerna bootstrap
                       - npx lerna run build --scope @ddcp/tools
+                  pre_build:
+                    commands:
+                      - '!Join':
+                        - 'export BUILD_NUMBER=$(cat ${CODEBUILD_SRC_DIR_'
+                        - '!Path':
+                            '!Join':
+                              - '!PathForAlias': IncrementCounter
+                              - - OutputArtifactName
+                        - '}/count)'
+                      - export BUILD_VERSION="0.0.1+${BUILD_NUMBER}"
+                      - echo ${BUILD_VERSION}
                   build:
                     commands:
                       - npx lerna run build
@@ -107,8 +136,20 @@ Pipelines:
                       - - Inline
                         - version
                 phases:
-                  '!Path':
-                    '!Join':
-                      - '!PathForAlias': BuildSpec
-                      - - Inline
-                        - phases
+                  install:
+                    '!Path':
+                      '!Join':
+                        - '!PathForAlias': BuildSpec
+                        - - Inline
+                          - phases
+                          - install
+                  pre_build:
+                    commands:
+                      - export BUILD_VERSION="0.0.0-development"
+                  build:
+                    '!Path':
+                      '!Join':
+                        - '!PathForAlias': BuildSpec
+                        - - Inline
+                          - phases
+                          - build
