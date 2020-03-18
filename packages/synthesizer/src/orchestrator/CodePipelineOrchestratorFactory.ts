@@ -158,7 +158,6 @@ class CodePipelineOrchestratorStage implements Stage {
             this.props.artifacts[artifactName] = new Artifact(artifactName);
         }
 
-        props.lambda.addToRolePolicy(props.counter.getOutput('ReadPolicy') as PolicyStatement);
         props.lambda.addToRolePolicy(props.counter.getOutput('WritePolicy') as PolicyStatement);
 
         this.stage.addAction(new LambdaInvokeAction({
