@@ -34,5 +34,9 @@ export interface Payload {
            APP_ID: string;
            PRIVATE_KEY: string;
        };
+       defaults: {
+           owner: string;
+           repo: string;
+       };
     };
 }
