@@ -183,7 +183,7 @@ export class SynthesisStack extends Stack {
                                         githubSettings : githubSettings?.Auth !== undefined ? {
                                             auth: githubSettings.Auth,
                                             defaults: {
-                                                user: githubSettings.Defaults?.Owner,
+                                                owner: githubSettings.Defaults?.Owner,
                                                 repo: githubSettings.Defaults?.Repo,
                                             }
                                         } : undefined,

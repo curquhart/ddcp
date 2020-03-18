@@ -20,8 +20,11 @@ export class Handler {
             const sha = payload.buildEnvironment?.find((envVar) => envVar.name === 'SOURCE_VERSION')?.value ?? null;
 
             if (sha === null) {
+                console.info('Source version missing so ignoring...');
                 return;
             }
+
+            console.info(`Got source version: ${sha}`);
 
             const prefix = 'github_pr_';
 
@@ -32,11 +35,17 @@ export class Handler {
                 }
             };
 
-            if (match === null || match.groups?.owner === undefined || match.groups?.repo === undefined) {
+            if (match === null) {
                 return;
             }
 
             const {owner, repo} = match.groups as {owner: string; repo: string};
+
+            if (owner === undefined || repo === undefined) {
+                console.info(`Unknown owner/repo. Defaults: ${payload.githubSettings.defaults}`);
+                return;
+            }
+            console.info(`Owner = ${owner} Repo = ${repo} Sha = ${sha}`);
 
             // Resolve from Secrets Manager
             const authSettings = await resolver.resolve(payload.githubSettings.auth);
