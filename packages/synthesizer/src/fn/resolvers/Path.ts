@@ -2,10 +2,19 @@ import {Base} from '../Base';
 import {ParameterCountError} from '../errors/ParameterCountError';
 import {StringParameterTypeError} from '../errors/StringParameterTypeError';
 import {ResolveResult} from '../../Resolver';
+import {BaseResourceFactory, BaseResourceProps} from '../../resource/BaseResourceFactory';
+import {throwError} from '@ddcp/errorhandling';
 
 type IParameters = Array<string | number>
 
 export class Path extends Base<unknown, IParameters> {
+    constructor(
+        protected allResolvers: Record<string, unknown>,
+        private readonly allResourceFactories: Record<string, BaseResourceFactory>
+    ) {
+        super(allResolvers);
+    }
+
     get name(): string {
         return '!Path';
     }
@@ -17,8 +26,24 @@ export class Path extends Base<unknown, IParameters> {
 
         let resolved: unknown = undefined;
         for (let index = 0; index < parameters.length; index++) {
+            // I am undecided whether I want this to be a thing or not..
+            if (index === 2 && parameters[0] === 'Resources' && !isNaN(Number(parameters[1])) && parameters[2] === 'Outputs') {
+                if (parameters.length !== 3) {
+                    throw new Error('Lookups within Resource Outputs can only be one level deep.');
+                }
+                const typedResolved = resolved as BaseResourceProps;
+                const resourceType = typedResolved.Type ?? throwError(new Error('Type is required in Resources.'));
+                const resourceFactory = this.allResourceFactories[ resourceType ] ?? throwError(new Error(`Invalid resource type: ${resourceType}`));
+
+                return {
+                    value: resourceFactory.new(typedResolved).getOutput(parameters[3]),
+                    performedWork: true
+                };
+            }
+
             const value: unknown = parameters[index];
             this.checkResolved(value);
+
             if (typeof value !== 'string' && typeof value !== 'number') {
                 // todo make error consistent
                 throw new StringParameterTypeError(index);

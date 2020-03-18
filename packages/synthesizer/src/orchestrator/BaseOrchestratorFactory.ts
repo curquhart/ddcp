@@ -1,17 +1,25 @@
 import {Construct} from '@aws-cdk/core';
-import {CodeBuildAction, Pipeline, S3PublishAction} from '../PipelineConfig';
+import {CodeBuildAction, CounterAction, Pipeline, S3PublishAction} from '../PipelineConfig';
 import {IPipeline} from '@aws-cdk/aws-codepipeline';
 import {ManagerResources} from '../SynthesisHandler';
 import {Project} from '@aws-cdk/aws-codebuild';
 import {Uniquifier} from '../Uniquifier';
+import {IFunction} from '@aws-cdk/aws-lambda';
+import {BaseResource} from '../resource/BaseResourceFactory';
 
 export interface CodeBuildActionProps {
     action: CodeBuildAction;
     project: Project;
 }
 
-export interface S3PublishProps {
+export interface S3PublishActionProps {
     action: S3PublishAction;
+}
+
+export interface CounterActionProps {
+    action: CounterAction;
+    lambda: IFunction;
+    counter: BaseResource;
 }
 
 export interface BranchOptions {
@@ -22,7 +30,8 @@ export interface BranchOptions {
 export interface Stage {
     addCodeCommitSourceAction(actionName: string, repositoryName: string, repositoryBranch: BranchOptions): void;
     addCodeBuildAction(props: CodeBuildActionProps): void;
-    addS3PublishAction(props: S3PublishProps): void;
+    addS3PublishAction(props: S3PublishActionProps): void;
+    addCounterAction(props: CounterActionProps): void;
 }
 
 export interface Orchestrator {

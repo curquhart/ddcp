@@ -6,7 +6,8 @@ import {Resolver} from './Resolver';
 import {Join} from './fn/resolvers/Join';
 import {Path} from './fn/resolvers/Path';
 import {PathForAlias} from './fn/resolvers/PathForAlias';
-import {Base} from './fn/Base';
+import {Base as BaseFn} from './fn/Base';
+import {BaseResourceFactory} from './resource/BaseResourceFactory';
 import {Import} from './fn/resolvers/Import';
 import {SsmString} from './fn/resolvers/SsmString';
 import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
@@ -15,23 +16,28 @@ import {CloudWatchOrchestratorFactory} from './orchestrator/CloudWatchOrchestrat
 import {Uniquifier} from './Uniquifier';
 import {Secret} from './fn/resolvers/Secret';
 import {Tokenizer} from '@ddcp/tokenizer';
+import {CounterResourceFactory} from './resource/CounterResourceFactory';
 
 const uniquifier = new Uniquifier();
 const tokenizer = new Tokenizer();
 
-const allResolvers: Record<string, Base<unknown, Array<unknown>>> = {};
-new Join(allResolvers).init();
-new Path(allResolvers).init();
-new PathForAlias(allResolvers).init();
-new Import(allResolvers).init();
-new SsmString(allResolvers, uniquifier).init();
-new Secret(allResolvers, tokenizer).init();
+const resolvers: Record<string, BaseFn<unknown, Array<unknown>>> = {};
+const resourceFactories: Record<string, BaseResourceFactory> = {};
+const orchestratorFactories: Record<string, BaseOrchestratorFactory> = {};
 
-const resolver = new Resolver(allResolvers);
+new Join(resolvers).init();
+new Path(resolvers, resourceFactories).init();
+new PathForAlias(resolvers).init();
+new Import(resolvers).init();
+new SsmString(resolvers, uniquifier).init();
+new Secret(resolvers, tokenizer).init();
 
-const allOrchestrators: Record<string, BaseOrchestratorFactory> = {};
-new CodePipelineOrchestratorFactory(allOrchestrators).init();
-new CloudWatchOrchestratorFactory(allOrchestrators).init();
+const resolver = new Resolver(resolvers);
+
+new CodePipelineOrchestratorFactory(orchestratorFactories).init();
+new CloudWatchOrchestratorFactory(orchestratorFactories).init();
+
+new CounterResourceFactory(resourceFactories, tokenizer, uniquifier).init();
 
 const isCodePipelineEvent = (event: unknown): event is CodePipelineEvent => {
     return typeof event === 'object' && event !== null && (event as Record<string, undefined>)['CodePipeline.job'] !== undefined;
@@ -39,7 +45,15 @@ const isCodePipelineEvent = (event: unknown): event is CodePipelineEvent => {
 
 export const handler = async (event: CodePipelineEvent | CodeCommitEvent, context: Context): Promise<void> => {
     if (isCodePipelineEvent(event)) {
-        return new SynthesisHandler().safeHandle(event, context, resolver, allOrchestrators, uniquifier, tokenizer);
+        return new SynthesisHandler().safeHandle({
+            event,
+            context,
+            resolver,
+            orchestratorFactories,
+            resourceFactories,
+            uniquifier,
+            tokenizer
+        });
     }
     else {
         return new SelectorHandler().handle(event);

@@ -1,4 +1,5 @@
 import * as s3 from '@aws-cdk/aws-s3';
+import {BaseResourceProps} from './resource/BaseResourceFactory';
 
 enum SourceType {
     CODE_COMMIT = 'CodeCommit'
@@ -6,7 +7,8 @@ enum SourceType {
 
 export enum ActionType {
     CODE_BUILD = 'CodeBuild',
-    S3_PUBLISH = 'S3Publish'
+    S3_PUBLISH = 'S3Publish',
+    COUNTER = 'Counter'
 }
 
 interface Source {
@@ -35,6 +37,7 @@ export interface CodeBuildAction extends Action {
     BuildSpec: {
         Inline?: CodeBuildBuildSpec;
     };
+    InputArtifacts?: Array<string>;
     Type: ActionType.CODE_BUILD;
 }
 
@@ -48,12 +51,23 @@ export interface S3PublishAction extends Action {
     CacheControl?: Array<string>;
 }
 
+export interface CounterAction extends Action {
+    Type: ActionType.COUNTER;
+    Counter: BaseResourceProps;
+    Operation: 'IncrementAndGet';
+    OutputArtifactName: string;
+}
+
 export const isCodeBuildAction = (action: Action): action is CodeBuildAction => {
     return action.Type === ActionType.CODE_BUILD;
 };
 
 export const isS3PublishAction = (action: Action): action is S3PublishAction => {
     return action.Type === ActionType.S3_PUBLISH;
+};
+
+export const isCounterAction = (action: Action): action is CounterAction => {
+    return action.Type === ActionType.COUNTER;
 };
 
 interface Stage {
@@ -95,4 +109,5 @@ export interface Pipeline {
 
 export interface PipelineConfigs {
     Pipelines?: Array<Pipeline>;
+    Resources?: Array<BaseResourceProps>;
 }

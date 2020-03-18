@@ -43,6 +43,11 @@ const LAMBDAS: Array<LambdaProps> = [
         asset: '@ddcpsns-to-slack.zip',
         destKey: '',
     },
+    {
+        name: 'action-counter',
+        asset: '@ddcpaction-counter.zip',
+        destKey: '',
+    },
 ];
 
 const getLambdaProps = (name: string): LambdaProps => {
@@ -164,7 +169,17 @@ export class ManagerStack extends Stack {
                     actions: ['events:PutEvents'],
                     resources: [eventBus.eventBusArn],
                 }),
-            ]
+            ],
+            environment: {
+                // Due to a 1000 byte limit in the lambda configuration, this must be in an env var (more storage)
+                // If/when it gets much bigger, will need to minify it in some manner, probably by just providing
+                // a prefix.
+                ASSET_KEYS: JSON.stringify(Object.assign({}, ... LAMBDAS.map((lambdaOpts) => {
+                    return {
+                        [lambdaOpts.name]: lambdaOpts.destKey,
+                    };
+                })))
+            }
         });
         const handlerFunctionNode = handlerFunction.node.defaultChild as CfnFunction;
         handlerFunctionNode.node.addInfo('cfn_nag disabled.');
@@ -246,11 +261,6 @@ export class ManagerStack extends Stack {
                     sourceRepoName: inputRepo.repositoryName,
                     eventBusArn: eventBus.eventBusArn,
                     assetBucketName: localStorageBucketNameParameter.valueAsString,
-                    assetKeys: Object.assign({}, ... LAMBDAS.map((lambdaOpts) => {
-                        return {
-                            [lambdaOpts.name]: lambdaOpts.destKey,
-                        };
-                    })),
                 }
             },
             runOrder: 1

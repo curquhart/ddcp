@@ -6,7 +6,7 @@ export interface BaseResolver<T, U> {
     resolve(parameters: U, fullValue: Record<string, unknown>): ResolveResult<T>;
 }
 
-export abstract class Base<T, U extends Array<unknown>> {
+export abstract class Base<T, U extends Array<unknown>> implements BaseResolver<T, U> {
     constructor(
         protected readonly allResolvers: Record<string, unknown>
     ) {

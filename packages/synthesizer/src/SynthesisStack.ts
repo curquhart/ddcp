@@ -1,9 +1,14 @@
 import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {BuildSpec, Project, Source} from '@aws-cdk/aws-codebuild';
-import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
+import {Pipeline} from '@aws-cdk/aws-codepipeline';
 import {Aws, Construct, Duration, Stack} from '@aws-cdk/core';
-import {isCodeBuildAction, isS3PublishAction, PipelineConfigs} from './PipelineConfig';
+import {
+    isCodeBuildAction,
+    isCounterAction,
+    isS3PublishAction,
+    PipelineConfigs
+} from './PipelineConfig';
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
 import * as targets from '@aws-cdk/aws-events-targets';
@@ -18,6 +23,7 @@ import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
 import {Uniquifier} from './Uniquifier';
 import {Tokenizer} from '@ddcp/tokenizer';
 import {tOrDefault} from '@ddcp/typehelpers';
+import {BaseResourceFactory} from './resource/BaseResourceFactory';
 
 export class SynthesisStack extends Stack {
     constructor(
@@ -27,7 +33,8 @@ export class SynthesisStack extends Stack {
             managerResources: ManagerResources;
             resolver: Resolver;
             unresolvedPipelineConfig: Record<string, unknown>;
-            orchestrators: Record<string, BaseOrchestratorFactory>;
+            orchestratorFactories: Record<string, BaseOrchestratorFactory>;
+            resourceFactories: Record<string, BaseResourceFactory>;
             uniquifier: Uniquifier;
             tokenizer: Tokenizer;
         }
@@ -39,8 +46,13 @@ export class SynthesisStack extends Stack {
         const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', props.managerResources.arn);
         const funcs: Record<string, Function> = {};
 
+        // create resources
+        for (const resource of tOrDefault(pipelineConfig.Resources, [])) {
+            const factory = props.resourceFactories[resource.Type ?? throwError(new Error('Resource Type is required.'))] ?? throwError(new Error(`Unknown resource type: ${resource.Type}`));
+            factory.new(resource).constructCdk(this);
+        }
+
         for (const pipeline of tOrDefault(pipelineConfig.Pipelines, [])) {
-            const artifacts: Record<string, Artifact> = {};
             const repositories: Record<string, IRepository> = {};
             const branchNames: Record<string, string | null> = {};
 
@@ -48,10 +60,10 @@ export class SynthesisStack extends Stack {
                 pipeline.Orchestrator = 'CodePipeline';
             }
 
-            if (props.orchestrators[pipeline.Orchestrator] === undefined) {
+            if (props.orchestratorFactories[pipeline.Orchestrator] === undefined) {
                 throw new Error(`Invalid orchestrator: ${pipeline.Orchestrator}`);
             }
-            const orchestratedPipeline = props.orchestrators[pipeline.Orchestrator].new({
+            const orchestratedPipeline = props.orchestratorFactories[pipeline.Orchestrator].new({
                 scope: this,
                 managerPipeline: codePipelineSynthPipeline,
                 managerResources: props.managerResources,
@@ -103,7 +115,6 @@ export class SynthesisStack extends Stack {
                 if (source.RepositoryName === undefined) {
                     throw new Error('RepositoryName is required.');
                 }
-                artifacts[ source.Name ] = new Artifact(source.Name);
                 repositories[ source.Name ] = Repository.fromRepositoryName(this, props.uniquifier.next(`Repo${source.RepositoryName}${source.BranchName}`), source.RepositoryName);
                 branchNames[ source.Name ] = source.BranchName ?? null;
 
@@ -145,7 +156,7 @@ export class SynthesisStack extends Stack {
                             buildSpec: BuildSpec.fromObject(buildSpec),
                             source: Source.codeCommit({
                                 repository,
-                                branchOrRef: branchName !== null ? branchName : undefined,
+                                branchOrRef: branchName ?? undefined,
                             })
                         });
 
@@ -158,7 +169,7 @@ export class SynthesisStack extends Stack {
                                         buildId: events.EventField.fromPath('$.detail.build-id'),
                                         region: events.EventField.fromPath('$.region'),
                                         repositoryName: repository.repositoryName,
-                                        branchName: branchName !== null ? branchName : undefined,
+                                        branchName: branchName ?? undefined,
                                         buildEnvironment: events.EventField.fromPath('$.detail.additional-information.environment.environment-variables'),
                                         slackSettings: slackSettings?.map((slackSetting) => {
                                             return {
@@ -186,6 +197,18 @@ export class SynthesisStack extends Stack {
                         orchestratedStage.addS3PublishAction({
                             action,
                         });
+                    }
+                    else if (isCounterAction(action)) {
+                        const lambda = this.getFunction(this, funcs, props.managerResources, 'action-counter', {});
+
+                        orchestratedStage.addCounterAction({
+                            action,
+                            lambda,
+                            counter: props.resourceFactories.Counter.new(action.Counter),
+                        });
+                    }
+                    else {
+                        throw new Error(`Unknown action type: ${action.Type}`);
                     }
                 }
             }

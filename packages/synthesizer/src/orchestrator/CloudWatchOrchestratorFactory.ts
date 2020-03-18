@@ -80,6 +80,10 @@ class CloudWatchOrchestratorStage implements Stage {
     addS3PublishAction(): void {
         throw new Error('S3 Publish is not supported on CloudWatch orchestrated pipelines.');
     }
+
+    addCounterAction(): void {
+        throw new Error('Counter is not supported on CloudWatch orchestrated pipelines.');
+    }
 }
 
 class CloudWatchOrchestrator implements Orchestrator {
