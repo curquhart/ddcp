@@ -19,11 +19,20 @@ export class Handler {
             const branchName = payload.branchName ?? payload.buildEnvironment?.find((envVar) => envVar.name === 'SOURCE_BRANCH_NAME')?.value;
             const sha = payload.buildEnvironment?.find((envVar) => envVar.name === 'SOURCE_VERSION')?.value ?? null;
 
+            if (sha === null) {
+                return;
+            }
+
             const prefix = 'github_pr_';
 
-            const match = branchName?.match(new RegExp(`${prefix}(?<owner>[^/]+)/(?<repo>[^/]+)/(?<prId>\\d+)$`)) ?? null;
+            const match = branchName?.match(new RegExp(`${prefix}(?<owner>[^/]+)/(?<repo>[^/]+)/(?<prId>\\d+)$`)) ?? {
+                groups: {
+                    owner: payload.githubSettings.defaults?.owner,
+                    repo: payload.githubSettings.defaults?.repo,
+                }
+            };
 
-            if (match === null || sha === null) {
+            if (match === null || match.groups?.owner === undefined || match.groups?.repo === undefined) {
                 return;
             }
 

@@ -112,6 +112,9 @@ Pipelines:
     GitHub:
       Auth:
         '!Secret': GitHubApp
+      Defaults:
+        Owner: curquhart
+        Repo: ddcp
     Orchestrator: CloudWatch
     Notifications:
       '!Path':

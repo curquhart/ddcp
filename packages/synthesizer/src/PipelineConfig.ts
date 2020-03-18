@@ -104,6 +104,10 @@ export interface Pipeline {
             APP_ID?: string;
             PRIVATE_KEY?: string;
         };
+        Defaults?: {
+            Owner?: string;
+            Repo?: string;
+        };
     };
 }
 
