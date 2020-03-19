@@ -53,6 +53,8 @@ Pipelines:
                 env:
                   'secrets-manager':
                     NPM_TOKEN: 'NpmPublish:NPM_TOKEN'
+                    GITHUB_USER: 'GithubPush:USERNAME'
+                    GITHUB_TOKEN: 'GithubPush:TOKEN'
                 phases:
                   install:
                     runtime-versions:
@@ -84,13 +86,13 @@ Pipelines:
                       - npx lerna run artifact-lint
                   post_build:
                     commands:
-                      - git clone https://github.com/curquhart/ddcp.git tmp
+                      - git clone https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/ddcp.git tmp
                       - cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
                       - mv tmp/.git .git
                       - rm -rf tmp
                       - git config user.email "ci@chelseau.com"
                       - git config user.name "DDCP CI"
-                      - npx lerna publish ${BUILD_VERSION} --no-push
+                      - npx lerna publish ${BUILD_VERSION}
                 artifacts:
                   secondary-artifacts:
                     Manager:
