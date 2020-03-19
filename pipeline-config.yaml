@@ -59,7 +59,7 @@ Pipelines:
                   install:
                     runtime-versions:
                       nodejs: 12
-                      ruby: 2.7
+                      ruby: 2.6
                       python: 3.8
                     commands:
                       - gem install cfn-nag
