@@ -80,7 +80,7 @@ Pipelines:
                       - cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
                       - mv tmp/.git .git
                       - rm -rf tmp
-                      - npx lerna version ${BUILD_VERSION} --no-push
+                      - npx lerna version ${BUILD_VERSION} --no-push --yes
                   build:
                     commands:
                       - npx lerna run build
@@ -89,7 +89,7 @@ Pipelines:
                       - npx lerna run artifact-lint
                   post_build:
                     commands:
-                      - npx lerna publish
+                      - npx lerna publish --yes
                 artifacts:
                   secondary-artifacts:
                     Manager:
