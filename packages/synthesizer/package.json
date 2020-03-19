@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/synthesizer",
-  "version": "0.0.1-alpha.21",
+  "version": "0.0.1-alpha.23",
   "main": "dist/bundled.js",
   "license": "MIT",
   "scripts": {
@@ -33,9 +33,9 @@
     "@aws-cdk/aws-sns": "1.25.0",
     "@aws-cdk/core": "1.25.0",
     "@aws-cdk/cx-api": "1.25.0",
-    "@ddcp/errorhandling": "^0.0.1-alpha.21",
-    "@ddcp/tokenizer": "^0.0.1-alpha.21",
-    "@ddcp/typehelpers": "^0.0.1-alpha.21",
+    "@ddcp/errorhandling": "^0.0.1-alpha.23",
+    "@ddcp/tokenizer": "^0.0.1-alpha.23",
+    "@ddcp/typehelpers": "^0.0.1-alpha.23",
     "adm-zip": "0.4.14",
     "aws-lambda": "1.0.5",
     "aws-sdk": "2.624.0",
@@ -43,8 +43,8 @@
     "tmp": "0.1.0"
   },
   "devDependencies": {
-    "@ddcp/eslint-config": "^0.0.1-alpha.21",
-    "@ddcp/typescript-config": "^0.0.1-alpha.21",
+    "@ddcp/eslint-config": "^0.0.1-alpha.23",
+    "@ddcp/typescript-config": "^0.0.1-alpha.23",
     "@types/adm-zip": "0.4.32",
     "@types/aws-lambda": "8.10.44",
     "@types/js-yaml": "3.12.2",

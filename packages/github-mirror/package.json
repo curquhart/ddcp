@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/github-mirror",
-  "version": "0.0.1-alpha.21",
+  "version": "0.0.1-alpha.23",
   "main": "dist/bundled.js",
   "license": "MIT",
   "scripts": {
@@ -31,8 +31,8 @@
     "tmp": "0.1.0"
   },
   "devDependencies": {
-    "@ddcp/eslint-config": "^0.0.1-alpha.21",
-    "@ddcp/typescript-config": "^0.0.1-alpha.21",
+    "@ddcp/eslint-config": "^0.0.1-alpha.23",
+    "@ddcp/typescript-config": "^0.0.1-alpha.23",
     "@types/aws-lambda": "8.10.46",
     "@types/node": "13.7.4",
     "@types/tmp": "0.1.0",
