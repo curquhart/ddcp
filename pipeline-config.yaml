@@ -92,7 +92,7 @@ Pipelines:
                       - rm -rf tmp
                       - git config user.email "ci@chelseau.com"
                       - git config user.name "DDCP CI"
-                      - npx lerna publish ${BUILD_VERSION}
+                      - npx lerna publish ${BUILD_VERSION} --yes
                 artifacts:
                   secondary-artifacts:
                     Manager:
