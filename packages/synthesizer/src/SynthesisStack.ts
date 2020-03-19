@@ -1,6 +1,6 @@
 import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
-import {BuildSpec, Project, Source} from '@aws-cdk/aws-codebuild';
+import {BuildSpec, LinuxBuildImage, Project, Source} from '@aws-cdk/aws-codebuild';
 import {Pipeline} from '@aws-cdk/aws-codepipeline';
 import {Aws, Construct, Duration, Stack} from '@aws-cdk/core';
 import {
@@ -159,7 +159,11 @@ export class SynthesisStack extends Stack {
                             source: Source.codeCommit({
                                 repository,
                                 branchOrRef: branchName ?? undefined,
-                            })
+                            }),
+                            // TODO: make this configurable.
+                            environment: {
+                                buildImage: LinuxBuildImage.STANDARD_3_0,
+                            },
                         });
 
                         // TODO: it's late, simplify this... a lot.
