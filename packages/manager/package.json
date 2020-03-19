@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/manager",
-  "version": "0.0.1-alpha.34",
+  "version": "0.0.1-alpha.36",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -38,9 +38,9 @@
     "tmp": "0.1.0"
   },
   "devDependencies": {
-    "@ddcp/eslint-config": "^0.0.1-alpha.34",
-    "@ddcp/s3-resolver": "^0.0.1-alpha.34",
-    "@ddcp/typescript-config": "^0.0.1-alpha.34",
+    "@ddcp/eslint-config": "^0.0.1-alpha.36",
+    "@ddcp/s3-resolver": "^0.0.1-alpha.36",
+    "@ddcp/typescript-config": "^0.0.1-alpha.36",
     "@types/js-yaml": "3.12.1",
     "@types/node": "13.7.4",
     "@types/tmp": "0.1.0",
