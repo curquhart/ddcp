@@ -76,12 +76,20 @@ Pipelines:
                         - '}/count)'
                       - export BUILD_VERSION="0.0.1-alpha.${BUILD_NUMBER}"
                       - echo ${BUILD_VERSION}
+                      - git clone https://github.com/curquhart/ddcp.git tmp
+                      - pushd tmp && git fetch && git reset --hard ${CODEBUILD_SOURCE_VERSION} && popd
+                      - mv tmp/.git .git
+                      - rm -rf tmp
+                      - npx lerna version ${BUILD_VERSION} --no-push
                   build:
                     commands:
                       - npx lerna run build
                       - npx lerna run lint
                       - npx lerna run pack
                       - npx lerna run artifact-lint
+                  post_build:
+                    commands:
+                      - npx lerna publish
                 artifacts:
                   secondary-artifacts:
                     Manager:
