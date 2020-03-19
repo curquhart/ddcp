@@ -2,6 +2,9 @@
   "name": "@ddcp/manager",
   "version": "1.0.0",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "mkdir -p dist && cdk synth > dist/manager.yaml",
     "clean": "rm -rf node_modules dist",

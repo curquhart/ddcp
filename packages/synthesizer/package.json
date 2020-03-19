@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "main": "dist/bundled.js",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf node_modules dist .cache",
     "lint": "eslint --ext .ts src/",
-    "pack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js && node ./verify-and-copy-sdk-api-metadata.js && npm-pack-zip --dst dist/"
+    "prepack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js && node ./verify-and-copy-sdk-api-metadata.js",
+    "pack": "npm-pack-zip --dst dist/"
   },
   "engines": {
     "node": ">=10.0.0"

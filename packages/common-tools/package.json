@@ -2,6 +2,9 @@
   "name": "@ddcp/tools",
   "version": "1.0.0",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc && npm run prepend-shebang-check-zip && npm run prepend-shebang-check-filesize",
     "prepend-shebang-check-zip": "echo '#!/usr/bin/env node' | cat - dist/check-zip.js > dist/check-zip.js.new && chmod +x dist/check-zip.js.new && mv dist/check-zip.js.new dist/check-zip.js",

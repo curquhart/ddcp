@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "dist/bundled.js",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc && cat dist/node_modules/**/*.js dist/src/index.js | sed 's#require(\"cfn-response\")#exports#' | jsmin > dist/bundled.js",
     "clean": "rm -rf node_modules dist",

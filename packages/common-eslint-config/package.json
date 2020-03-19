@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "license": "MIT",
   "main": "eslintrc.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "rm -rf node_modules"
   },

@@ -2,6 +2,9 @@
   "name": "@ddcp/typescript-config",
   "version": "1.0.0",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "rm -rf node_modules"
   },
