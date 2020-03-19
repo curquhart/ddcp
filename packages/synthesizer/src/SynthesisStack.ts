@@ -25,6 +25,8 @@ import {Tokenizer} from '@ddcp/tokenizer';
 import {tOrDefault} from '@ddcp/typehelpers';
 import {BaseResourceFactory} from './resource/BaseResourceFactory';
 
+const SECRETS_MANAGER_ARN_REGEXP = /^(arn:[^:]+:secretsmanager:[^:]+:[^:]+:secret:[^:-]+).*$/;
+
 export class SynthesisStack extends Stack {
     constructor(
         scope: Construct,
@@ -160,6 +162,36 @@ export class SynthesisStack extends Stack {
                             })
                         });
 
+                        // TODO: it's late, simplify this... a lot.
+                        if (buildSpec.env !== undefined && buildSpec.env['secrets-manager'] !== undefined) {
+                            const requiredSecrets = Object.values(buildSpec.env['secrets-manager']).map((value) => {
+                                // codebuild has a weird format - arnOrName:KEY:EXTRACT:STAGE:VERSION. Everything after KEY is optional.
+                                const match = value.match(SECRETS_MANAGER_ARN_REGEXP);
+
+                                let secretName = '';
+
+                                if (match !== null) {
+                                    secretName = match[1];
+                                }
+                                else {
+                                    [secretName] = value.split(':');
+                                }
+
+                                const parts = value.substr(secretName.length + 1).split(':');
+
+                                parts.shift(); // key
+                                parts.shift(); // stage
+                                const secretVersion = parts.shift() ?? '*';
+
+                                return `${secretName}-${secretVersion}`;
+                            }).filter((value) => value !== '');
+
+                            if (requiredSecrets.length > 0) {
+                                const secretsManagerPolicy = this.getSecretsManagerPolicy(requiredSecrets);
+                                codeBuildProject.addToRolePolicy(secretsManagerPolicy);
+                            }
+                        }
+
                         if (snsTopic !== undefined) {
                             codeBuildProject.onStateChange('OnStateChange', {
                                 target: new targets.SnsTopic(snsTopic, {
@@ -246,16 +278,39 @@ export class SynthesisStack extends Stack {
     private applySecretsManagerPolicyToFunction(fn: Function, tokenizer: Tokenizer, fnData: unknown): void {
         const secretTokens = tokenizer.getAllTokens('secret', fnData);
         if (Object.keys(secretTokens).length > 0) {
-            fn.addToRolePolicy(new PolicyStatement({
-                actions: ['secretsmanager:GetSecretValue'],
-                resources: Object.values(secretTokens).map((secretToken) => `arn:${Aws.PARTITION}:secretsmanager:${Aws.REGION}:${Aws.ACCOUNT_ID}:secret:${secretToken.value}-*`)
-            }));
+            fn.addToRolePolicy(this.getSecretsManagerPolicy(Object.values(secretTokens).map((token) => token.value)));
             fn.addEnvironment('TOKENS', JSON.stringify(Object.assign({}, ...Object.entries(secretTokens).map(([key, token]) => {
                 return {
                     [key]: token.token
                 };
             }))));
         }
+    }
 
+    private getSecretsManagerPolicy(secretNamesAndArns: Array<string>): PolicyStatement {
+        return new PolicyStatement({
+            actions: ['secretsmanager:GetSecretValue'],
+            resources: secretNamesAndArns.map((secretNameOrArn) => {
+                const match = secretNameOrArn.match(SECRETS_MANAGER_ARN_REGEXP);
+                let secretName = '';
+                let secretVersion = '';
+
+                if (match !== null) {
+                    secretName = match[1];
+                }
+                else {
+                    [secretName] = secretNameOrArn.split('-');
+                }
+
+                secretVersion = secretNameOrArn.substr(secretName.length + 1) || '*';
+
+                if (SECRETS_MANAGER_ARN_REGEXP.test(secretNameOrArn)) {
+                    return `${secretName}-${secretVersion}`;
+                }
+                else {
+                    return `arn:${Aws.PARTITION}:secretsmanager:${Aws.REGION}:${Aws.ACCOUNT_ID}:secret:${secretName}-${secretVersion}`;
+                }
+            })
+        });
     }
 }
