@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/sns-to-slack",
-  "version": "0.0.1-alpha.36",
+  "version": "0.0.1-alpha.41",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
@@ -22,14 +22,14 @@
     ]
   },
   "dependencies": {
-    "@ddcp/secretsmanager": "^0.0.1-alpha.36",
-    "@ddcp/sns-models": "^0.0.1-alpha.36",
-    "@ddcp/stringutils": "^0.0.1-alpha.36",
+    "@ddcp/secretsmanager": "^0.0.1-alpha.41",
+    "@ddcp/sns-models": "^0.0.1-alpha.41",
+    "@ddcp/stringutils": "^0.0.1-alpha.41",
     "aws-lambda": "1.0.5"
   },
   "devDependencies": {
-    "@ddcp/eslint-config": "^0.0.1-alpha.36",
-    "@ddcp/typescript-config": "^0.0.1-alpha.36",
+    "@ddcp/eslint-config": "^0.0.1-alpha.41",
+    "@ddcp/typescript-config": "^0.0.1-alpha.41",
     "@types/aws-lambda": "8.10.44",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
