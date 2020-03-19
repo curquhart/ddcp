@@ -76,13 +76,6 @@ Pipelines:
                         - '}/count)'
                       - export BUILD_VERSION="0.0.1-alpha.${BUILD_NUMBER}"
                       - echo ${BUILD_VERSION}
-                      - git clone https://github.com/curquhart/ddcp.git tmp
-                      - cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
-                      - mv tmp/.git .git
-                      - rm -rf tmp
-                      - git config user.email "ci@chelseau.com"
-                      - git config user.name "DDCP CI"
-                      - npx lerna version ${BUILD_VERSION} --no-push --yes
                   build:
                     commands:
                       - npx lerna run build
@@ -91,7 +84,13 @@ Pipelines:
                       - npx lerna run artifact-lint
                   post_build:
                     commands:
-                      - npx lerna publish --yes
+                      - git clone https://github.com/curquhart/ddcp.git tmp
+                      - cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
+                      - mv tmp/.git .git
+                      - rm -rf tmp
+                      - git config user.email "ci@chelseau.com"
+                      - git config user.name "DDCP CI"
+                      - npx lerna publish ${BUILD_VERSION} --no-push
                 artifacts:
                   secondary-artifacts:
                     Manager:
