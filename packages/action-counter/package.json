@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/action-counter",
-  "version": "0.0.1-alpha.30",
+  "version": "0.0.1-alpha.33",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
@@ -27,8 +27,8 @@
     "aws-sdk": "2.641.0"
   },
   "devDependencies": {
-    "@ddcp/eslint-config": "^0.0.1-alpha.30",
-    "@ddcp/typescript-config": "^0.0.1-alpha.30",
+    "@ddcp/eslint-config": "^0.0.1-alpha.33",
+    "@ddcp/typescript-config": "^0.0.1-alpha.33",
     "@types/adm-zip": "0.4.32",
     "@types/aws-lambda": "8.10.44",
     "@typescript-eslint/eslint-plugin": "2.21.0",
