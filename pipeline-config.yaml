@@ -76,7 +76,7 @@ Pipelines:
                         - '}/count)'
                       - export BUILD_VERSION="0.0.1-alpha.${BUILD_NUMBER}"
                       - echo ${BUILD_VERSION}
-                      - lerna version ${BUILD_VERSION} --no-push
+                      - npx lerna version ${BUILD_VERSION} --no-push
                   build:
                     commands:
                       - npx lerna run build
@@ -85,7 +85,7 @@ Pipelines:
                       - npx lerna run artifact-lint
                   post_build:
                     commands:
-                      - lerna publish
+                      - npx lerna publish
                 artifacts:
                   secondary-artifacts:
                     Manager:
