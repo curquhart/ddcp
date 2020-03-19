@@ -52,7 +52,7 @@ Pipelines:
                 version: 0.2
                 env:
                   secrets-manager:
-                    NPM_TOKEN: 'NpmPublish:NPM_TOKEN:AWSCURRENT:AWSCURRENT'
+                    NPM_TOKEN: 'NpmPublish:NPM_TOKEN'
                 phases:
                   install:
                     runtime-versions:
