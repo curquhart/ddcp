@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/tokenizer",
-  "version": "1.0.0",
+  "version": "0.0.1-alpha.21",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -21,12 +21,12 @@
     "escape-string-regexp": "2.0.0"
   },
   "devDependencies": {
-    "eslint": "6.8.0",
-    "typescript": "3.8.2",
+    "@ddcp/eslint-config": "^0.0.1-alpha.21",
+    "@ddcp/typescript-config": "^0.0.1-alpha.21",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
+    "eslint": "6.8.0",
     "eslint-plugin-node": "11.0.0",
-    "@ddcp/eslint-config": "1.0.0",
-    "@ddcp/typescript-config": "1.0.0"
+    "typescript": "3.8.2"
   }
 }

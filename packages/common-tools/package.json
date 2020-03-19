@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/tools",
-  "version": "1.0.0",
+  "version": "0.0.1-alpha.21",
   "license": "MIT",
   "scripts": {
     "build": "tsc && npm run prepend-shebang-check-zip && npm run prepend-shebang-check-filesize",
@@ -12,9 +12,8 @@
     "check-zip": "dist/check-zip.js",
     "check-filesize": "dist/check-filesize.js"
   },
-  "dependencies": {},
   "devDependencies": {
-    "typescript": "3.8.2",
-    "@ddcp/typescript-config": "1.0.0"
+    "@ddcp/typescript-config": "^0.0.1-alpha.21",
+    "typescript": "3.8.2"
   }
 }
