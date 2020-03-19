@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/s3-resolver",
-  "version": "1.0.0",
+  "version": "0.0.1-alpha.23",
   "main": "dist/bundled.js",
   "license": "MIT",
   "scripts": {
@@ -23,16 +23,16 @@
     "cfn-response": "1.0.1"
   },
   "devDependencies": {
+    "@ddcp/eslint-config": "^0.0.1-alpha.23",
+    "@ddcp/tools": "^0.0.1-alpha.23",
+    "@ddcp/typescript-config": "^0.0.1-alpha.23",
     "@types/aws-lambda": "8.10.44",
     "@types/cfn-response": "1.0.1",
-    "eslint": "6.8.0",
-    "jsmin": "1.0.1",
-    "typescript": "3.8.2",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
+    "eslint": "6.8.0",
     "eslint-plugin-node": "11.0.0",
-    "@ddcp/eslint-config": "1.0.0",
-    "@ddcp/typescript-config": "1.0.0",
-    "@ddcp/tools": "1.0.0"
+    "jsmin": "1.0.1",
+    "typescript": "3.8.2"
   }
 }
