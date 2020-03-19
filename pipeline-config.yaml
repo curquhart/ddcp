@@ -80,6 +80,8 @@ Pipelines:
                       - cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
                       - mv tmp/.git .git
                       - rm -rf tmp
+                      - git config user.email "ci@chelseau.com"
+                      - git config user.name "DDCP CI"
                       - npx lerna version ${BUILD_VERSION} --no-push --yes
                   build:
                     commands:
