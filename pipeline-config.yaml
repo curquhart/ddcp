@@ -86,15 +86,19 @@ Pipelines:
                       - npx lerna run artifact-lint
                   post_build:
                     commands:
-                      - git clone https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/ddcp.git tmp
-                      - cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
-                      - mv tmp/.git .git
-                      - rm -rf tmp
-                      - git config user.email "ci@chelseau.com"
-                      - git config user.name "DDCP CI"
-                      - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-                      - 'npx lerna publish ${BUILD_VERSION} --no-push --yes | tee /tmp/publish-results && grep -qv "lerna ERR\|WARN" < /tmp/publish-results'
-                      - git push
+                      - |
+                        if [ $CODEBUILD_BUILD_SUCCEEDING -eq 1 ];
+                        then
+                          git clone https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/ddcp.git tmp
+                          cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
+                          mv tmp/.git .git
+                          rm -rf tmp
+                          git config user.email "ci@chelseau.com"
+                          git config user.name "DDCP CI"
+                          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+                          npx lerna publish ${BUILD_VERSION} --no-push --yes | tee /tmp/publish-results && grep -qv "lerna ERR\|WARN" < /tmp/publish-results
+                          git push
+                        fi
                 artifacts:
                   secondary-artifacts:
                     Manager:
