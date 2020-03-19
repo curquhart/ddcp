@@ -97,7 +97,7 @@ Pipelines:
                           git config user.name "DDCP CI"
                           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
                           npx lerna publish ${BUILD_VERSION} --no-push --yes | tee /tmp/publish-results && grep -qv "lerna ERR\|WARN" < /tmp/publish-results
-                          git push
+                          git push origin --tags :
                         fi
                 artifacts:
                   secondary-artifacts:
