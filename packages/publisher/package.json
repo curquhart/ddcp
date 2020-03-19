@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/publisher",
-  "version": "1.0.0",
+  "version": "0.0.1-alpha.30",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -22,7 +22,7 @@
     ]
   },
   "dependencies": {
-    "@aws-cdk/cx-api": "1.25.0",
+    "@aws-cdk/aws-apigateway": "1.25.0",
     "@aws-cdk/aws-cloudformation": "1.25.0",
     "@aws-cdk/aws-codecommit": "1.25.0",
     "@aws-cdk/aws-events": "1.25.0",
@@ -31,25 +31,25 @@
     "@aws-cdk/aws-s3": "1.25.0",
     "@aws-cdk/aws-s3-deployment": "1.25.0",
     "@aws-cdk/core": "1.25.0",
+    "@aws-cdk/cx-api": "1.25.0",
     "aws-cdk": "1.25.0",
-    "npm-pack-zip": "1.2.7",
-    "@aws-cdk/aws-apigateway": "1.25.0"
+    "npm-pack-zip": "1.2.7"
   },
   "devDependencies": {
-    "eslint": "6.8.0",
-    "ts-node": "8.6.2",
-    "typescript": "3.8.2",
+    "@ddcp/action-counter": "^0.0.1-alpha.30",
+    "@ddcp/eslint-config": "^0.0.1-alpha.30",
+    "@ddcp/github-mirror": "^0.0.1-alpha.30",
+    "@ddcp/manager": "^0.0.1-alpha.30",
+    "@ddcp/sns-to-github": "^0.0.1-alpha.30",
+    "@ddcp/sns-to-slack": "^0.0.1-alpha.30",
+    "@ddcp/synthesizer": "^0.0.1-alpha.30",
+    "@ddcp/tools": "^0.0.1-alpha.30",
+    "@ddcp/typescript-config": "^0.0.1-alpha.30",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
+    "eslint": "6.8.0",
     "eslint-plugin-node": "11.0.0",
-    "@ddcp/manager": "1.0.0",
-    "@ddcp/synthesizer": "1.0.0",
-    "@ddcp/github-mirror": "1.0.0",
-    "@ddcp/sns-to-github": "1.0.0",
-    "@ddcp/sns-to-slack": "1.0.0",
-    "@ddcp/action-counter": "1.0.0",
-    "@ddcp/eslint-config": "1.0.0",
-    "@ddcp/typescript-config": "1.0.0",
-    "@ddcp/tools": "1.0.0"
+    "ts-node": "8.6.2",
+    "typescript": "3.8.2"
   }
 }

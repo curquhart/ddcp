@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/manager",
-  "version": "1.0.0",
+  "version": "0.0.1-alpha.30",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -20,7 +20,6 @@
     ]
   },
   "dependencies": {
-    "@aws-cdk/cx-api": "1.25.0",
     "@aws-cdk/aws-cloudformation": "1.25.0",
     "@aws-cdk/aws-codebuild": "1.25.0",
     "@aws-cdk/aws-codecommit": "1.25.0",
@@ -33,22 +32,23 @@
     "@aws-cdk/aws-s3": "1.25.0",
     "@aws-cdk/aws-sns": "1.25.0",
     "@aws-cdk/core": "1.25.0",
+    "@aws-cdk/cx-api": "1.25.0",
     "aws-cdk": "1.25.0",
     "js-yaml": "3.13.1",
     "tmp": "0.1.0"
   },
   "devDependencies": {
+    "@ddcp/eslint-config": "^0.0.1-alpha.30",
+    "@ddcp/s3-resolver": "^0.0.1-alpha.30",
+    "@ddcp/typescript-config": "^0.0.1-alpha.30",
+    "@types/js-yaml": "3.12.1",
     "@types/node": "13.7.4",
     "@types/tmp": "0.1.0",
-    "@types/js-yaml": "3.12.1",
-    "eslint": "6.8.0",
-    "ts-node": "8.6.2",
-    "typescript": "3.8.2",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
+    "eslint": "6.8.0",
     "eslint-plugin-node": "11.0.0",
-    "@ddcp/s3-resolver": "1.0.0",
-    "@ddcp/eslint-config": "1.0.0",
-    "@ddcp/typescript-config": "1.0.0"
+    "ts-node": "8.6.2",
+    "typescript": "3.8.2"
   }
 }

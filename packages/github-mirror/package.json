@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/github-mirror",
-  "version": "1.0.0",
+  "version": "0.0.1-alpha.30",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
@@ -26,25 +26,25 @@
     "@types/aws4": "1.5.1",
     "@types/rimraf": "2.0.3",
     "@types/shell-escape": "0.2.0",
+    "aws-lambda": "1.0.5",
     "aws4": "1.9.1",
     "github-webhook-validators": "1.0.3",
     "npm-pack-zip": "1.2.7",
     "rimraf": "3.0.2",
     "shell-escape": "0.2.0",
-    "tmp": "0.1.0",
-    "aws-lambda": "1.0.5"
+    "tmp": "0.1.0"
   },
   "devDependencies": {
+    "@ddcp/eslint-config": "^0.0.1-alpha.30",
+    "@ddcp/typescript-config": "^0.0.1-alpha.30",
+    "@types/aws-lambda": "8.10.46",
     "@types/node": "13.7.4",
     "@types/tmp": "0.1.0",
-    "@types/aws-lambda": "8.10.46",
-    "eslint": "6.8.0",
-    "typescript": "3.8.2",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
+    "eslint": "6.8.0",
     "eslint-plugin-node": "11.0.0",
     "parcel": "1.12.4",
-    "@ddcp/eslint-config": "1.0.0",
-    "@ddcp/typescript-config": "1.0.0"
+    "typescript": "3.8.2"
   }
 }
