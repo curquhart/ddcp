@@ -92,6 +92,7 @@ Pipelines:
                       - rm -rf tmp
                       - git config user.email "ci@chelseau.com"
                       - git config user.name "DDCP CI"
+                      - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
                       - npx lerna publish ${BUILD_VERSION} --yes
                 artifacts:
                   secondary-artifacts:
