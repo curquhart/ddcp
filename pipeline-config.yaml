@@ -51,7 +51,7 @@ Pipelines:
               Inline:
                 version: 0.2
                 env:
-                  secrets-manager:
+                  'secrets-manager':
                     NPM_TOKEN: 'NpmPublish:NPM_TOKEN'
                 phases:
                   install:
