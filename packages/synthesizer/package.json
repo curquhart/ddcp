@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/synthesizer",
-  "version": "0.0.1-alpha.23",
+  "version": "1.0.0",
   "main": "dist/bundled.js",
   "license": "MIT",
   "scripts": {
@@ -18,44 +18,44 @@
     ]
   },
   "dependencies": {
+    "@aws-cdk/cx-api": "1.25.0",
     "@aws-cdk/aws-cloudformation": "1.25.0",
     "@aws-cdk/aws-codebuild": "1.25.0",
     "@aws-cdk/aws-codecommit": "1.25.0",
     "@aws-cdk/aws-codepipeline": "1.25.0",
     "@aws-cdk/aws-codepipeline-actions": "1.25.0",
     "@aws-cdk/aws-dynamodb": "1.25.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.25.0",
     "@aws-cdk/aws-events": "1.25.0",
     "@aws-cdk/aws-events-targets": "1.25.0",
     "@aws-cdk/aws-iam": "1.25.0",
     "@aws-cdk/aws-lambda": "1.25.0",
-    "@aws-cdk/aws-lambda-event-sources": "1.25.0",
     "@aws-cdk/aws-s3": "1.25.0",
     "@aws-cdk/aws-sns": "1.25.0",
     "@aws-cdk/core": "1.25.0",
-    "@aws-cdk/cx-api": "1.25.0",
-    "@ddcp/errorhandling": "^0.0.1-alpha.23",
-    "@ddcp/tokenizer": "^0.0.1-alpha.23",
-    "@ddcp/typehelpers": "^0.0.1-alpha.23",
     "adm-zip": "0.4.14",
     "aws-lambda": "1.0.5",
     "aws-sdk": "2.624.0",
     "js-yaml": "3.13.1",
-    "tmp": "0.1.0"
+    "tmp": "0.1.0",
+    "@ddcp/errorhandling": "1.0.0",
+    "@ddcp/tokenizer": "1.0.0",
+    "@ddcp/typehelpers": "1.0.0"
   },
   "devDependencies": {
-    "@ddcp/eslint-config": "^0.0.1-alpha.23",
-    "@ddcp/typescript-config": "^0.0.1-alpha.23",
-    "@types/adm-zip": "0.4.32",
     "@types/aws-lambda": "8.10.44",
-    "@types/js-yaml": "3.12.2",
+    "@types/adm-zip": "0.4.32",
     "@types/tmp": "0.1.0",
+    "@types/js-yaml": "3.12.2",
+    "eslint": "6.8.0",
+    "typescript": "3.8.2",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
-    "eslint": "6.8.0",
     "eslint-plugin-node": "11.0.0",
-    "glob": "7.1.6",
     "npm-pack-zip": "1.2.7",
     "parcel": "1.12.4",
-    "typescript": "3.8.2"
+    "glob": "7.1.6",
+    "@ddcp/eslint-config": "1.0.0",
+    "@ddcp/typescript-config": "1.0.0"
   }
 }
