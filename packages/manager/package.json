@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/manager",
-  "version": "0.0.1-alpha.23",
+  "version": "0.0.1-alpha.21",
   "license": "MIT",
   "scripts": {
     "build": "mkdir -p dist && cdk synth > dist/manager.yaml",
@@ -35,9 +35,9 @@
     "tmp": "0.1.0"
   },
   "devDependencies": {
-    "@ddcp/eslint-config": "^0.0.1-alpha.23",
-    "@ddcp/s3-resolver": "^0.0.1-alpha.23",
-    "@ddcp/typescript-config": "^0.0.1-alpha.23",
+    "@ddcp/eslint-config": "^0.0.1-alpha.21",
+    "@ddcp/s3-resolver": "^0.0.1-alpha.21",
+    "@ddcp/typescript-config": "^0.0.1-alpha.21",
     "@types/js-yaml": "3.12.1",
     "@types/node": "13.7.4",
     "@types/tmp": "0.1.0",
