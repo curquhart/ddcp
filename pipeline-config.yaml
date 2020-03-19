@@ -71,7 +71,7 @@ Pipelines:
                               - '!PathForAlias': IncrementCounter
                               - - OutputArtifactName
                         - '}/count)'
-                      - export BUILD_VERSION="0.0.1+${BUILD_NUMBER}"
+                      - export BUILD_VERSION="0.0.1-alpha.${BUILD_NUMBER}"
                       - echo ${BUILD_VERSION}
                   build:
                     commands:
