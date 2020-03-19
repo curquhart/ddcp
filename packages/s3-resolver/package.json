@@ -1,6 +1,5 @@
 {
   "name": "@ddcp/s3-resolver",
-  "private": true,
   "version": "1.0.0",
   "main": "dist/bundled.js",
   "license": "MIT",
