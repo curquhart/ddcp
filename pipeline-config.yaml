@@ -85,7 +85,7 @@ Pipelines:
                       - npx lerna run artifact-lint
                   post_build:
                     commands:
-                      - npm publish
+                      - lerna publish
                 artifacts:
                   secondary-artifacts:
                     Manager:
