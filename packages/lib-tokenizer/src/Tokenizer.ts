@@ -82,7 +82,7 @@ export class Tokenizer {
     async resolveAllTokens<T extends string | Record<string, unknown> | Array<unknown> | unknown>(
         type: string,
         data: T,
-        resolver: (token: string, value: string) => unknown | Promise<unknown>
+        resolver: (value: string) => unknown | Promise<unknown>
     ): Promise<T> {
         if (isString(data)) {
             const strData = data as string;
@@ -91,7 +91,7 @@ export class Tokenizer {
                 const value = this.getValueFromKey(key, type);
 
                 if (value !== undefined && strData.indexOf(token) !== -1) {
-                    const resolved = await resolver(token, value);
+                    const resolved = await resolver(value);
                     if (data === token) {
                         return resolved as T;
                     }

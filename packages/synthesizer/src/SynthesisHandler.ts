@@ -12,6 +12,19 @@ import {Uniquifier} from './Uniquifier';
 import {Tokenizer} from '@ddcp/tokenizer';
 import {BaseResourceFactory} from './resource/BaseResourceFactory';
 import {throwError} from '@ddcp/errorhandling';
+import {Base as BaseFn} from './fn/Base';
+import {Join} from './fn/resolvers/Join';
+import {Path} from './fn/resolvers/Path';
+import {PathForAlias} from './fn/resolvers/PathForAlias';
+import {Import} from './fn/resolvers/Import';
+import {SsmString} from './fn/resolvers/SsmString';
+import {Secret} from './fn/resolvers/Secret';
+import {Script} from './fn/resolvers/Script';
+import {CodePipelineOrchestratorFactory} from './orchestrator/CodePipelineOrchestratorFactory';
+import {CloudWatchOrchestratorFactory} from './orchestrator/CloudWatchOrchestratorFactory';
+import {CounterResourceFactory} from './resource/CounterResourceFactory';
+import {ArtifactStore} from './index';
+import {Param} from './fn/resolvers/Param';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
@@ -44,7 +57,7 @@ export interface SynthesisHandlerProps {
     resourceFactories: Record<string, BaseResourceFactory>;
     uniquifier: Uniquifier;
     tokenizer: Tokenizer;
-    context: Context;
+    artifactStore: Record<string, Buffer>;
 }
 
 interface SynthesisHandlerManagerProps {
@@ -68,19 +81,23 @@ export class SynthesisHandler {
         const inZip = new AdmZip(inputArtifact.Body as Buffer);
         const pipelineConfigYaml = inZip.readAsText('pipeline-config.yaml');
 
-        new SynthesisStack(app, STACK_ID, {
+        await new SynthesisStack(app, STACK_ID, {
             managerResources: props.synthPipeline,
             resolver: props.resolver,
             unresolvedPipelineConfig: yaml.safeLoad(pipelineConfigYaml),
             orchestratorFactories: props.orchestratorFactories,
             resourceFactories: props.resourceFactories,
             uniquifier: props.uniquifier,
-            tokenizer: props.tokenizer
-        });
+            tokenizer: props.tokenizer,
+            artifactStore: props.artifactStore
+        }).init();
         const template = app.synth().getStackArtifact(STACK_ID).template;
 
         const outZip = new AdmZip();
         outZip.addFile('template.json', Buffer.from(JSON.stringify(template)));
+        Object.entries(props.artifactStore).forEach(([fileName, fileContents]) => {
+            outZip.addFile(`assets/${fileName}`, fileContents);
+        });
 
         await s3.putObject({
             Bucket: props.event['CodePipeline.job'].data.outputArtifacts[0].location.s3Location.bucketName,
@@ -89,12 +106,12 @@ export class SynthesisHandler {
         }).promise();
     }
 
-    async safeHandle(props: SynthesisHandlerProps): Promise<void> {
+    async safeHandle(event: CodePipelineEvent, context: Context): Promise<void> {
         let cleanupCb = EMPTY_VOID_FN;
         const cp = new CodePipeline();
 
         try {
-            const userData = JSON.parse(props.event['CodePipeline.job'].data.actionConfiguration.configuration.UserParameters);
+            const userData = JSON.parse(event['CodePipeline.job'].data.actionConfiguration.configuration.UserParameters);
 
             const scratchDir = userData.scratchDir;
             const scratchDirCleanup = userData.scratchDirCleanup;
@@ -110,6 +127,30 @@ export class SynthesisHandler {
                 throw new Error('synthPipeline userParam is required.');
             }
 
+            const artifactStore: ArtifactStore = {};
+            const uniquifier = new Uniquifier();
+            const tokenizer = new Tokenizer();
+
+            const resolvers: Record<string, BaseFn<unknown, Array<unknown>>> = {};
+            const resourceFactories: Record<string, BaseResourceFactory> = {};
+            const orchestratorFactories: Record<string, BaseOrchestratorFactory> = {};
+
+            new Join(resolvers).init();
+            new Path(resolvers, resourceFactories).init();
+            new PathForAlias(resolvers).init();
+            new Import(resolvers).init();
+            new SsmString(resolvers, uniquifier).init();
+            new Secret(resolvers, tokenizer).init();
+            new Script(resolvers, artifactStore, tokenizer).init();
+            new Param(resolvers, synthPipeline).init();
+
+            const resolver = new Resolver(resolvers);
+
+            new CodePipelineOrchestratorFactory(orchestratorFactories).init();
+            new CloudWatchOrchestratorFactory(orchestratorFactories).init();
+
+            new CounterResourceFactory(resourceFactories, tokenizer, uniquifier).init();
+
             const cdkOutDir = tmp.dirSync({
                 dir: scratchDir,
                 unsafeCleanup: scratchDirCleanup
@@ -121,14 +162,24 @@ export class SynthesisHandler {
             Object.assign(synthPipeline, {
                 assetKeys: JSON.parse(process.env.ASSET_KEYS ?? throwError(new Error('ASSET_KEYS env var is missing.')))
             });
-            await this.handle({...props, synthPipeline, cdkOutDir: cdkOutDir.name});
-            await cp.putJobSuccessResult({jobId: props.event['CodePipeline.job'].id}).promise();
+            await this.handle({
+                event,
+                resolver,
+                orchestratorFactories,
+                resourceFactories,
+                uniquifier,
+                tokenizer,
+                artifactStore,
+                synthPipeline,
+                cdkOutDir: cdkOutDir.name
+            });
+            await cp.putJobSuccessResult({jobId: event['CodePipeline.job'].id}).promise();
         }
         catch (err) {
             console.error(err);
-            await cp.putJobFailureResult({jobId: props.event['CodePipeline.job'].id, failureDetails: {
+            await cp.putJobFailureResult({jobId: event['CodePipeline.job'].id, failureDetails: {
                 type: 'JobFailed',
-                message: `Failed to synthesize pipeline. Ref# ${props.context.awsRequestId}`
+                message: `Failed to synthesize pipeline. Ref# ${context.awsRequestId}`
             }}).promise();
         }
         finally {

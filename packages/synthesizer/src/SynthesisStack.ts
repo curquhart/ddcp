@@ -27,22 +27,24 @@ import {BaseResourceFactory} from './resource/BaseResourceFactory';
 
 const SECRETS_MANAGER_ARN_REGEXP = /^(arn:[^:]+:secretsmanager:[^:]+:[^:]+:secret:[^:-]+).*$/;
 
-export class SynthesisStack extends Stack {
-    constructor(
-        scope: Construct,
-        id: string,
-        props: {
-            managerResources: ManagerResources;
-            resolver: Resolver;
-            unresolvedPipelineConfig: Record<string, unknown>;
-            orchestratorFactories: Record<string, BaseOrchestratorFactory>;
-            resourceFactories: Record<string, BaseResourceFactory>;
-            uniquifier: Uniquifier;
-            tokenizer: Tokenizer;
-        }
-    ) {
-        super(scope, id);
+interface SynthesisStackProps {
+    managerResources: ManagerResources;
+    resolver: Resolver;
+    unresolvedPipelineConfig: Record<string, unknown>;
+    orchestratorFactories: Record<string, BaseOrchestratorFactory>;
+    resourceFactories: Record<string, BaseResourceFactory>;
+    uniquifier: Uniquifier;
+    tokenizer: Tokenizer;
+    artifactStore: Record<string, Buffer>;
+}
 
+export class SynthesisStack extends Stack {
+    constructor(scope: Construct, id: string, private readonly props: SynthesisStackProps) {
+        super(scope, id);
+    }
+
+    async init(): Promise<void> {
+        const props = this.props;
         const pipelineConfig = props.resolver.resolve(this, props.unresolvedPipelineConfig) as PipelineConfigs;
 
         const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', props.managerResources.arn);
@@ -194,6 +196,20 @@ export class SynthesisStack extends Stack {
                                 const secretsManagerPolicy = this.getSecretsManagerPolicy(requiredSecrets);
                                 codeBuildProject.addToRolePolicy(secretsManagerPolicy);
                             }
+                        }
+                        const allS3Keys: Array<string> = [];
+                        await props.tokenizer.resolveAllTokens('s3', buildSpec, (value) => {
+                            if (allS3Keys.indexOf(value) === -1) {
+                                allS3Keys.push(value);
+                            }
+                            return value;
+                        });
+
+                        if (allS3Keys.length > 0) {
+                            codeBuildProject.addToRolePolicy(new PolicyStatement({
+                                actions: ['s3:GetObject'],
+                                resources: allS3Keys.map((key) => `arn:aws:s3:::${key}`),
+                            }));
                         }
 
                         if (snsTopic !== undefined) {
