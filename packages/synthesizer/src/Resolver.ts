@@ -90,7 +90,7 @@ export class Resolver {
                         };
 
                         if (isResolved(this.allResolvers, entry)) {
-                            resolved = this.allResolvers[key].withScope(scope).resolve(typeof entry !== 'object' || entry === null ? [entry] : entry, value);
+                            resolved = this.allResolvers[key].withScope(scope).resolve(!Array.isArray(entry) ? [entry] : entry, value);
                         }
                         else {
                             toResolve.push({

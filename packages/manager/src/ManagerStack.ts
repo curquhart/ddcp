@@ -10,7 +10,8 @@ import {
     CodeCommitSourceAction,
     CodeCommitTrigger,
     LambdaInvokeAction,
-    ManualApprovalAction
+    ManualApprovalAction,
+    S3DeployAction
 } from '@aws-cdk/aws-codepipeline-actions';
 import * as fs from 'fs';
 import {CfnPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
@@ -331,13 +332,23 @@ export class ManagerStack extends Stack {
             ]
         });
 
+
+
         pipeline.addStage({
             stageName: 'UpdatePipeline',
             actions: [
+                new S3DeployAction({
+                    actionName: 'DeployArtifacts',
+                    objectKey: 'assets/',
+                    input: synthesizedPipeline,
+                    bucket: localBucket,
+                    runOrder: 1,
+                }),
                 new CloudFormationExecuteChangeSetAction({
                     stackName,
                     actionName: 'ExecuteChangeSet',
-                    changeSetName
+                    changeSetName,
+                    runOrder: 2,
                 })
             ]
         });

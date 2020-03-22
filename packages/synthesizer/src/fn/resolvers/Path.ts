@@ -9,7 +9,7 @@ type IParameters = Array<string | number>
 
 export class Path extends Base<unknown, IParameters> {
     constructor(
-        protected allResolvers: Record<string, unknown>,
+        protected allResolvers: Record<string, Base<unknown, Array<unknown>>>,
         private readonly allResourceFactories: Record<string, BaseResourceFactory>
     ) {
         super(allResolvers);

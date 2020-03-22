@@ -14,7 +14,7 @@ export class Resolver {
                 tokenizer = new Tokenizer(JSON.parse(process.env.TOKENS));
             }
         }
-        return await tokenizer.resolveAllTokens('secret', payload, async (token: string, value: string) => {
+        return await tokenizer.resolveAllTokens('secret', payload, async (value: string) => {
             const secretsManager = new SecretsManager();
             const secretValue = await secretsManager.getSecretValue({
                 SecretId: value
