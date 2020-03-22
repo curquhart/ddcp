@@ -190,7 +190,7 @@ export class SynthesisStack extends Stack {
                             throw new Error('BranchName cannot be undefined.');
                         }
 
-                        const codeBuildProject = new Project(this, props.uniquifier.next('Project'), {
+                        const codeBuildProject = new Project(this, props.uniquifier.next(`${pipeline.Name}${stage.Name}${action.Name}Project`), {
                             projectName: `${pipeline.Name}${stage.Name}${action.Name}Project`,
                             buildSpec: BuildSpec.fromObject(buildSpec),
                             source: Source.codeCommit({
