@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/sns-models",
-  "version": "0.0.1-alpha.48",
+  "version": "0.0.1-alpha.59",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -24,8 +24,8 @@
     "aws-lambda": "1.0.5"
   },
   "devDependencies": {
-    "@ddcp/eslint-config": "^0.0.1-alpha.48",
-    "@ddcp/typescript-config": "^0.0.1-alpha.48",
+    "@ddcp/eslint-config": "^0.0.1-alpha.59",
+    "@ddcp/typescript-config": "^0.0.1-alpha.59",
     "@types/aws-lambda": "8.10.44",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
