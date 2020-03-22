@@ -135,14 +135,17 @@ Pipelines:
             Order: 2
             SourceName: Source
             BuildSpec:
+              Alias: TestBuildSpec
               Inline:
                 version: 0.2
                 phases:
                   install:
-                    - npm install
-                    - npx lerna bootstrap
+                    commands:
+                      - npm install
+                      - npx lerna bootstrap
                   build:
-                    - npm t
+                    commands:
+                      - npm t
       - Name: PublishStage
         Actions:
           - Name: Manager
@@ -210,6 +213,10 @@ Pipelines:
                         - - Inline
                           - phases
                           - build
-          - '!Path':
-              '!Join':
-                - '!PathForAlias': TestAction
+          - Name: Test
+            Type: CodeBuild
+            Order: 1
+            SourceName: Source
+            BuildSpec:
+              '!Path':
+                '!PathForAlias': TestBuildSpec
