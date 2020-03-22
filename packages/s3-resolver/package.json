@@ -10,7 +10,8 @@
     "build": "tsc && cat dist/node_modules/**/*.js dist/src/index.js | sed 's#require(\"cfn-response\")#exports#' | jsmin > dist/bundled.js",
     "clean": "rm -rf node_modules dist",
     "lint": "eslint --ext .ts src/",
-    "artifact-lint": "check-filesize dist/bundled.js min=1024 max=4096"
+    "artifact-lint": "check-filesize dist/bundled.js min=1024 max=4096",
+    "test": "jest"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -26,16 +27,20 @@
     "cfn-response": "1.0.1"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "7.9.0",
     "@ddcp/eslint-config": "^0.0.1-alpha.59",
     "@ddcp/tools": "^0.0.1-alpha.59",
     "@ddcp/typescript-config": "^0.0.1-alpha.59",
     "@types/aws-lambda": "8.10.44",
     "@types/cfn-response": "1.0.1",
+    "@types/jest": "25.1.4",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
     "eslint": "6.8.0",
     "eslint-plugin-node": "11.0.0",
+    "jest": "25.1.0",
     "jsmin": "1.0.1",
+    "ts-jest": "25.2.1",
     "typescript": "3.8.2"
   }
 }
