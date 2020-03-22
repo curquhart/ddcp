@@ -339,7 +339,7 @@ export class ManagerStack extends Stack {
             actions: [
                 new S3DeployAction({
                     actionName: 'DeployArtifacts',
-                    objectKey: 'assets/',
+                    objectKey: 'assets',
                     input: synthesizedPipeline,
                     bucket: localBucket,
                     runOrder: 1,

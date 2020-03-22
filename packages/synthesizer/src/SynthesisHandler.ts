@@ -96,7 +96,7 @@ export class SynthesisHandler {
         const outZip = new AdmZip();
         outZip.addFile('template.json', Buffer.from(JSON.stringify(template)));
         Object.entries(props.artifactStore).forEach(([fileName, fileContents]) => {
-            outZip.addFile(`assets/${fileName}`, fileContents);
+            outZip.addFile(fileName, fileContents);
         });
 
         await s3.putObject({
