@@ -10,8 +10,8 @@
     "clean": "rm -rf node_modules dist",
     "deploy": "cdk deploy",
     "lint": "eslint --ext .ts src/",
-    "pack": "zip -jr dist/dist.zip node_modules/@ddcp/action-counter/dist/@ddcpaction-counter.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/sns-to-slack/dist/@ddcpsns-to-slack.zip node_modules/@ddcp/sns-to-github/dist/@ddcpsns-to-github.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/manager/dist/manager.yaml",
-    "artifact-lint": "check-zip dist/dist.zip @ddcpsynthesizer.zip @ddcpaction-counter.zip @ddcpsns-to-slack.zip @ddcpsns-to-github.zip @ddcpgithub-mirror.zip manager.yaml"
+    "pack": "zip -jr dist/dist.zip node_modules/@ddcp/action-counter/dist/@ddcpaction-counter.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/sns-to-slack/dist/@ddcpsns-to-slack.zip node_modules/@ddcp/sns-to-github/dist/@ddcpsns-to-github.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/manager/dist/manager.yaml",
+    "artifact-lint": "check-zip dist/dist.zip @ddcpsynthesizer.zip @ddcpaction-counter.zip @ddcpgithub-mirror.zip @ddcpsns-to-slack.zip @ddcpsns-to-github.zip @ddcpgithub-mirror.zip manager.yaml"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -22,7 +22,6 @@
     ]
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "1.25.0",
     "@aws-cdk/aws-cloudformation": "1.25.0",
     "@aws-cdk/aws-codecommit": "1.25.0",
     "@aws-cdk/aws-events": "1.25.0",

@@ -1,8 +1,9 @@
 import * as s3 from '@aws-cdk/aws-s3';
 import {BaseResourceProps} from './resource/BaseResourceFactory';
 
-enum SourceType {
-    CODE_COMMIT = 'CodeCommit'
+export enum SourceType {
+    CODE_COMMIT = 'CodeCommit',
+    GIT = 'Git'
 }
 
 export enum ActionType {
@@ -11,12 +12,17 @@ export enum ActionType {
     COUNTER = 'Counter'
 }
 
-interface Source {
+export interface Source {
     Name?: string;
     Type?: SourceType;
     RepositoryName?: string;
     BranchName?: string;
     BranchPattern?: string;
+    Uri?: string;
+    Trigger: 'GitHubWebHook';
+    Auth?: {
+        PrivateKey?: string;
+    };
 }
 
 interface Action {

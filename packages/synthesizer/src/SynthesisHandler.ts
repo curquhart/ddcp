@@ -25,6 +25,7 @@ import {CloudWatchOrchestratorFactory} from './orchestrator/CloudWatchOrchestrat
 import {CounterResourceFactory} from './resource/CounterResourceFactory';
 import {ArtifactStore} from './index';
 import {Param} from './fn/resolvers/Param';
+import {GitSourceSync} from './builders/GitSourceSync';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
@@ -58,6 +59,7 @@ export interface SynthesisHandlerProps {
     uniquifier: Uniquifier;
     tokenizer: Tokenizer;
     artifactStore: Record<string, Buffer>;
+    gitSourceBuilder: GitSourceSync;
 }
 
 interface SynthesisHandlerManagerProps {
@@ -89,7 +91,8 @@ export class SynthesisHandler {
             resourceFactories: props.resourceFactories,
             uniquifier: props.uniquifier,
             tokenizer: props.tokenizer,
-            artifactStore: props.artifactStore
+            artifactStore: props.artifactStore,
+            gitSourceBuilder: props.gitSourceBuilder,
         }).init();
         const template = app.synth().getStackArtifact(STACK_ID).template;
 
@@ -151,6 +154,8 @@ export class SynthesisHandler {
 
             new CounterResourceFactory(resourceFactories, tokenizer, uniquifier).init();
 
+            const gitSourceBuilder = new GitSourceSync();
+
             const cdkOutDir = tmp.dirSync({
                 dir: scratchDir,
                 unsafeCleanup: scratchDirCleanup
@@ -171,7 +176,8 @@ export class SynthesisHandler {
                 tokenizer,
                 artifactStore,
                 synthPipeline,
-                cdkOutDir: cdkOutDir.name
+                cdkOutDir: cdkOutDir.name,
+                gitSourceBuilder
             });
             await cp.putJobSuccessResult({jobId: event['CodePipeline.job'].id}).promise();
         }

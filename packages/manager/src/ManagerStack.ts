@@ -49,6 +49,11 @@ const LAMBDAS: Array<LambdaProps> = [
         asset: '@ddcpaction-counter.zip',
         destKey: '',
     },
+    {
+        name: 'github-mirror',
+        asset: '@ddcpgithub-mirror.zip',
+        destKey: '',
+    },
 ];
 
 const getLambdaProps = (name: string): LambdaProps => {
