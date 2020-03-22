@@ -40,7 +40,7 @@ export class Script extends Base<unknown, IParameters> {
         ], fullValue).value as string);
 
         return {
-            value: `aws s3 cp s3://${s3Path} /tmp/${fileHash} && echo '${fileHash} /tmp/${fileHash}' | shasum -c && chmod +x /tmp/${fileHash} && /tmp/${fileHash}`,
+            value: `aws s3 cp s3://${s3Path} /tmp/${fileHash} && echo '${fileHash}  /tmp/${fileHash}' | shasum -c && chmod +x /tmp/${fileHash} && /tmp/${fileHash}`,
             performedWork: true,
         };
     }
