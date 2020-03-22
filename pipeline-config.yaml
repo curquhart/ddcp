@@ -87,7 +87,7 @@ Pipelines:
                   post_build:
                     commands:
                       - '!Script':
-                          Bin: >
+                          Bin: |
                             #!/usr/bin/env bash
 
                             set -e
