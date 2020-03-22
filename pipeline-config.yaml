@@ -22,7 +22,12 @@ Pipelines:
             '!Secret': SlackWebHookUrl
     Sources:
       - Name: Source
-        Type: CodeCommit
+        Type: Git
+        Uri: git@github.com:curquhart/ddcp.git
+        Auth:
+          PrivateKey:
+            '!Secret': GitHubDeployKey
+        Trigger: GitHubWebHook
         RepositoryName: ddcp
         BranchName: master
     Stages:
