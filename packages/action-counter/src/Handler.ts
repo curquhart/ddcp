@@ -1,5 +1,7 @@
 import {CodePipelineEvent, Context} from 'aws-lambda';
-import {CodePipeline, DynamoDB, S3} from 'aws-sdk';
+import {CodePipeline} from 'aws-sdk';
+import {DynamoDB} from 'aws-sdk';
+import {S3} from 'aws-sdk';
 import * as AdmZip from 'adm-zip';
 
 const getArtifactS3Client = (event: CodePipelineEvent): S3 => {
@@ -14,9 +16,6 @@ const getArtifactS3Client = (event: CodePipelineEvent): S3 => {
     });
 };
 
-const cp = new CodePipeline();
-const dynamodb = new DynamoDB();
-
 interface UserParams {
     Operation: string;
     TableName: string;
@@ -24,7 +23,9 @@ interface UserParams {
 }
 
 export class Handler {
-    private async incrementAndGet(userParameters: UserParams): Promise<number> {
+    async incrementAndGet(userParameters: UserParams): Promise<number> {
+        const dynamodb = new DynamoDB();
+
         const res = await dynamodb.updateItem({
             TableName: userParameters.TableName,
             Key: {
@@ -53,6 +54,8 @@ export class Handler {
     }
 
     async safeHandle(event: CodePipelineEvent, context: Context): Promise<void> {
+        const cp = new CodePipeline();
+
         try {
             const s3 = getArtifactS3Client(event);
 

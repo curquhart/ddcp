@@ -6,6 +6,14 @@
     "lerna": "3.20.2"
   },
   "devDependencies": {
-    "lerna-audit": "1.1.1"
+    "@babel/preset-typescript": "7.9.0",
+    "@types/jest": "25.1.4",
+    "jest": "25.1.0",
+    "lerna-audit": "1.1.1",
+    "ts-jest": "25.2.1",
+    "typescript": "3.8.2"
+  },
+  "scripts": {
+    "test": "jest"
   }
 }
