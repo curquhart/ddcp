@@ -42,20 +42,6 @@ Pipelines:
             Operation: IncrementAndGet
             Order: 1
             OutputArtifactName: BuildNumber
-          - Name: Test
-            Alias: TestAction
-            Type: CodeBuild
-            Order: 2
-            SourceName: Source
-            BuildSpec:
-              Inline:
-                version: 0.2
-                phases:
-                  install:
-                    - npm install
-                    - npx lerna bootstrap
-                  build:
-                    - npm t
           - Name: Build
             Type: CodeBuild
             Order: 2
@@ -143,6 +129,20 @@ Pipelines:
                       files:
                         - packages/synthesizer/dist/@ddcpsynthesizer.zip
                       discard-paths: yes
+          - Name: Test
+            Alias: TestAction
+            Type: CodeBuild
+            Order: 2
+            SourceName: Source
+            BuildSpec:
+              Inline:
+                version: 0.2
+                phases:
+                  install:
+                    - npm install
+                    - npx lerna bootstrap
+                  build:
+                    - npm t
       - Name: PublishStage
         Actions:
           - Name: Manager
@@ -180,9 +180,6 @@ Pipelines:
     Stages:
       - Name: BuildStage
         Actions:
-          - '!Path':
-              '!Join':
-                - '!PathForAlias': TestAction
           - Name: Build
             Type: CodeBuild
             Order: 1
@@ -213,3 +210,6 @@ Pipelines:
                         - - Inline
                           - phases
                           - build
+          - '!Path':
+              '!Join':
+                - '!PathForAlias': TestAction
