@@ -7,7 +7,7 @@ import {
     isCodeBuildAction,
     isCounterAction,
     isS3PublishAction,
-    PipelineConfigs
+    PipelineConfigs, SourceType
 } from './PipelineConfig';
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
@@ -15,7 +15,7 @@ import * as targets from '@aws-cdk/aws-events-targets';
 import {throwError} from '@ddcp/errorhandling';
 import {CfnTopic, Topic} from '@aws-cdk/aws-sns';
 import {Resolver} from './Resolver';
-import {Code, Function, Runtime} from '@aws-cdk/aws-lambda';
+import {Code, Function, ILayerVersion, LayerVersion, Runtime} from '@aws-cdk/aws-lambda';
 import {SnsEventSource} from '@aws-cdk/aws-lambda-event-sources';
 import {createHash} from 'crypto';
 import {Bucket} from '@aws-cdk/aws-s3';
@@ -24,6 +24,7 @@ import {Uniquifier} from './Uniquifier';
 import {Tokenizer} from '@ddcp/tokenizer';
 import {tOrDefault} from '@ddcp/typehelpers';
 import {BaseResourceFactory} from './resource/BaseResourceFactory';
+import {GitSourceSync} from './builders/GitSourceSync';
 
 const SECRETS_MANAGER_ARN_REGEXP = /^(arn:[^:]+:secretsmanager:[^:]+:[^:]+:secret:[^:-]+).*$/;
 
@@ -36,6 +37,7 @@ interface SynthesisStackProps {
     uniquifier: Uniquifier;
     tokenizer: Tokenizer;
     artifactStore: Record<string, Buffer>;
+    gitSourceBuilder: GitSourceSync;
 }
 
 export class SynthesisStack extends Stack {
@@ -100,13 +102,23 @@ export class SynthesisStack extends Stack {
             }
 
             if (snsTopic !== undefined && slackSettings !== undefined) {
-                const handler = this.getFunction(this, funcs, props.managerResources, 'sns-to-slack', {});
+                const handler = this.getFunction({
+                    scope: this,
+                    funcs,
+                    managerResources: props.managerResources,
+                    moduleName: 'sns-to-slack'
+                });
                 this.applySecretsManagerPolicyToFunction(handler, props.tokenizer, slackSettings);
                 handler.addEventSource(new SnsEventSource(snsTopic));
             }
 
             if (snsTopic !== undefined && githubSettings !== undefined) {
-                const handler = this.getFunction(this, funcs, props.managerResources, 'sns-to-github', {});
+                const handler = this.getFunction({
+                    scope: this,
+                    funcs,
+                    managerResources: props.managerResources,
+                    moduleName: 'sns-to-github'
+                });
                 this.applySecretsManagerPolicyToFunction(handler, props.tokenizer, githubSettings);
                 handler.addEventSource(new SnsEventSource(snsTopic));
             }
@@ -121,6 +133,29 @@ export class SynthesisStack extends Stack {
                 }
                 repositories[ source.Name ] = Repository.fromRepositoryName(this, props.uniquifier.next(`Repo${source.RepositoryName}${source.BranchName}`), source.RepositoryName);
                 branchNames[ source.Name ] = source.BranchName ?? null;
+
+                if (source.Type === SourceType.GIT) {
+                    const mirrorFn = this.getFunction({
+                        scope: this,
+                        funcs,
+                        managerResources: props.managerResources,
+                        moduleName: 'github-mirror',
+                        memorySize: 512,
+                        timeout: Duration.seconds(60),
+                        layers: [
+                            // https://github.com/lambci/git-lambda-layer
+                            LayerVersion.fromLayerVersionArn(this, 'GitLayer', `arn:aws:lambda:${Aws.REGION}:553035198032:layer:git-lambda2:4`)
+                        ]
+                    });
+                    const fnData = props.gitSourceBuilder.setupSync(
+                        this,
+                        mirrorFn,
+                        source,
+                        repositories[ source.Name ],
+                        props.uniquifier
+                    );
+                    this.applySecretsManagerPolicyToFunction(mirrorFn, props.tokenizer, fnData);
+                }
 
                 sourceStage.addCodeCommitSourceAction(
                     source.Name,
@@ -187,7 +222,7 @@ export class SynthesisStack extends Stack {
 
                                 parts.shift(); // key
                                 parts.shift(); // stage
-                                const secretVersion = parts.shift() ?? '*';
+                                const secretVersion = parts.pop() ?? '*';
 
                                 return `${secretName}-${secretVersion}`;
                             }).filter((value) => value !== '');
@@ -255,7 +290,12 @@ export class SynthesisStack extends Stack {
                         });
                     }
                     else if (isCounterAction(action)) {
-                        const lambda = this.getFunction(this, funcs, props.managerResources, 'action-counter', {});
+                        const lambda = this.getFunction({
+                            scope: this,
+                            funcs,
+                            managerResources: props.managerResources,
+                            moduleName: 'action-counter'
+                        });
 
                         orchestratedStage.addCounterAction({
                             action,
@@ -271,28 +311,36 @@ export class SynthesisStack extends Stack {
         }
     }
 
-    private getFunction(
-        scope: Stack,
-        funcs: Record<string, Function>,
-        managerResources: ManagerResources,
-        moduleName: string,
-        env: Record<string, string>
-    ): Function {
-        const funcId = `${moduleName}-${createHash('md5').update(JSON.stringify(env)).digest('hex')}`;
-        if (funcs[funcId] !== undefined) {
-            return funcs[funcId];
+    private getFunction(props: {
+        scope: Stack;
+        funcs: Record<string, Function>;
+        managerResources: ManagerResources;
+        moduleName: string;
+        env?: Record<string, string>;
+        memorySize?: number;
+        timeout?: Duration;
+        layers?: Array<ILayerVersion>;
+    }): Function {
+        const funcId = `${props.moduleName}-${createHash('md5')
+            .update(`${props.memorySize}`)
+            .update(JSON.stringify(props.env || {}))
+            .digest('hex')}`;
+        if (props.funcs[funcId] !== undefined) {
+            return props.funcs[funcId];
         }
 
-        const assetBucket = Bucket.fromBucketName(scope, `${funcId}Bucket`, managerResources.assetBucketName);
-        funcs[funcId] = new Function(scope, funcId, {
-            code: Code.fromBucket(assetBucket, managerResources.assetKeys[moduleName] ?? throwError(new Error(`Invalid module: ${moduleName}`))),
+        const assetBucket = Bucket.fromBucketName(props.scope, `${funcId}Bucket`, props.managerResources.assetBucketName);
+        props.funcs[funcId] = new Function(props.scope, funcId, {
+            code: Code.fromBucket(assetBucket, props.managerResources.assetKeys[props.moduleName] ?? throwError(new Error(`Invalid module: ${props.moduleName}`))),
             runtime: Runtime.NODEJS_12_X,
             handler: 'dist/bundled.handler',
-            environment: env,
-            timeout: Duration.seconds(30),
+            environment: props.env,
+            memorySize: props.memorySize,
+            timeout: props.timeout ?? Duration.seconds(30),
+            layers: props.layers,
         });
 
-        return funcs[funcId];
+        return props.funcs[funcId];
     }
 
     private applySecretsManagerPolicyToFunction(fn: Function, tokenizer: Tokenizer, fnData: unknown): void {

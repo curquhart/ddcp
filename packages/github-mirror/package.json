@@ -22,6 +22,7 @@
     ]
   },
   "dependencies": {
+    "@ddcp/secretsmanager": "^0.0.1-alpha.48",
     "@octokit/webhooks": "7.1.0",
     "@types/aws4": "1.5.1",
     "@types/rimraf": "2.0.3",

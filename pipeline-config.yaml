@@ -22,7 +22,12 @@ Pipelines:
             '!Secret': SlackWebHookUrl
     Sources:
       - Name: Source
-        Type: CodeCommit
+        Type: Git
+        Uri: git@github.com:curquhart/ddcp.git
+        Auth:
+          PrivateKey:
+            '!Secret': GitHubMirrorPrivateKey
+        Trigger: GitHubWebHook
         RepositoryName: ddcp
         BranchName: master
     Stages:
@@ -54,7 +59,7 @@ Pipelines:
                   'secrets-manager':
                     NPM_TOKEN: 'NpmPublish:NPM_TOKEN'
                     GITHUB_USER: 'GithubPush:USERNAME'
-                    GITHUB_TOKEN: 'GithubPush:TOKEN'
+                    GITHUB_PRIVATE_KEY: 'GitHubVersioningPrivateKey'
                 phases:
                   install:
                     runtime-versions:
@@ -94,7 +99,11 @@ Pipelines:
 
                             if [[ ${CODEBUILD_BUILD_SUCCEEDING} -eq 1 ]]
                             then
-                              git clone https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/ddcp.git tmp
+                              eval $(ssh-agent -s)
+                              echo "${GITHUB_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
+                              mkdir -p ~/.ssh
+                              chmod 0700 ~/.ssh
+                              git clone git@github.com:${GITHUB_USER}/ddcp.git tmp
                               cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
                               mv tmp/.git .git
                               rm -rf tmp
