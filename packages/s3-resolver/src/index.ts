@@ -64,6 +64,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent, context:
         );
     }
     catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err);
 
         await sendResponsePromise(

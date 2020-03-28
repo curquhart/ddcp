@@ -1,14 +1,15 @@
-import {SNSEvent} from 'aws-lambda';
+import {Context, SNSEvent} from 'aws-lambda';
 import {Octokit} from '@octokit/rest';
 import {createAppAuth} from '@octokit/auth-app';
 import {CodeBuildStatus, Payload} from '@ddcp/sns-models';
 import {Resolver} from '@ddcp/secretsmanager';
 import {throwError} from '@ddcp/errorhandling';
+import {info} from './loggers';
 
 const resolver = new Resolver();
 
 export class Handler {
-    async handle(event: SNSEvent): Promise<void> {
+    async handle(event: SNSEvent, context: Context): Promise<void> {
         for (const record of event.Records) {
             const payload = JSON.parse(record.Sns.Message) as Payload;
 
@@ -20,11 +21,11 @@ export class Handler {
             const sha = payload.buildEnvironment?.find((envVar) => envVar.name === 'SOURCE_VERSION')?.value ?? null;
 
             if (sha === null) {
-                console.info('Source version missing so ignoring...');
+                info('Source version missing so ignoring...');
                 return;
             }
 
-            console.info(`Got source version: ${sha}`);
+            info(`Got source version: ${sha}`);
 
             const prefix = 'github_pr_';
 
@@ -42,10 +43,10 @@ export class Handler {
             const {owner, repo} = match.groups as {owner: string; repo: string};
 
             if (owner === undefined || repo === undefined) {
-                console.info(`Unknown owner/repo. Defaults: ${payload.githubSettings.defaults}`);
+                info(`Unknown owner/repo. Defaults: ${payload.githubSettings.defaults}`);
                 return;
             }
-            console.info(`Owner = ${owner} Repo = ${repo} Sha = ${sha}`);
+            info(`Owner = ${owner} Repo = ${repo} Sha = ${sha}`);
 
             // Resolve from Secrets Manager
             const authSettings = await resolver.resolve(payload.githubSettings.auth);
@@ -94,7 +95,7 @@ export class Handler {
 
             const codeBuildLink = `https://${payload.region}.console.aws.amazon.com/codesuite/codebuild/projects/${payload.projectName}/build/${payload.buildId.split('/').pop()}/log?region=${payload.region}`;
 
-            console.info(`Creating check on ${owner}/${repo} for ${sha}: status = ${checkStatus} conclusion = ${conclusion} cblink = ${codeBuildLink}`);
+            info(context.awsRequestId)(`Creating check on ${owner}/${repo} for ${sha}: status = ${checkStatus} conclusion = ${conclusion} cblink = ${codeBuildLink}`);
             await installationAuthedOctokit.checks.create({
                 owner,
                 repo,

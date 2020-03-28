@@ -1,4 +1,5 @@
 import * as aws4 from 'aws4';
+import {error} from '@ddcp/lib-logger';
 
 const re = /^([^=]+)=(.*)$/gm;
 
@@ -55,7 +56,7 @@ const main = async(): Promise<void> => {
 
 main()
 .catch((err) => {
-    console.error(err);
+    error('NA', err);
     // eslint-disable-next-line no-process-exit
     process.exit(1);
 });

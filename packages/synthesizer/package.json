@@ -43,6 +43,7 @@
     "@ddcp/errorhandling": "^1.0.0",
     "@ddcp/tokenizer": "^1.0.0",
     "@ddcp/typehelpers": "^1.0.0",
+    "@ddcp/lib-logger": "^1.0.0",
     "adm-zip": "0.4.14",
     "aws-lambda": "1.0.5",
     "aws-sdk": "2.624.0",
