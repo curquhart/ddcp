@@ -180,6 +180,10 @@ Pipelines:
                                 git config user.name "DDCP CI"
                                 echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
                                 npx lerna publish ${BUILD_VERSION} --conventional-commits --no-push --yes | tee /tmp/publish-results && grep -qv "lerna ERR\|WARN" < /tmp/publish-results
+
+                                eval $(ssh-agent -s)
+                                echo "${GITHUB_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
+
                                 # separate commands because we want our tag to push even if we've fallen behind master.
                                 git push origin v${BUILD_VERSION}
                                 git push origin master
