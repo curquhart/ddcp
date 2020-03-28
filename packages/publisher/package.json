@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/publisher",
-  "version": "0.0.1-beta.88",
+  "version": "1.0.0",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -37,15 +37,15 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/action-counter": "^0.0.1-beta.88",
-    "@ddcp/eslint-config": "^0.0.1-beta.88",
-    "@ddcp/github-mirror": "^0.0.1-beta.88",
-    "@ddcp/manager": "^0.0.1-beta.88",
-    "@ddcp/sns-to-github": "^0.0.1-beta.88",
-    "@ddcp/sns-to-slack": "^0.0.1-beta.88",
-    "@ddcp/synthesizer": "^0.0.1-beta.88",
-    "@ddcp/tools": "^0.0.1-beta.88",
-    "@ddcp/typescript-config": "^0.0.1-beta.88",
+    "@ddcp/action-counter": "^1.0.0",
+    "@ddcp/eslint-config": "^1.0.0",
+    "@ddcp/github-mirror": "^1.0.0",
+    "@ddcp/manager": "^1.0.0",
+    "@ddcp/sns-to-github": "^1.0.0",
+    "@ddcp/sns-to-slack": "^1.0.0",
+    "@ddcp/synthesizer": "^1.0.0",
+    "@ddcp/tools": "^1.0.0",
+    "@ddcp/typescript-config": "^1.0.0",
     "@types/jest": "25.1.4",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
