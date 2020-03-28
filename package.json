@@ -11,6 +11,7 @@
     "jest": "25.1.0",
     "jest-junit": "10.0.0",
     "lerna-audit": "1.1.1",
+    "standard-version": "7.1.0",
     "ts-jest": "25.2.1",
     "typescript": "3.8.2"
   },
