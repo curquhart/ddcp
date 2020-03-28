@@ -74,6 +74,20 @@ Pipelines:
                       - npx lerna run build --scope @ddcp/tools
                   pre_build:
                     commands:
+                      - '!Script':
+                          Bin: |
+                            #!/usr/bin/env bash
+
+                            set -e
+
+                            eval $(ssh-agent -s)
+                            echo "${GITHUB_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
+                            mkdir -p ~/.ssh
+                            chmod 0700 ~/.ssh
+                            git clone git@github.com:${GITHUB_USER}/ddcp.git tmp
+                            cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
+                            mv tmp/.git .git
+                            rm -rf tmp
                       - '!Join':
                         - 'export BUILD_NUMBER=$(cat ${CODEBUILD_SRC_DIR_'
                         - '!Path':
@@ -159,14 +173,6 @@ Pipelines:
 
                             if [[ ${CODEBUILD_BUILD_SUCCEEDING} -eq 1 ]]
                             then
-                              eval $(ssh-agent -s)
-                              echo "${GITHUB_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
-                              mkdir -p ~/.ssh
-                              chmod 0700 ~/.ssh
-                              git clone git@github.com:${GITHUB_USER}/ddcp.git tmp
-                              cd tmp && git fetch && git reset --hard ${CODEBUILD_RESOLVED_SOURCE_VERSION} && cd ..
-                              mv tmp/.git .git
-                              rm -rf tmp
                               # is head tagged? if so, we're done.
                               if [[ "$(git tag --contains HEAD)" == "" ]]
                               then
