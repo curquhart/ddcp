@@ -146,6 +146,12 @@ Pipelines:
                   build:
                     commands:
                       - npm t
+                reports:
+                  'test-results':
+                    files:
+                      - reports/junit.xml
+                    discard-paths: yes
+                    file-format: JunitXml
       - Name: PublishStage
         Actions:
           - Name: Manager
