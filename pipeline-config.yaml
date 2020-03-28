@@ -89,7 +89,7 @@ Pipelines:
 
                                 const fs = require('fs');
 
-                                const bump = require('standard-version/lib/lifecycles/bump');
+                                const bump = require(`${process.cwd()}/node_modules/standard-version/lib/lifecycles/bump`);
 
                                 const startVersion = JSON.parse(fs.readFileSync('lerna.json').toString()).version;
                                 const buildNumber = process.env.BUILD_NUMBER;
