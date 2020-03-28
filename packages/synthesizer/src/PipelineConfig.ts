@@ -37,6 +37,7 @@ type CodeBuildBuildSpec = Record<string, unknown> & {
     artifacts?: {
         'secondary-artifacts'?: Record<string, unknown>;
     };
+    reports?: Record<string, unknown>;
     env?: {
         'secrets-manager'?: Record<string, string>;
     };

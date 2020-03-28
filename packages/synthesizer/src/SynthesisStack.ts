@@ -188,8 +188,9 @@ export class SynthesisStack extends Stack {
                             throw new Error('BranchName cannot be undefined.');
                         }
 
+                        const codeBuildProjectName = `${pipeline.Name}${stage.Name}${action.Name}Project`;
                         const codeBuildProject = new Project(this, props.uniquifier.next(`${pipeline.Name}${stage.Name}${action.Name}Project`), {
-                            projectName: `${pipeline.Name}${stage.Name}${action.Name}Project`,
+                            projectName: codeBuildProjectName,
                             buildSpec: BuildSpec.fromObject(buildSpec),
                             source: Source.codeCommit({
                                 repository,
@@ -200,6 +201,20 @@ export class SynthesisStack extends Stack {
                                 buildImage: LinuxBuildImage.STANDARD_3_0,
                             },
                         });
+
+                        for (const reportName of Object.keys(tOrDefault(buildSpec.reports, {}))) {
+                            codeBuildProject.addToRolePolicy(new PolicyStatement({
+                                actions: [
+                                    'codebuild:CreateReportGroup',
+                                    'codebuild:CreateReport',
+                                    'codebuild:BatchPutTestCases',
+                                    'codebuild:UpdateReport',
+                                ],
+                                resources: [
+                                    `arn:aws:codebuild:${Aws.REGION}:${Aws.ACCOUNT_ID}:report-group/${codeBuildProjectName}-${reportName}`
+                                ]
+                            }));
+                        }
 
                         // TODO: it's late, simplify this... a lot.
                         if (buildSpec.env !== undefined && buildSpec.env['secrets-manager'] !== undefined) {
