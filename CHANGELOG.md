@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.1-beta.88](https://github.com/curquhart/ddcp/compare/v0.0.1-alpha.81...v0.0.1-beta.88) (2020-03-28)
+
+
+### Bug Fixes
+
+* clone repo before determining version ([3fb1fea](https://github.com/curquhart/ddcp/commit/3fb1feaad0d3ae5308943f12f135e4db65f4ea70))
+* correct require path for standard-version ([3c80dbd](https://github.com/curquhart/ddcp/commit/3c80dbd84478e7b0d16c4ee519130e1f62290eee))
+* setup ssh-agent again before push ([77e3bd1](https://github.com/curquhart/ddcp/commit/77e3bd1a9e6b0aa1a36d74287a1fe74106a5e4a7))
+* suppress output of sha check and s3 cp ([78ef8a9](https://github.com/curquhart/ddcp/commit/78ef8a9d30a936fa61ee7bf56d80c36bbf01281b))
+
+
+### Features
+
+* integrate semantic versioning into auto versioning ([deb43e8](https://github.com/curquhart/ddcp/commit/deb43e8a4fc190c50bd183e1f7e4fba17b97ce83))
+
+
+
+
+
 ## [0.0.1-alpha.81](https://github.com/curquhart/ddcp/compare/v0.0.1-alpha.79...v0.0.1-alpha.81) (2020-03-28)
 
 **Note:** Version bump only for package ddcp
