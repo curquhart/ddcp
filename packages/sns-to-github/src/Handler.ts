@@ -99,7 +99,7 @@ export class Handler {
                 owner,
                 repo,
                 'head_sha': sha,
-                'name': 'CodeBuild',
+                'name': `CodeBuild - ${payload.projectName}`,
                 'status': checkStatus,
                 'conclusion': conclusion,
                 'details_url': codeBuildLink,
