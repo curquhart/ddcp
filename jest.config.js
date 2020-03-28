@@ -23,5 +23,13 @@ module.exports = {
   testEnvironment: 'node',
   collectCoverage: true,
   coverageReporters: ['json', 'html'],
-  coverageDirectory: 'coverage'
+  reporters: [
+    'default',
+    [
+      'jest-junit', {
+        outputDirectory: 'reports',
+      }
+    ]
+  ],
+  coverageDirectory: 'reports/coverage'
 };

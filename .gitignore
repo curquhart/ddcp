@@ -1,5 +1,6 @@
 cdk.out/
 coverage/
+reports/
 dist/
 node_modules/
 .cache/
