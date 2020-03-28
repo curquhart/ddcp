@@ -149,7 +149,7 @@ Pipelines:
                                         console.log(`${endMajor}.${endMinor}.${endPatch}-beta.${buildNumber}`)
                                     }
                                     else {
-                                        console.log(endVersion)
+                                        console.log(`${endVersion}-${buildNumber}`)
                                     }
                                 }).catch((err) => {
                                     console.error(err);
