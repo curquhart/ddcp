@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/sns-to-github",
-  "version": "1.0.0",
+  "version": "1.1.0-91",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
@@ -38,9 +38,9 @@
     "universal-github-app-jwt": "./node_modules/universal-github-app-jwt/dist-node/index.js"
   },
   "dependencies": {
-    "@ddcp/errorhandling": "^1.0.0",
-    "@ddcp/secretsmanager": "^1.0.0",
-    "@ddcp/sns-models": "^1.0.0",
+    "@ddcp/errorhandling": "^1.1.0-91",
+    "@ddcp/secretsmanager": "^1.1.0-91",
+    "@ddcp/sns-models": "^1.1.0-91",
     "@octokit/app": "4.2.0",
     "@octokit/auth-app": "2.4.3",
     "@octokit/request": "5.3.2",
@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/eslint-config": "^1.0.0",
+    "@ddcp/eslint-config": "^1.1.0-91",
     "@ddcp/typescript-config": "^1.0.0",
     "@types/aws-lambda": "8.10.44",
     "@types/debug": "4.1.5",
