@@ -1,14 +1,9 @@
 import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
-import {BuildSpec, LinuxBuildImage, Project, Source} from '@aws-cdk/aws-codebuild';
+import {BuildEnvironmentVariableType, BuildSpec, LinuxBuildImage, Project, Source} from '@aws-cdk/aws-codebuild';
 import {Pipeline} from '@aws-cdk/aws-codepipeline';
-import {Aws, Fn, Construct, Duration, Stack} from '@aws-cdk/core';
-import {
-    isCodeBuildAction,
-    isCounterAction,
-    isS3PublishAction,
-    PipelineConfigs, SourceType
-} from './PipelineConfig';
+import {Aws, Construct, Duration, Fn, Stack} from '@aws-cdk/core';
+import {isCodeBuildAction, isCounterAction, isS3PublishAction, PipelineConfigs, SourceType} from './PipelineConfig';
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
 import * as kms from '@aws-cdk/aws-kms';
@@ -196,9 +191,23 @@ export class SynthesisStack extends Stack {
                                 repository,
                                 branchOrRef: branchName ?? undefined,
                             }),
-                            // TODO: make this configurable.
                             environment: {
+                                // TODO: make this configurable.
                                 buildImage: LinuxBuildImage.STANDARD_3_0,
+                                environmentVariables: {
+                                    DDCP_PIPELINE_NAME: {
+                                        type: BuildEnvironmentVariableType.PLAINTEXT,
+                                        value: pipeline.Name,
+                                    },
+                                    DDCP_STAGE_NAME: {
+                                        type: BuildEnvironmentVariableType.PLAINTEXT,
+                                        value: stage.Name,
+                                    },
+                                    DDCP_ACTION_NAME: {
+                                        type: BuildEnvironmentVariableType.PLAINTEXT,
+                                        value: action.Name,
+                                    },
+                                }
                             },
                         });
 
