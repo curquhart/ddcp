@@ -37,6 +37,7 @@
     "@aws-cdk/aws-lambda-event-sources": "1.30.0",
     "@aws-cdk/aws-s3": "1.30.0",
     "@aws-cdk/aws-sns": "1.30.0",
+    "@aws-cdk/aws-kms": "1.30.0",
     "@aws-cdk/core": "1.30.0",
     "@aws-cdk/cx-api": "1.30.0",
     "@ddcp/errorhandling": "^0.0.1-alpha.65",

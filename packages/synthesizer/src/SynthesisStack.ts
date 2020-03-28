@@ -2,7 +2,7 @@ import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {BuildSpec, LinuxBuildImage, Project, Source} from '@aws-cdk/aws-codebuild';
 import {Pipeline} from '@aws-cdk/aws-codepipeline';
-import {Aws, Construct, Duration, Stack} from '@aws-cdk/core';
+import {Aws, Fn, Construct, Duration, Stack} from '@aws-cdk/core';
 import {
     isCodeBuildAction,
     isCounterAction,
@@ -11,9 +11,10 @@ import {
 } from './PipelineConfig';
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
+import * as kms from '@aws-cdk/aws-kms';
 import * as targets from '@aws-cdk/aws-events-targets';
 import {throwError} from '@ddcp/errorhandling';
-import {CfnTopic, Topic} from '@aws-cdk/aws-sns';
+import {Topic} from '@aws-cdk/aws-sns';
 import {Resolver} from './Resolver';
 import {Code, Function, ILayerVersion, LayerVersion, Runtime} from '@aws-cdk/aws-lambda';
 import {SnsEventSource} from '@aws-cdk/aws-lambda-event-sources';
@@ -79,26 +80,23 @@ export class SynthesisStack extends Stack {
 
             const slackSettings = pipeline.Notifications?.Slack !== undefined && pipeline.Notifications?.Slack.length > 0 ? pipeline.Notifications?.Slack : undefined;
             const githubSettings = pipeline.GitHub;
-            const snsTopic = slackSettings !== undefined || githubSettings !== undefined ? new Topic(this, props.uniquifier.next('Sns')) : undefined;
+
+            const needsSnsTopic = slackSettings !== undefined || githubSettings !== undefined;
+            const topicName = props.uniquifier.next(`ddcp-events-${pipeline.Name}-${Fn.select(2, Fn.split('/', Aws.STACK_ID))}`);
+            const snsKey = needsSnsTopic ? new kms.Key(this, props.uniquifier.next(`${pipeline.Name}SnsKey`), {
+                alias: `alias/${topicName}-key`
+            }): undefined;
+            const snsTopic = needsSnsTopic ? new Topic(this, props.uniquifier.next('Sns'), {
+                masterKey: snsKey,
+                topicName: topicName
+            }) : undefined;
             if (snsTopic !== undefined) {
                 snsTopic.addToResourcePolicy(new PolicyStatement({
                     actions: ['sns:Publish'],
                     principals: [new ServicePrincipal('events')],
                     resources: [snsTopic.topicArn]
                 }));
-                const slackSnsTopicNode = snsTopic?.node.defaultChild as CfnTopic;
-                slackSnsTopicNode.node.addInfo('cfn_nag disabled.');
-                slackSnsTopicNode
-                    .addOverride('Metadata', {
-                        'cfn_nag': {
-                            'rules_to_suppress': [
-                                {
-                                    id: 'W47',
-                                    reason: 'CodeBuild events do not contain any sensitive information and does not need encryption.',
-                                },
-                            ]
-                        }
-                    });
+                snsKey?.grant(new ServicePrincipal('events'), 'kms:GenerateDataKey', 'kms:Decrypt');
             }
 
             if (snsTopic !== undefined && slackSettings !== undefined) {
