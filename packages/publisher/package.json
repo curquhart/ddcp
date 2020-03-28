@@ -33,6 +33,7 @@
     "@aws-cdk/core": "1.25.0",
     "@aws-cdk/cx-api": "1.25.0",
     "aws-cdk": "1.25.0",
+    "@ddcp/lib-logger": "^1.0.0",
     "npm-pack-zip": "1.2.7"
   },
   "devDependencies": {

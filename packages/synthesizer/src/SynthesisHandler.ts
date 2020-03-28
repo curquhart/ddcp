@@ -26,6 +26,7 @@ import {CounterResourceFactory} from './resource/CounterResourceFactory';
 import {ArtifactStore} from './index';
 import {Param} from './fn/resolvers/Param';
 import {GitSourceSync} from './builders/GitSourceSync';
+import {error} from '@ddcp/lib-logger';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
@@ -147,7 +148,7 @@ export class SynthesisHandler {
             new Script(resolvers, artifactStore, tokenizer).init();
             new Param(resolvers, synthPipeline).init();
 
-            const resolver = new Resolver(resolvers);
+            const resolver = new Resolver(resolvers, context);
 
             new CodePipelineOrchestratorFactory(orchestratorFactories).init();
             new CloudWatchOrchestratorFactory(orchestratorFactories).init();
@@ -182,7 +183,7 @@ export class SynthesisHandler {
             await cp.putJobSuccessResult({jobId: event['CodePipeline.job'].id}).promise();
         }
         catch (err) {
-            console.error(err);
+            error(context.awsRequestId, err);
             await cp.putJobFailureResult({jobId: event['CodePipeline.job'].id, failureDetails: {
                 type: 'JobFailed',
                 message: `Failed to synthesize pipeline. Ref# ${context.awsRequestId}`

@@ -1,9 +1,11 @@
 import {CloudWatchEvents, CodeCommit, CodePipeline} from 'aws-sdk';
 import {CodeCommitEvent} from './CodeCommitEvent';
 import {tOrDefault} from '@ddcp/typehelpers';
+import {error, warn} from '@ddcp/lib-logger';
+import {Context} from 'aws-lambda';
 
 export class SelectorHandler {
-    async handle(event: CodeCommitEvent): Promise<void> {
+    async handle(event: CodeCommitEvent, context: Context): Promise<void> {
         const cc = new CodeCommit();
 
         const inputFile = event.detail.inputFile;
@@ -29,7 +31,7 @@ export class SelectorHandler {
                     }
 
                     if (beforePath !== null && beforePath !== afterPath) {
-                        console.warn(`WARN: ${inputFile} was renamed from ${beforePath} to ${afterPath}`);
+                        warn(context.awsRequestId, `${inputFile} was renamed from ${beforePath} to ${afterPath}`);
                     }
 
                     if (afterPath === inputFile) {
@@ -71,7 +73,7 @@ export class SelectorHandler {
 
             for (const resItem of tOrDefault(res.Entries, [])) {
                 if (resItem.ErrorCode !== undefined) {
-                    console.error(`Failed to publish event: errno=${resItem.ErrorCode} err=${resItem.ErrorMessage}`);
+                    error(context.awsRequestId, `Failed to publish event: errno=${resItem.ErrorCode} err=${resItem.ErrorMessage}`);
                 }
             }
         }

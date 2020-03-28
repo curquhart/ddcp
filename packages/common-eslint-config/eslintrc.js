@@ -9,6 +9,7 @@ module.exports = {
     'ecmaVersion': 2020
   },
   'rules': {
+    'no-console': ['error'],
     'semi': [2, 'always'],
     'quotes': ['error', 'single'],
     'node/no-missing-import': ['error', {

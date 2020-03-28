@@ -3,6 +3,7 @@ import {CodePipeline} from 'aws-sdk';
 import {DynamoDB} from 'aws-sdk';
 import {S3} from 'aws-sdk';
 import * as AdmZip from 'adm-zip';
+import {error} from '@ddcp/lib-logger';
 
 const getArtifactS3Client = (event: CodePipelineEvent): S3 => {
     const accessKeyId = event['CodePipeline.job'].data.artifactCredentials.accessKeyId;
@@ -77,7 +78,7 @@ export class Handler {
 
             await cp.putJobSuccessResult({jobId: event['CodePipeline.job'].id}).promise();
         } catch (err) {
-            console.error(err);
+            error(context.awsRequestId, err);
             await cp.putJobFailureResult({
                 jobId: event['CodePipeline.job'].id, failureDetails: {
                     type: 'JobFailed',

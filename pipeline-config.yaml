@@ -215,6 +215,7 @@ Pipelines:
                       - npx lerna bootstrap
                   build:
                     commands:
+                      - npx lerna run build
                       - npm t
                 reports:
                   'test-results':

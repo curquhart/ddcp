@@ -14,6 +14,6 @@ export const handler = async (event: CodePipelineEvent | CodeCommitEvent, contex
         return new SynthesisHandler().safeHandle(event, context);
     }
     else {
-        return new SelectorHandler().handle(event);
+        return new SelectorHandler().handle(event, context);
     }
 };

@@ -25,11 +25,9 @@
   "dependencies": {
     "@ddcp/secretsmanager": "^1.0.0",
     "@octokit/webhooks": "7.1.0",
-    "@types/aws4": "1.5.1",
-    "@types/rimraf": "2.0.3",
-    "@types/shell-escape": "0.2.0",
     "aws-lambda": "1.0.5",
     "aws4": "1.9.1",
+    "@ddcp/lib-logger": "^1.0.0",
     "github-webhook-validators": "1.0.3",
     "npm-pack-zip": "1.2.7",
     "rimraf": "3.0.2",
@@ -37,6 +35,9 @@
     "tmp": "0.1.0"
   },
   "devDependencies": {
+    "@types/aws4": "1.5.1",
+    "@types/rimraf": "2.0.3",
+    "@types/shell-escape": "0.2.0",
     "@babel/preset-typescript": "7.9.0",
     "@ddcp/eslint-config": "^1.0.0",
     "@ddcp/typescript-config": "^1.0.0",
