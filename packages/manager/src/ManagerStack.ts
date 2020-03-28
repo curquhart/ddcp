@@ -281,16 +281,34 @@ export class ManagerStack extends Stack {
             runOrder: 2
         });
 
-
+        // Use one fairly mega stage so that the change set is not updated out of turn if a new change comes in.
         pipeline.addStage({
-            stageName: 'PreparePipeline',
+            stageName: 'UpdatePipeline',
             actions: [
                 synthAction,
-                changeSetAction
+                changeSetAction,
+                new S3DeployAction({
+                    actionName: 'DeployArtifacts',
+                    objectKey: 'assets',
+                    input: synthesizedPipeline,
+                    bucket: localBucket,
+                    runOrder: changeSetAction.actionProperties.runOrder,
+                }),
+                new ManualApprovalAction({
+                    actionName: 'Approval',
+                    additionalInformation: 'Changes to pipeline infrastructure require approval before executing.',
+                    runOrder: 3,
+                }),
+                new CloudFormationExecuteChangeSetAction({
+                    stackName,
+                    actionName: 'ExecuteChangeSet',
+                    changeSetName,
+                    runOrder: 4,
+                }),
             ]
         });
 
-        const synthDefaultPolicy = pipeline.node.findChild('PreparePipeline').node.findChild('SynthesizePipeline').node.findChild('CodePipelineActionRole').node.findChild('DefaultPolicy').node.findChild('Resource') as CfnPolicy;
+        const synthDefaultPolicy = pipeline.node.findChild('UpdatePipeline').node.findChild('SynthesizePipeline').node.findChild('CodePipelineActionRole').node.findChild('DefaultPolicy').node.findChild('Resource') as CfnPolicy;
         synthDefaultPolicy.node.addInfo('cfn_nag disabled.');
         synthDefaultPolicy
             .addOverride('Metadata', {
@@ -326,36 +344,5 @@ export class ManagerStack extends Stack {
                     ]
                 }
             });
-
-        pipeline.addStage({
-            stageName: 'ApprovePipeline',
-            actions: [
-                new ManualApprovalAction({
-                    actionName: 'Approval',
-                    additionalInformation: 'Changes to pipeline infrastructure require approval before executing.',
-                }),
-            ]
-        });
-
-
-
-        pipeline.addStage({
-            stageName: 'UpdatePipeline',
-            actions: [
-                new S3DeployAction({
-                    actionName: 'DeployArtifacts',
-                    objectKey: 'assets',
-                    input: synthesizedPipeline,
-                    bucket: localBucket,
-                    runOrder: 1,
-                }),
-                new CloudFormationExecuteChangeSetAction({
-                    stackName,
-                    actionName: 'ExecuteChangeSet',
-                    changeSetName,
-                    runOrder: 2,
-                })
-            ]
-        });
     }
 }
