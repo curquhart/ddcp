@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/secretsmanager",
-  "version": "0.0.1-alpha.65",
+  "version": "0.0.1-alpha.71",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -22,13 +22,13 @@
     ]
   },
   "dependencies": {
-    "@ddcp/tokenizer": "^0.0.1-alpha.65",
+    "@ddcp/tokenizer": "^0.0.1-alpha.71",
     "aws-sdk": "2.640.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/eslint-config": "^0.0.1-alpha.65",
-    "@ddcp/typescript-config": "^0.0.1-alpha.65",
+    "@ddcp/eslint-config": "^0.0.1-alpha.71",
+    "@ddcp/typescript-config": "^0.0.1-alpha.71",
     "@types/jest": "25.1.4",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
