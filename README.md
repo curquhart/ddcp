@@ -1,6 +1,6 @@
 # Data Driven CodePipeline synthesizer
 
-![Build Status](https://codebuild.us-west-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiMUF1RlhoSGcxWVJQaEVBaWI3S0JadUlaUlVHTnQvQngrYVBLZjMzQnNLenlNZ3p5OFYrb0dGWExYZXMyR3RDUEJybGFnNVRXRWN6VFJSM0RBZUxYYy8wPSIsIml2UGFyYW1ldGVyU3BlYyI6Im0xVGw0TURlS2REaGoxUG0iLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+![Build Status](https://ddcp-pipeline-badgeassetsdd232fa513-16aet7pptdyyx.s3-us-west-1.amazonaws.com/876f717f1bd19c4fd7d20b880a3c010fbe55ebc7)
 
 About
 -----
