@@ -4,6 +4,7 @@ Resources:
     Alias: BuildNumberCounter
 Pipelines:
   - Name: ddcp-build
+    EnableBadge: true
     Notifications:
       Alias: Notifications
       Slack:
@@ -52,7 +53,6 @@ Pipelines:
                     - '!PathForAlias': IncrementCounter
                     - - OutputArtifactName
             ComputeType: BUILD_GENERAL1_MEDIUM
-            EnableBadge: true
             BuildSpec:
               Alias: BuildSpec
               Inline:
@@ -73,7 +73,6 @@ Pipelines:
                       - pip install cfn-lint
                       - npm install
                       - npx lerna bootstrap
-                      - npx lerna run build --scope @ddcp/tools
                   pre_build:
                     commands:
                       - '!Script':

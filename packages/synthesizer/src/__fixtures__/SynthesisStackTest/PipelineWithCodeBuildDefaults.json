@@ -611,7 +611,7 @@
         ]
       }
     },
-    "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6C5CBACC": {
+    "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6492E68E": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
@@ -642,7 +642,7 @@
         ]
       }
     },
-    "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRoleDefaultPolicy858AA710": {
+    "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRoleDefaultPolicy1692E2B1": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
         "PolicyDocument": {
@@ -674,15 +674,15 @@
           ],
           "Version": "2012-10-17"
         },
-        "PolicyName": "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRoleDefaultPolicy858AA710",
+        "PolicyName": "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRoleDefaultPolicy1692E2B1",
         "Roles": [
           {
-            "Ref": "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6C5CBACC"
+            "Ref": "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6492E68E"
           }
         ]
       }
     },
-    "githubmirror5b1e9de318f4686efcefb0bac81eff0628982D30": {
+    "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff063B48399A": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
@@ -692,7 +692,7 @@
         "Handler": "dist/bundled.handler",
         "Role": {
           "Fn::GetAtt": [
-            "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6C5CBACC",
+            "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6492E68E",
             "Arn"
           ]
         },
@@ -736,8 +736,8 @@
         "Timeout": 60
       },
       "DependsOn": [
-        "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRoleDefaultPolicy858AA710",
-        "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6C5CBACC"
+        "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRoleDefaultPolicy1692E2B1",
+        "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6492E68E"
       ]
     },
     "WebhookEndpointDDDAE8CDA3": {
@@ -746,7 +746,7 @@
         "Name": "WebhookEndpointDD"
       }
     },
-    "WebhookEndpointDDDeployment264EB5ABddfd54a1319d0da8223c7c6ee7f33ad9": {
+    "WebhookEndpointDDDeployment264EB5AB63d9fac05130fcbe6edeabae3783ed5f": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -765,7 +765,7 @@
           "Ref": "WebhookEndpointDDDAE8CDA3"
         },
         "DeploymentId": {
-          "Ref": "WebhookEndpointDDDeployment264EB5ABddfd54a1319d0da8223c7c6ee7f33ad9"
+          "Ref": "WebhookEndpointDDDeployment264EB5AB63d9fac05130fcbe6edeabae3783ed5f"
         },
         "StageName": "prod"
       }
@@ -821,7 +821,7 @@
         "Action": "lambda:InvokeFunction",
         "FunctionName": {
           "Fn::GetAtt": [
-            "githubmirror5b1e9de318f4686efcefb0bac81eff0628982D30",
+            "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff063B48399A",
             "Arn"
           ]
         },
@@ -862,7 +862,7 @@
         "Action": "lambda:InvokeFunction",
         "FunctionName": {
           "Fn::GetAtt": [
-            "githubmirror5b1e9de318f4686efcefb0bac81eff0628982D30",
+            "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff063B48399A",
             "Arn"
           ]
         },
@@ -934,7 +934,7 @@
                 ":lambda:path/2015-03-31/functions/",
                 {
                   "Fn::GetAtt": [
-                    "githubmirror5b1e9de318f4686efcefb0bac81eff0628982D30",
+                    "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff063B48399A",
                     "Arn"
                   ]
                 },

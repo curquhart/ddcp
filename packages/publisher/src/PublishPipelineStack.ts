@@ -5,7 +5,7 @@ import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
 import {CfnStack} from '@aws-cdk/aws-cloudformation';
 import {createHash} from 'crypto';
 import * as fs from 'fs';
-import {error} from '@ddcp/lib-logger';
+import {errorLogger} from '@ddcp/logger';
 
 const app = new App();
 
@@ -69,7 +69,7 @@ const shasum = createHash('sha1');
 distReadStream.on('data', (data) => shasum.update(data));
 distReadStream.on('end', () => new PublisherPipelineInitStack(shasum.digest('hex'), app, 'ddcp'));
 distReadStream.on('error', (err: Error) => {
-    error('NA', err);
+    errorLogger(err);
     // eslint-disable-next-line no-process-exit
     process.exit(1);
 });

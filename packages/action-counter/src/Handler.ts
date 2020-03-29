@@ -3,7 +3,7 @@ import {CodePipeline} from 'aws-sdk';
 import {DynamoDB} from 'aws-sdk';
 import {S3} from 'aws-sdk';
 import * as AdmZip from 'adm-zip';
-import {error} from '@ddcp/lib-logger';
+import {error} from '@ddcp/logger';
 
 const getArtifactS3Client = (event: CodePipelineEvent): S3 => {
     const accessKeyId = event['CodePipeline.job'].data.artifactCredentials.accessKeyId;

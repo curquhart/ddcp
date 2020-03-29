@@ -2,7 +2,8 @@ import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {
     BuildEnvironmentVariableType,
-    BuildSpec, CfnProject,
+    BuildSpec,
+    CfnProject,
     LinuxBuildImage,
     Project,
     Source
@@ -17,16 +18,16 @@ import * as targets from '@aws-cdk/aws-events-targets';
 import {throwError} from '@ddcp/errorhandling';
 import {Topic} from '@aws-cdk/aws-sns';
 import {Resolver} from './Resolver';
-import {Code, Function, ILayerVersion, LayerVersion, Runtime} from '@aws-cdk/aws-lambda';
+import {Function, LayerVersion} from '@aws-cdk/aws-lambda';
 import {SnsEventSource} from '@aws-cdk/aws-lambda-event-sources';
-import {createHash} from 'crypto';
-import {Bucket} from '@aws-cdk/aws-s3';
 import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
 import {Uniquifier} from './Uniquifier';
 import {Tokenizer} from '@ddcp/tokenizer';
 import {tOrDefault} from '@ddcp/typehelpers';
 import {BaseResourceFactory} from './resource/BaseResourceFactory';
 import {GitSourceSync} from './builders/GitSourceSync';
+import {getFunction} from './helpers';
+import {LambdaModuleName} from '@ddcp/module-collection';
 
 const SECRETS_MANAGER_ARN_REGEXP = /^(arn:[^:]+:secretsmanager:[^:]+:[^:]+:secret:[^:-]+).*$/;
 
@@ -52,7 +53,7 @@ export class SynthesisStack extends Stack {
         const pipelineConfig = props.resolver.resolve(this, props.unresolvedPipelineConfig) as PipelineConfigs;
 
         const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', props.managerResources.arn);
-        const funcs: Record<string, Function> = {};
+        const functionCache: Record<string, Function> = {};
 
         // create resources
         for (const resource of tOrDefault(pipelineConfig.Resources, [])) {
@@ -76,7 +77,8 @@ export class SynthesisStack extends Stack {
                 managerPipeline: codePipelineSynthPipeline,
                 managerResources: props.managerResources,
                 pipeline,
-                uniquifier: props.uniquifier
+                uniquifier: props.uniquifier,
+                functionCache,
             });
 
             const slackSettings = pipeline.Notifications?.Slack !== undefined && pipeline.Notifications?.Slack.length > 0 ? pipeline.Notifications?.Slack : undefined;
@@ -101,22 +103,22 @@ export class SynthesisStack extends Stack {
             }
 
             if (snsTopic !== undefined && slackSettings !== undefined) {
-                const handler = this.getFunction({
+                const handler = getFunction({
                     scope: this,
-                    funcs,
+                    functionCache,
                     managerResources: props.managerResources,
-                    moduleName: 'sns-to-slack'
+                    moduleName: LambdaModuleName.SnsToSlack,
                 });
                 this.applySecretsManagerPolicyToFunction(handler, props.tokenizer, slackSettings);
                 handler.addEventSource(new SnsEventSource(snsTopic));
             }
 
             if (snsTopic !== undefined && githubSettings !== undefined) {
-                const handler = this.getFunction({
+                const handler = getFunction({
                     scope: this,
-                    funcs,
+                    functionCache,
                     managerResources: props.managerResources,
-                    moduleName: 'sns-to-github'
+                    moduleName: LambdaModuleName.SnsToGitHub,
                 });
                 this.applySecretsManagerPolicyToFunction(handler, props.tokenizer, githubSettings);
                 handler.addEventSource(new SnsEventSource(snsTopic));
@@ -134,11 +136,11 @@ export class SynthesisStack extends Stack {
                 branchNames[ source.Name ] = source.BranchName ?? null;
 
                 if (source.Type === SourceType.GIT) {
-                    const mirrorFn = this.getFunction({
+                    const mirrorFn = getFunction({
                         scope: this,
-                        funcs,
+                        functionCache,
                         managerResources: props.managerResources,
-                        moduleName: 'github-mirror',
+                        moduleName: LambdaModuleName.GitHubMirror,
                         memorySize: 512,
                         timeout: Duration.seconds(60),
                         layers: [
@@ -325,11 +327,11 @@ export class SynthesisStack extends Stack {
                         });
                     }
                     else if (isCounterAction(action)) {
-                        const lambda = this.getFunction({
+                        const lambda = getFunction({
                             scope: this,
-                            funcs,
+                            functionCache,
                             managerResources: props.managerResources,
-                            moduleName: 'action-counter'
+                            moduleName: LambdaModuleName.ActionCounter,
                         });
 
                         orchestratedStage.addCounterAction({
@@ -344,38 +346,6 @@ export class SynthesisStack extends Stack {
                 }
             }
         }
-    }
-
-    private getFunction(props: {
-        scope: Stack;
-        funcs: Record<string, Function>;
-        managerResources: ManagerResources;
-        moduleName: string;
-        env?: Record<string, string>;
-        memorySize?: number;
-        timeout?: Duration;
-        layers?: Array<ILayerVersion>;
-    }): Function {
-        const funcId = `${props.moduleName}-${createHash('md5')
-            .update(`${props.memorySize}`)
-            .update(JSON.stringify(props.env || {}))
-            .digest('hex')}`;
-        if (props.funcs[funcId] !== undefined) {
-            return props.funcs[funcId];
-        }
-
-        const assetBucket = Bucket.fromBucketName(props.scope, `${funcId}Bucket`, props.managerResources.assetBucketName);
-        props.funcs[funcId] = new Function(props.scope, funcId, {
-            code: Code.fromBucket(assetBucket, props.managerResources.assetKeys[props.moduleName] ?? throwError(new Error(`Invalid module: ${props.moduleName}`))),
-            runtime: Runtime.NODEJS_12_X,
-            handler: 'dist/bundled.handler',
-            environment: props.env,
-            memorySize: props.memorySize,
-            timeout: props.timeout ?? Duration.seconds(30),
-            layers: props.layers,
-        });
-
-        return props.funcs[funcId];
     }
 
     private applySecretsManagerPolicyToFunction(fn: Function, tokenizer: Tokenizer, fnData: unknown): void {

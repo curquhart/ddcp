@@ -10,8 +10,7 @@
     "clean": "rm -rf node_modules dist",
     "deploy": "cdk deploy",
     "lint": "eslint --ext .ts src/",
-    "pack": "zip -jr dist/dist.zip node_modules/@ddcp/action-counter/dist/@ddcpaction-counter.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip node_modules/@ddcp/sns-to-slack/dist/@ddcpsns-to-slack.zip node_modules/@ddcp/sns-to-github/dist/@ddcpsns-to-github.zip node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip node_modules/@ddcp/manager/dist/manager.yaml",
-    "artifact-lint": "check-zip dist/dist.zip @ddcpsynthesizer.zip @ddcpaction-counter.zip @ddcpgithub-mirror.zip @ddcpsns-to-slack.zip @ddcpsns-to-github.zip @ddcpgithub-mirror.zip manager.yaml",
+    "pack": "ts-node ./prepareartifacts.ts",
     "test": "jest"
   },
   "engines": {
@@ -32,7 +31,8 @@
     "@aws-cdk/aws-s3-deployment": "1.25.0",
     "@aws-cdk/core": "1.25.0",
     "@aws-cdk/cx-api": "1.25.0",
-    "@ddcp/lib-logger": "^1.2.0-104",
+    "@ddcp/logger": "^1.2.0-104",
+    "@ddcp/module-collection": "^1.2.0-104",
     "aws-cdk": "1.25.0",
     "npm-pack-zip": "1.2.7"
   },
@@ -45,9 +45,12 @@
     "@ddcp/sns-to-github": "^1.2.0-104",
     "@ddcp/sns-to-slack": "^1.2.0-104",
     "@ddcp/synthesizer": "^1.2.0-104",
+    "@ddcp/codepipeline-badge": "^1.2.0-104",
     "@ddcp/tools": "^1.0.0",
     "@ddcp/typescript-config": "^1.0.0",
     "@types/jest": "25.1.4",
+    "adm-zip": "0.4.14",
+    "@types/adm-zip": "0.4.32",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
     "eslint": "6.8.0",
