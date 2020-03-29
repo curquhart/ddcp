@@ -142,7 +142,7 @@ Pipelines:
                                     issuePrefixes: [ '#' ],
                                     packageFiles: [ 'package.json' ],
                                     bumpFiles: [ 'package.json', 'package-lock.json' ]
-                                }, startVersion.replace(/-.+$/, '').then((endVersion) => {
+                                }, startVersion.replace(/-.+$/, '')).then((endVersion) => {
                                     const [ endMajor, endMinor, endPatch ] = endVersion.split('.');
 
                                     if (startMajor === endMajor && startMinor === endMinor && startPatch.replace(/-.+$/, '') === endPatch.replace(/-.+$/, '')) {
