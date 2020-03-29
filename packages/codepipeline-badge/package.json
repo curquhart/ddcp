@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/codepipeline-badge",
-  "version": "1.2.0-104",
+  "version": "1.2.1-107",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
