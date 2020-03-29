@@ -204,7 +204,7 @@ Pipelines:
             Type: CodeBuild
             Order: 2
             SourceName: Source
-            ComputeSize: BUILD_GENERAL1_MEDIUM
+            ComputeType: BUILD_GENERAL1_MEDIUM
             BuildSpec:
               Alias: TestBuildSpec
               Inline:
