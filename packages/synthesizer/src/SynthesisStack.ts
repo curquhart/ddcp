@@ -1,6 +1,13 @@
 import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
-import {BuildEnvironmentVariableType, BuildSpec, LinuxBuildImage, Project, Source} from '@aws-cdk/aws-codebuild';
+import {
+    BuildEnvironmentVariableType,
+    BuildSpec,
+    ComputeType,
+    LinuxBuildImage,
+    Project,
+    Source
+} from '@aws-cdk/aws-codebuild';
 import {Pipeline} from '@aws-cdk/aws-codepipeline';
 import {Aws, Construct, Duration, Fn, Stack} from '@aws-cdk/core';
 import {isCodeBuildAction, isCounterAction, isS3PublishAction, PipelineConfigs, SourceType} from './PipelineConfig';
@@ -192,8 +199,9 @@ export class SynthesisStack extends Stack {
                                 branchOrRef: branchName ?? undefined,
                             }),
                             environment: {
-                                // TODO: make this configurable.
+                                // TODO: make these configurable.
                                 buildImage: LinuxBuildImage.STANDARD_3_0,
+                                computeType: ComputeType.MEDIUM,
                                 environmentVariables: {
                                     DDCP_PIPELINE_NAME: {
                                         type: BuildEnvironmentVariableType.PLAINTEXT,
