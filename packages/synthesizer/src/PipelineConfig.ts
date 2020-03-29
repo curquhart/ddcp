@@ -1,5 +1,6 @@
 import * as s3 from '@aws-cdk/aws-s3';
 import {BaseResourceProps} from './resource/BaseResourceFactory';
+import {ComputeType} from "@aws-cdk/aws-codebuild";
 
 export enum SourceType {
     CODE_COMMIT = 'CodeCommit',
@@ -49,6 +50,10 @@ export interface CodeBuildAction extends Action {
     };
     InputArtifacts?: Array<string>;
     Type: ActionType.CODE_BUILD;
+    EnableBadge?: boolean;
+    BuildImage?: string;
+    ComputeType?: ComputeType;
+    PrivilegedMode?: boolean;
 }
 
 export interface S3PublishAction extends Action {
