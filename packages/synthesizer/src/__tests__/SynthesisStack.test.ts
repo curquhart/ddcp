@@ -153,4 +153,150 @@ describe('SynthesisStack test', () => {
             JSON.parse(fs.readFileSync(`${__dirname}/../__fixtures__/SynthesisStackTest/PipelineWithCounter.json`).toString())
         );
     });
+
+    it('synthesizes with CodeBuild defaults', async () => {
+        const app = new App({
+            outdir: tmpDir.name,
+        });
+
+        const resolvers = {};
+        const resourceFactories = {};
+
+        new Path(resolvers, resourceFactories).init();
+        new PathForAlias(resolvers).init();
+
+        const resolver = new Resolver(resolvers, 'NA');
+        const uniquifier = new Uniquifier();
+        const tokenizer = new Tokenizer();
+        const gitSourceBuilder = new GitSourceSync();
+        new CounterResourceFactory(resourceFactories, tokenizer, uniquifier).init();
+        const orchestrators = {};
+        new CodePipelineOrchestratorFactory(orchestrators).init();
+
+        const stackId = 'stack';
+        const stack = new SynthesisStack(app, stackId, {
+            managerResources: MANAGER_RESOURCES,
+            resolver: resolver,
+            unresolvedPipelineConfig: {
+                Pipelines: [
+                    {
+                        Name: 'foo',
+                        Sources: [
+                            {
+                                Name: 'Source',
+                                Type: 'Git',
+                                Uri: 'git@github.com:foo/bar.git',
+                                Trigger: 'GitHubWebHook',
+                                RepositoryName: 'baz',
+                                BranchName: 'foobar',
+                            }
+                        ],
+                        Stages: [
+                            {
+                                Name: 'BuildStage',
+                                Actions: [
+                                    {
+                                        Name: 'BuildAction',
+                                        Type: 'CodeBuild',
+                                        SourceName: 'Source',
+                                        BuildSpec: {
+                                            Inline: {},
+                                        },
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            orchestratorFactories: orchestrators,
+            resourceFactories: resourceFactories,
+            uniquifier,
+            tokenizer,
+            artifactStore: {},
+            gitSourceBuilder,
+        });
+
+        await stack.init();
+
+        const synth = app.synth();
+        expect(synth.getStackArtifact(stackId).template).toEqual(
+            JSON.parse(fs.readFileSync(`${__dirname}/../__fixtures__/SynthesisStackTest/PipelineWithCodeBuildDefaults.json`).toString())
+        );
+    });
+
+    it('synthesizes with CodeBuild overrides', async () => {
+        const app = new App({
+            outdir: tmpDir.name,
+        });
+
+        const resolvers = {};
+        const resourceFactories = {};
+
+        new Path(resolvers, resourceFactories).init();
+        new PathForAlias(resolvers).init();
+
+        const resolver = new Resolver(resolvers, 'NA');
+        const uniquifier = new Uniquifier();
+        const tokenizer = new Tokenizer();
+        const gitSourceBuilder = new GitSourceSync();
+        new CounterResourceFactory(resourceFactories, tokenizer, uniquifier).init();
+        const orchestrators = {};
+        new CodePipelineOrchestratorFactory(orchestrators).init();
+
+        const stackId = 'stack';
+        const stack = new SynthesisStack(app, stackId, {
+            managerResources: MANAGER_RESOURCES,
+            resolver: resolver,
+            unresolvedPipelineConfig: {
+                Pipelines: [
+                    {
+                        Name: 'foo',
+                        Sources: [
+                            {
+                                Name: 'Source',
+                                Type: 'Git',
+                                Uri: 'git@github.com:foo/bar.git',
+                                Trigger: 'GitHubWebHook',
+                                RepositoryName: 'baz',
+                                BranchName: 'foobar',
+                            }
+                        ],
+                        Stages: [
+                            {
+                                Name: 'BuildStage',
+                                Actions: [
+                                    {
+                                        Name: 'BuildAction',
+                                        Type: 'CodeBuild',
+                                        SourceName: 'Source',
+                                        ComputeType: 'CUSTOM_COMPUTE_TYPE',
+                                        EnableBadge: true,
+                                        BuildImage: 'aws/codebuild/standard:2.0',
+                                        PrivilegedMode: true,
+                                        BuildSpec: {
+                                            Inline: {},
+                                        },
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            orchestratorFactories: orchestrators,
+            resourceFactories: resourceFactories,
+            uniquifier,
+            tokenizer,
+            artifactStore: {},
+            gitSourceBuilder,
+        });
+
+        await stack.init();
+
+        const synth = app.synth();
+        expect(synth.getStackArtifact(stackId).template).toEqual(
+            JSON.parse(fs.readFileSync(`${__dirname}/../__fixtures__/SynthesisStackTest/PipelineWithCodeBuildOverrides.json`).toString())
+        );
+    });
 });

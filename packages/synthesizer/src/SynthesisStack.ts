@@ -2,8 +2,7 @@ import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {
     BuildEnvironmentVariableType,
-    BuildSpec,
-    ComputeType,
+    BuildSpec, CfnProject,
     LinuxBuildImage,
     Project,
     Source
@@ -198,10 +197,11 @@ export class SynthesisStack extends Stack {
                                 repository,
                                 branchOrRef: branchName ?? undefined,
                             }),
+                            badge: action.EnableBadge,
                             environment: {
-                                // TODO: make these configurable.
-                                buildImage: LinuxBuildImage.STANDARD_3_0,
-                                computeType: ComputeType.MEDIUM,
+                                buildImage: action.BuildImage !== undefined ? LinuxBuildImage.fromDockerRegistry(action.BuildImage) : LinuxBuildImage.STANDARD_3_0,
+                                computeType: action.ComputeType,
+                                privileged: action.PrivilegedMode,
                                 environmentVariables: {
                                     DDCP_PIPELINE_NAME: {
                                         type: BuildEnvironmentVariableType.PLAINTEXT,
@@ -218,6 +218,11 @@ export class SynthesisStack extends Stack {
                                 }
                             },
                         });
+                        if (action.BuildImage?.startsWith('aws/') === true) {
+                            const cfnProject = codeBuildProject.node.defaultChild as CfnProject;
+                            // Default to CODEBUILD
+                            cfnProject.addOverride('Properties.Environment.ImagePullCredentialsType', undefined);
+                        }
 
                         for (const reportName of Object.keys(tOrDefault(buildSpec.reports, {}))) {
                             codeBuildProject.addToRolePolicy(new PolicyStatement({
