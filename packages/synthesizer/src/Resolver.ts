@@ -2,7 +2,6 @@ import {Base} from './fn/Base';
 import {EMPTY_VOID_FN} from './helpers';
 import {Stack} from '@aws-cdk/core';
 import {info} from '@ddcp/lib-logger';
-import {Context} from 'aws-lambda';
 
 /**
  * Recursively checks if the provided value has been resolved.
@@ -46,7 +45,7 @@ export interface ResolveJob {
 export class Resolver {
     constructor(
         private readonly allResolvers: Record<string, Base<unknown, Array<unknown>>>,
-        private readonly context: Context
+        private readonly requestId: string
     ) {
     }
 
@@ -108,7 +107,7 @@ export class Resolver {
 
                         if (resolved.performedWork) {
                             nextValue.onPerformedWork(resolved.value);
-                            info(this.context.awsRequestId, `Resolved to ${JSON.stringify(resolved.value)}`);
+                            info(this.requestId, `Resolved to ${JSON.stringify(resolved.value)}`);
                         }
                     }
                 }

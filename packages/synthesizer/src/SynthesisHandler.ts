@@ -31,9 +31,8 @@ const STACK_ID = 'generated';
 
 export interface ManagerResources {
     arn: string;
-    buildStateSnsTopicArn: string;
     sourceBranch: string;
-    sourceType: string;
+    sourceType: 'CodeCommit';
     sourceRepoName: string;
     eventBusArn: string;
     assetBucketName: string;
@@ -148,7 +147,7 @@ export class SynthesisHandler {
             new Script(resolvers, artifactStore, tokenizer).init();
             new Param(resolvers, synthPipeline).init();
 
-            const resolver = new Resolver(resolvers, context);
+            const resolver = new Resolver(resolvers, context.awsRequestId);
 
             new CodePipelineOrchestratorFactory(orchestratorFactories).init();
             new CloudWatchOrchestratorFactory(orchestratorFactories).init();

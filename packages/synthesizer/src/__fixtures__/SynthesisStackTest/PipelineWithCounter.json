@@ -1,0 +1,1215 @@
+{
+  "Resources": {
+    "CounterTableDDA1A05B82": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "KeySchema": [
+          {
+            "AttributeName": "counterId",
+            "KeyType": "HASH"
+          }
+        ],
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "counterId",
+            "AttributeType": "S"
+          }
+        ],
+        "BillingMode": "PAY_PER_REQUEST"
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete"
+    },
+    "CodePipelineDDArtifactsBucketEncryptionKey22DA3A80": {
+      "Type": "AWS::KMS::Key",
+      "Properties": {
+        "KeyPolicy": {
+          "Statement": [
+            {
+              "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion",
+                "kms:GenerateDataKey",
+                "kms:TagResource",
+                "kms:UntagResource"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CodePipelineDDRole98C34FFB",
+                    "Arn"
+                  ]
+                }
+              },
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CodePipelineDDSourcesSourceCodePipelineActionRoleEDB5BE44",
+                    "Arn"
+                  ]
+                }
+              },
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CodePipelineDDCounterIncrementStageCounterIncrementActionCodePipelineActionRoleD672EAF7",
+                    "Arn"
+                  ]
+                }
+              },
+              "Resource": "*"
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete"
+    },
+    "CodePipelineDDArtifactsBucket64CBD350": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "KMSMasterKeyID": {
+                  "Fn::GetAtt": [
+                    "CodePipelineDDArtifactsBucketEncryptionKey22DA3A80",
+                    "Arn"
+                  ]
+                },
+                "SSEAlgorithm": "aws:kms"
+              }
+            }
+          ]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        }
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
+    },
+    "CodePipelineDDArtifactsBucketEncryptionKeyAlias19828BB0": {
+      "Type": "AWS::KMS::Alias",
+      "Properties": {
+        "AliasName": "alias/codepipeline-stackcodepipelineddc8ca58b6",
+        "TargetKeyId": {
+          "Fn::GetAtt": [
+            "CodePipelineDDArtifactsBucketEncryptionKey22DA3A80",
+            "Arn"
+          ]
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete"
+    },
+    "CodePipelineDDRole98C34FFB": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "codepipeline.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "CodePipelineDDRoleDefaultPolicyBEC76895": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject*",
+                "s3:Abort*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "CodePipelineDDArtifactsBucket64CBD350",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "CodePipelineDDArtifactsBucket64CBD350",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "CodePipelineDDArtifactsBucketEncryptionKey22DA3A80",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "CodePipelineDDSourcesSourceCodePipelineActionRoleEDB5BE44",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "CodePipelineDDCounterIncrementStageCounterIncrementActionCodePipelineActionRoleD672EAF7",
+                  "Arn"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "CodePipelineDDRoleDefaultPolicyBEC76895",
+        "Roles": [
+          {
+            "Ref": "CodePipelineDDRole98C34FFB"
+          }
+        ]
+      }
+    },
+    "CodePipelineDD5A7513A0": {
+      "Type": "AWS::CodePipeline::Pipeline",
+      "Properties": {
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "CodePipelineDDRole98C34FFB",
+            "Arn"
+          ]
+        },
+        "Stages": [
+          {
+            "Actions": [
+              {
+                "ActionTypeId": {
+                  "Category": "Source",
+                  "Owner": "AWS",
+                  "Provider": "CodeCommit",
+                  "Version": "1"
+                },
+                "Configuration": {
+                  "RepositoryName": "baz",
+                  "BranchName": "foobar",
+                  "PollForSourceChanges": false
+                },
+                "Name": "Source",
+                "OutputArtifacts": [
+                  {
+                    "Name": "Source"
+                  }
+                ],
+                "RoleArn": {
+                  "Fn::GetAtt": [
+                    "CodePipelineDDSourcesSourceCodePipelineActionRoleEDB5BE44",
+                    "Arn"
+                  ]
+                },
+                "RunOrder": 1
+              }
+            ],
+            "Name": "Sources"
+          },
+          {
+            "Actions": [
+              {
+                "ActionTypeId": {
+                  "Category": "Invoke",
+                  "Owner": "AWS",
+                  "Provider": "Lambda",
+                  "Version": "1"
+                },
+                "Configuration": {
+                  "FunctionName": {
+                    "Ref": "actioncounterebb3503f2d88e9125354625ec3bcc5a5263C8752"
+                  },
+                  "UserParameters": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "{\"Operation\":\"IncrementAndGet\",\"TableName\":\"",
+                        {
+                          "Ref": "CounterTableDDA1A05B82"
+                        },
+                        "\",\"CounterId\":\"TestCounter\"}"
+                      ]
+                    ]
+                  }
+                },
+                "Name": "CounterIncrementAction",
+                "OutputArtifacts": [
+                  {
+                    "Name": "Number"
+                  }
+                ],
+                "RoleArn": {
+                  "Fn::GetAtt": [
+                    "CodePipelineDDCounterIncrementStageCounterIncrementActionCodePipelineActionRoleD672EAF7",
+                    "Arn"
+                  ]
+                },
+                "RunOrder": 1
+              }
+            ],
+            "Name": "CounterIncrementStage"
+          }
+        ],
+        "ArtifactStore": {
+          "EncryptionKey": {
+            "Id": {
+              "Fn::GetAtt": [
+                "CodePipelineDDArtifactsBucketEncryptionKey22DA3A80",
+                "Arn"
+              ]
+            },
+            "Type": "KMS"
+          },
+          "Location": {
+            "Ref": "CodePipelineDDArtifactsBucket64CBD350"
+          },
+          "Type": "S3"
+        },
+        "Name": "foo"
+      },
+      "DependsOn": [
+        "CodePipelineDDRoleDefaultPolicyBEC76895",
+        "CodePipelineDDRole98C34FFB"
+      ]
+    },
+    "CodePipelineDDSourcesSourceCodePipelineActionRoleEDB5BE44": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "CodePipelineDDSourcesSourceCodePipelineActionRoleDefaultPolicy93100A4D": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject*",
+                "s3:Abort*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "CodePipelineDDArtifactsBucket64CBD350",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "CodePipelineDDArtifactsBucket64CBD350",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "CodePipelineDDArtifactsBucketEncryptionKey22DA3A80",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Action": [
+                "codecommit:GetBranch",
+                "codecommit:GetCommit",
+                "codecommit:UploadArchive",
+                "codecommit:GetUploadArchiveStatus",
+                "codecommit:CancelUploadArchive"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":codecommit:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":baz"
+                  ]
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "CodePipelineDDSourcesSourceCodePipelineActionRoleDefaultPolicy93100A4D",
+        "Roles": [
+          {
+            "Ref": "CodePipelineDDSourcesSourceCodePipelineActionRoleEDB5BE44"
+          }
+        ]
+      }
+    },
+    "CodePipelineDDEventsRole98F35B97": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "CodePipelineDDEventsRoleDefaultPolicy834B4A6D": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "codepipeline:StartPipelineExecution",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":codepipeline:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "CodePipelineDD5A7513A0"
+                    }
+                  ]
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "CodePipelineDDEventsRoleDefaultPolicy834B4A6D",
+        "Roles": [
+          {
+            "Ref": "CodePipelineDDEventsRole98F35B97"
+          }
+        ]
+      }
+    },
+    "CodePipelineDDCounterIncrementStageCounterIncrementActionCodePipelineActionRoleD672EAF7": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "CodePipelineDDCounterIncrementStageCounterIncrementActionCodePipelineActionRoleDefaultPolicy0C5640FE": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "lambda:ListFunctions",
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "actioncounterebb3503f2d88e9125354625ec3bcc5a5263C8752",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Action": [
+                "s3:DeleteObject*",
+                "s3:PutObject*",
+                "s3:Abort*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "CodePipelineDDArtifactsBucket64CBD350",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "CodePipelineDDArtifactsBucket64CBD350",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "CodePipelineDDArtifactsBucketEncryptionKey22DA3A80",
+                  "Arn"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "CodePipelineDDCounterIncrementStageCounterIncrementActionCodePipelineActionRoleDefaultPolicy0C5640FE",
+        "Roles": [
+          {
+            "Ref": "CodePipelineDDCounterIncrementStageCounterIncrementActionCodePipelineActionRoleD672EAF7"
+          }
+        ]
+      }
+    },
+    "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6C5CBACC": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRoleDefaultPolicy858AA710": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "codecommit:GitPush",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":codecommit:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":baz"
+                  ]
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRoleDefaultPolicy858AA710",
+        "Roles": [
+          {
+            "Ref": "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6C5CBACC"
+          }
+        ]
+      }
+    },
+    "githubmirror5b1e9de318f4686efcefb0bac81eff0628982D30": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "bar",
+          "S3Key": "fn5"
+        },
+        "Handler": "dist/bundled.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6C5CBACC",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs12.x",
+        "Environment": {
+          "Variables": {
+            "LOCAL_URI": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://git-codecommit.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  },
+                  "/v1/repos/baz"
+                ]
+              ]
+            },
+            "REMOTE_URI": "git@github.com:foo/bar.git"
+          }
+        },
+        "Layers": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":553035198032:layer:git-lambda2:4"
+              ]
+            ]
+          }
+        ],
+        "MemorySize": 512,
+        "Timeout": 60
+      },
+      "DependsOn": [
+        "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRoleDefaultPolicy858AA710",
+        "githubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6C5CBACC"
+      ]
+    },
+    "WebhookEndpointDDDAE8CDA3": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "WebhookEndpointDD"
+      }
+    },
+    "WebhookEndpointDDDeployment264EB5ABddfd54a1319d0da8223c7c6ee7f33ad9": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "WebhookEndpointDDDAE8CDA3"
+        },
+        "Description": "Automatically created by the RestApi construct"
+      },
+      "DependsOn": [
+        "WebhookEndpointDDPOST79E8676B"
+      ]
+    },
+    "WebhookEndpointDDDeploymentStageprod785BA251": {
+      "Type": "AWS::ApiGateway::Stage",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "WebhookEndpointDDDAE8CDA3"
+        },
+        "DeploymentId": {
+          "Ref": "WebhookEndpointDDDeployment264EB5ABddfd54a1319d0da8223c7c6ee7f33ad9"
+        },
+        "StageName": "prod"
+      }
+    },
+    "WebhookEndpointDDCloudWatchRoleA09665FE": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "apigateway.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    "WebhookEndpointDDAccountE286BD82": {
+      "Type": "AWS::ApiGateway::Account",
+      "Properties": {
+        "CloudWatchRoleArn": {
+          "Fn::GetAtt": [
+            "WebhookEndpointDDCloudWatchRoleA09665FE",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "WebhookEndpointDDDAE8CDA3"
+      ]
+    },
+    "WebhookEndpointDDPOSTApiPermissionstackWebhookEndpointDD815CA64APOSTB9EEA1F3": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "githubmirror5b1e9de318f4686efcefb0bac81eff0628982D30",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "WebhookEndpointDDDAE8CDA3"
+              },
+              "/",
+              {
+                "Ref": "WebhookEndpointDDDeploymentStageprod785BA251"
+              },
+              "/POST/"
+            ]
+          ]
+        }
+      }
+    },
+    "WebhookEndpointDDPOSTApiPermissionTeststackWebhookEndpointDD815CA64APOST8D4B43EB": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "githubmirror5b1e9de318f4686efcefb0bac81eff0628982D30",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "WebhookEndpointDDDAE8CDA3"
+              },
+              "/test-invoke-stage/POST/"
+            ]
+          ]
+        }
+      }
+    },
+    "WebhookEndpointDDPOST79E8676B": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "WebhookEndpointDDDAE8CDA3",
+            "RootResourceId"
+          ]
+        },
+        "RestApiId": {
+          "Ref": "WebhookEndpointDDDAE8CDA3"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "202"
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_MATCH",
+          "RequestParameters": {
+            "integration.request.header.X-Amz-Invocation-Type": "'Event'"
+          },
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "githubmirror5b1e9de318f4686efcefb0bac81eff0628982D30",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": [
+          {
+            "StatusCode": "202"
+          }
+        ]
+      }
+    },
+    "RepoDDstackCodePipelineDDC8CA58B6EventRule045DABAE": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "EventPattern": {
+          "source": [
+            "aws.codecommit"
+          ],
+          "resources": [
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":codecommit:",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ":",
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  ":baz"
+                ]
+              ]
+            }
+          ],
+          "detail-type": [
+            "CodeCommit Repository State Change"
+          ],
+          "detail": {
+            "event": [
+              "referenceCreated",
+              "referenceUpdated"
+            ],
+            "referenceName": [
+              "foobar"
+            ]
+          }
+        },
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":codepipeline:",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ":",
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  ":",
+                  {
+                    "Ref": "CodePipelineDD5A7513A0"
+                  }
+                ]
+              ]
+            },
+            "Id": "Target0",
+            "RoleArn": {
+              "Fn::GetAtt": [
+                "CodePipelineDDEventsRole98F35B97",
+                "Arn"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "actioncounterebb3503f2d88e9125354625ec3bcc5a5ServiceRole9E0933D2": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    "actioncounterebb3503f2d88e9125354625ec3bcc5a5ServiceRoleDefaultPolicyDBB32079": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "dynamodb:UpdateItem",
+              "Condition": {
+                "ForAllValues:StringEquals": {
+                  "dynamodb:LeadingKeys": [
+                    "TestCounter"
+                  ]
+                }
+              },
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "CounterTableDDA1A05B82",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Action": [
+                "codepipeline:PutJobSuccessResult",
+                "codepipeline:PutJobFailureResult"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "actioncounterebb3503f2d88e9125354625ec3bcc5a5ServiceRoleDefaultPolicyDBB32079",
+        "Roles": [
+          {
+            "Ref": "actioncounterebb3503f2d88e9125354625ec3bcc5a5ServiceRole9E0933D2"
+          }
+        ]
+      }
+    },
+    "actioncounterebb3503f2d88e9125354625ec3bcc5a5263C8752": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "bar",
+          "S3Key": "fn4"
+        },
+        "Handler": "dist/bundled.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "actioncounterebb3503f2d88e9125354625ec3bcc5a5ServiceRole9E0933D2",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs12.x",
+        "Timeout": 30
+      },
+      "DependsOn": [
+        "actioncounterebb3503f2d88e9125354625ec3bcc5a5ServiceRoleDefaultPolicyDBB32079",
+        "actioncounterebb3503f2d88e9125354625ec3bcc5a5ServiceRole9E0933D2"
+      ]
+    }
+  },
+  "Outputs": {
+    "WebhookEndpointDDEndpoint4CEC15D0": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "WebhookEndpointDDDAE8CDA3"
+            },
+            ".execute-api.",
+            {
+              "Ref": "AWS::Region"
+            },
+            ".",
+            {
+              "Ref": "AWS::URLSuffix"
+            },
+            "/",
+            {
+              "Ref": "WebhookEndpointDDDeploymentStageprod785BA251"
+            },
+            "/"
+          ]
+        ]
+      }
+    }
+  }
+}

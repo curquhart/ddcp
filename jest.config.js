@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const rootPath = `${__dirname}/packages`;
 module.exports = {
-  roots: [].concat(...fs.readdirSync(rootPath).map((path) => {
+  projects: [].concat(...fs.readdirSync(rootPath).map((path) => {
     const absPath = `${rootPath}/${path}`;
     if (fs.existsSync(`${absPath}/jest.config.js`)) {
       const jestConfig = require(`${absPath}/jest.config.js`);
@@ -12,7 +12,7 @@ module.exports = {
         return jestConfig.roots.map((root) => root.startsWith('/') ?root : `${absPath}/${root}`);
       }
       else {
-        return [`${absPath}/src`];
+        return [`${absPath}`];
       }
     }
     else if (fs.existsSync(`${absPath}/src`)) {
