@@ -3,7 +3,6 @@ import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {
     BuildEnvironmentVariableType,
     BuildSpec, CfnProject,
-    ComputeType, ImagePullPrincipalType,
     LinuxBuildImage,
     Project,
     Source

@@ -1,6 +1,6 @@
 import * as s3 from '@aws-cdk/aws-s3';
 import {BaseResourceProps} from './resource/BaseResourceFactory';
-import {ComputeType} from "@aws-cdk/aws-codebuild";
+import {ComputeType} from '@aws-cdk/aws-codebuild';
 
 export enum SourceType {
     CODE_COMMIT = 'CodeCommit',
