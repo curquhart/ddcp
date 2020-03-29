@@ -51,6 +51,8 @@ Pipelines:
                   '!Join':
                     - '!PathForAlias': IncrementCounter
                     - - OutputArtifactName
+            ComputeType: BUILD_GENERAL1_MEDIUM
+            EnableBadge: true
             BuildSpec:
               Alias: BuildSpec
               Inline:
@@ -160,6 +162,7 @@ Pipelines:
                   build:
                     commands:
                       - npx lerna run build
+                      - npm t
                       - npx lerna run lint
                       - npx lerna run pack
                       - npx lerna run artifact-lint
@@ -199,25 +202,6 @@ Pipelines:
                       files:
                         - packages/synthesizer/dist/@ddcpsynthesizer.zip
                       discard-paths: yes
-          - Name: Test
-            Alias: TestAction
-            Type: CodeBuild
-            Order: 2
-            SourceName: Source
-            ComputeType: BUILD_GENERAL1_MEDIUM
-            BuildSpec:
-              Alias: TestBuildSpec
-              Inline:
-                version: 0.2
-                phases:
-                  install:
-                    commands:
-                      - npm install
-                      - npx lerna bootstrap
-                  build:
-                    commands:
-                      - npx lerna run build
-                      - npm t
                 reports:
                   'test-results':
                     files:
@@ -265,6 +249,7 @@ Pipelines:
             Type: CodeBuild
             Order: 1
             SourceName: Source
+            ComputeType: BUILD_GENERAL1_MEDIUM
             BuildSpec:
               Inline:
                 version:
@@ -291,11 +276,9 @@ Pipelines:
                         - - Inline
                           - phases
                           - build
-          - Name: Test
-            Type: CodeBuild
-            Order: 1
-            SourceName: Source
-            ComputeType: BUILD_GENERAL1_MEDIUM
-            BuildSpec:
-              '!Path':
-                '!PathForAlias': TestBuildSpec
+                reports:
+                  '!Path':
+                    '!Join':
+                      - '!PathForAlias': BuildSpec
+                      - - Inline
+                        - reports
