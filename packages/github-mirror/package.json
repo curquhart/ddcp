@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/github-mirror",
-  "version": "1.1.0-beta.94",
+  "version": "1.1.0-beta.96",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
@@ -23,8 +23,8 @@
     ]
   },
   "dependencies": {
-    "@ddcp/lib-logger": "^1.1.0-beta.94",
-    "@ddcp/secretsmanager": "^1.1.0-beta.94",
+    "@ddcp/lib-logger": "^1.1.0-beta.96",
+    "@ddcp/secretsmanager": "^1.1.0-beta.96",
     "@octokit/webhooks": "7.1.0",
     "aws-lambda": "1.0.5",
     "aws4": "1.9.1",
@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/eslint-config": "^1.1.0-beta.94",
+    "@ddcp/eslint-config": "^1.1.0-beta.96",
     "@ddcp/typescript-config": "^1.0.0",
     "@types/aws-lambda": "8.10.46",
     "@types/aws4": "1.5.1",
