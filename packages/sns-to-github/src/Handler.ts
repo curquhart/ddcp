@@ -4,7 +4,7 @@ import {createAppAuth} from '@octokit/auth-app';
 import {CodeBuildStatus, Payload} from '@ddcp/sns-models';
 import {Resolver} from '@ddcp/secretsmanager';
 import {throwError} from '@ddcp/errorhandling';
-import {info} from './loggers';
+import {info} from '@ddcp/logger';
 
 const resolver = new Resolver();
 
@@ -21,11 +21,11 @@ export class Handler {
             const sha = payload.buildEnvironment?.find((envVar) => envVar.name === 'SOURCE_VERSION')?.value ?? null;
 
             if (sha === null) {
-                info('Source version missing so ignoring...');
+                info(context.awsRequestId, 'Source version missing so ignoring...');
                 return;
             }
 
-            info(`Got source version: ${sha}`);
+            info(context.awsRequestId, `Got source version: ${sha}`);
 
             const prefix = 'github_pr_';
 
@@ -43,10 +43,10 @@ export class Handler {
             const {owner, repo} = match.groups as {owner: string; repo: string};
 
             if (owner === undefined || repo === undefined) {
-                info(`Unknown owner/repo. Defaults: ${payload.githubSettings.defaults}`);
+                info(context.awsRequestId, `Unknown owner/repo. Defaults: ${payload.githubSettings.defaults}`);
                 return;
             }
-            info(`Owner = ${owner} Repo = ${repo} Sha = ${sha}`);
+            info(context.awsRequestId, `Owner = ${owner} Repo = ${repo} Sha = ${sha}`);
 
             // Resolve from Secrets Manager
             const authSettings = await resolver.resolve(payload.githubSettings.auth);
@@ -95,7 +95,7 @@ export class Handler {
 
             const codeBuildLink = `https://${payload.region}.console.aws.amazon.com/codesuite/codebuild/projects/${payload.projectName}/build/${payload.buildId.split('/').pop()}/log?region=${payload.region}`;
 
-            info(context.awsRequestId)(`Creating check on ${owner}/${repo} for ${sha}: status = ${checkStatus} conclusion = ${conclusion} cblink = ${codeBuildLink}`);
+            info(context.awsRequestId, `Creating check on ${owner}/${repo} for ${sha}: status = ${checkStatus} conclusion = ${conclusion} cblink = ${codeBuildLink}`);
             await installationAuthedOctokit.checks.create({
                 owner,
                 repo,

@@ -1,7 +1,7 @@
 import {CloudWatchEvents, CodeCommit, CodePipeline} from 'aws-sdk';
 import {CodeCommitEvent} from './CodeCommitEvent';
 import {tOrDefault} from '@ddcp/typehelpers';
-import {error, warn} from '@ddcp/lib-logger';
+import {error, warn} from '@ddcp/logger';
 import {Context} from 'aws-lambda';
 
 export class SelectorHandler {

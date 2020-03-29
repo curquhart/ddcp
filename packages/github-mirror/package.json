@@ -23,7 +23,7 @@
     ]
   },
   "dependencies": {
-    "@ddcp/lib-logger": "^1.2.0-104",
+    "@ddcp/logger": "^1.2.0-104",
     "@ddcp/secretsmanager": "^1.2.0-104",
     "@octokit/webhooks": "7.1.0",
     "aws-lambda": "1.0.5",

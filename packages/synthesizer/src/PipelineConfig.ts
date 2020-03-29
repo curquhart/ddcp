@@ -109,6 +109,7 @@ interface SlackNotification {
 export interface Pipeline {
     Orchestrator?: string;
     Name?: string;
+    EnableBadge?: boolean;
     Sources?: Array<Source>;
     Stages?: Array<Stage>;
     Notifications?: {

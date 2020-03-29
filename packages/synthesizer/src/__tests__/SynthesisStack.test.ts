@@ -11,6 +11,7 @@ import {CounterResourceFactory} from '../resource/CounterResourceFactory';
 import {CodePipelineOrchestratorFactory} from '../orchestrator/CodePipelineOrchestratorFactory';
 import {Path} from '../fn/resolvers/Path';
 import {PathForAlias} from '../fn/resolvers/PathForAlias';
+import {LambdaModuleName} from '@ddcp/module-collection';
 
 const MANAGER_RESOURCES: ManagerResources = {
     arn: 'arn:aws:codepipeline:us-east-1:111111111111:synthesizer',
@@ -20,11 +21,12 @@ const MANAGER_RESOURCES: ManagerResources = {
     eventBusArn: 'arn:aws:events:us-east-1:111111111111:event-bus/default',
     assetBucketName: 'bar',
     assetKeys: {
-        'synth': 'fn1',
-        'sns-to-github': 'fn2',
-        'sns-to-slack': 'fn3',
-        'action-counter': 'fn4',
-        'github-mirror': 'fn5',
+        [LambdaModuleName.Synthesizer]: 'fn1',
+        [LambdaModuleName.SnsToGitHub]: 'fn2',
+        [LambdaModuleName.SnsToSlack]: 'fn3',
+        [LambdaModuleName.ActionCounter]: 'fn4',
+        [LambdaModuleName.GitHubMirror]: 'fn5',
+        [LambdaModuleName.CodePipelineBadge]: 'fn6',
     },
 };
 

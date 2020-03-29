@@ -18,53 +18,10 @@ import {CfnPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
+import {LambdaInputArtifacts, LambdaModuleName, LambdaOutputArtifacts} from '@ddcp/module-collection';
 
 const MANAGER_BRANCH = 'master';
 
-interface LambdaProps {
-    name: string;
-    asset: string;
-    destKey: string;
-}
-
-// TODO: need a source of truth for these..
-const LAMBDAS: Array<LambdaProps> = [
-    {
-        name: 'synth',
-        asset: '@ddcpsynthesizer.zip',
-        destKey: '',
-    },
-    {
-        name: 'sns-to-github',
-        asset: '@ddcpsns-to-github.zip',
-        destKey: '',
-    },
-    {
-        name: 'sns-to-slack',
-        asset: '@ddcpsns-to-slack.zip',
-        destKey: '',
-    },
-    {
-        name: 'action-counter',
-        asset: '@ddcpaction-counter.zip',
-        destKey: '',
-    },
-    {
-        name: 'github-mirror',
-        asset: '@ddcpgithub-mirror.zip',
-        destKey: '',
-    },
-];
-
-const getLambdaProps = (name: string): LambdaProps => {
-    for (const lambdaProps of LAMBDAS) {
-        if (lambdaProps.name === name) {
-            return lambdaProps;
-        }
-    }
-
-    throw new Error(`${name} could not be found.`);
-};
 
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
@@ -108,7 +65,7 @@ export class ManagerStack extends Stack {
             handler: 'index.handler',
             initialPolicy: [
                 new PolicyStatement({
-                    resources: LAMBDAS.map((lambdaOps) => sourceBucket.arnForObjects(`${sourceBucketPrefixParameter.valueAsString}${lambdaOps.asset}`)),
+                    resources: Object.values(LambdaInputArtifacts).map((assetPath) => sourceBucket.arnForObjects(`${sourceBucketPrefixParameter.valueAsString}${assetPath.split('/').pop()}`)),
                     actions: [
                         's3:GetObject'
                     ],
@@ -138,24 +95,25 @@ export class ManagerStack extends Stack {
                 }
             });
 
+        const lambdaOutputs = {} as LambdaOutputArtifacts;
 
         // Copy all required lambdas into local storage. (this in the future will be requester pays which is why we
         // don't just reference the source bucket directly.)
-        LAMBDAS.forEach((lambdaOpts) => {
-            const resolverCr = new CustomResource(this, `DDCP${lambdaOpts.name}`, {
+        Object.entries(LambdaInputArtifacts).forEach(([moduleName, assetPath]) => {
+            const resolverCr = new CustomResource(this, `DDCP${moduleName}`, {
                 provider: CustomResourceProvider.fromLambda(s3resolver),
                 properties: {
                     SourceBucketName: sourceBucketNameParameter.valueAsString,
-                    SourceKey: `${sourceBucketPrefixParameter.valueAsString}${lambdaOpts.asset}`,
+                    SourceKey: `${sourceBucketPrefixParameter.valueAsString}${assetPath.split('/').pop()}`,
                     DestBucketName: localBucket.bucketName,
                     StackUuid: stackUuid,
                 },
             });
-            lambdaOpts.destKey = resolverCr.getAtt('DestKey').toString();
+            lambdaOutputs[moduleName as LambdaModuleName] = resolverCr.getAtt('DestKey').toString();
         });
 
         const handlerFunction = new Function(this, 'DDCpMainHandler', {
-            code: Code.fromBucket(localBucket, getLambdaProps('synth').destKey),
+            code: Code.fromBucket(localBucket, lambdaOutputs[LambdaModuleName.Synthesizer]),
             handler: 'dist/bundled.handler',
             runtime: Runtime.NODEJS_12_X,
             timeout: Duration.minutes(5),
@@ -180,11 +138,7 @@ export class ManagerStack extends Stack {
                 // Due to a 1000 byte limit in the lambda configuration, this must be in an env var (more storage)
                 // If/when it gets much bigger, will need to minify it in some manner, probably by just providing
                 // a prefix.
-                ASSET_KEYS: JSON.stringify(Object.assign({}, ... LAMBDAS.map((lambdaOpts) => {
-                    return {
-                        [lambdaOpts.name]: lambdaOpts.destKey,
-                    };
-                })))
+                ASSET_KEYS: JSON.stringify(lambdaOutputs)
             }
         });
         const handlerFunctionNode = handlerFunction.node.defaultChild as CfnFunction;

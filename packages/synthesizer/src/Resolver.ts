@@ -1,7 +1,7 @@
 import {Base} from './fn/Base';
 import {EMPTY_VOID_FN} from './helpers';
 import {Stack} from '@aws-cdk/core';
-import {info} from '@ddcp/lib-logger';
+import {info} from '@ddcp/logger';
 
 /**
  * Recursively checks if the provided value has been resolved.

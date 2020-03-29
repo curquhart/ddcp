@@ -26,7 +26,8 @@ import {CounterResourceFactory} from './resource/CounterResourceFactory';
 import {ArtifactStore} from './index';
 import {Param} from './fn/resolvers/Param';
 import {GitSourceSync} from './builders/GitSourceSync';
-import {error} from '@ddcp/lib-logger';
+import {error} from '@ddcp/logger';
+import {LambdaOutputArtifacts} from '@ddcp/module-collection';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
@@ -36,7 +37,7 @@ export interface ManagerResources {
     sourceRepoName: string;
     eventBusArn: string;
     assetBucketName: string;
-    assetKeys: Record<string, string>;
+    assetKeys: LambdaOutputArtifacts;
 }
 
 const getArtifactS3Client = (event: CodePipelineEvent): S3 => {

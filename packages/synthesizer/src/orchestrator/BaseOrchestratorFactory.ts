@@ -4,7 +4,7 @@ import {IPipeline} from '@aws-cdk/aws-codepipeline';
 import {ManagerResources} from '../SynthesisHandler';
 import {Project} from '@aws-cdk/aws-codebuild';
 import {Uniquifier} from '../Uniquifier';
-import {IFunction} from '@aws-cdk/aws-lambda';
+import {Function, IFunction} from '@aws-cdk/aws-lambda';
 import {BaseResource} from '../resource/BaseResourceFactory';
 
 export interface CodeBuildActionProps {
@@ -45,6 +45,7 @@ export interface OrchestratorProps {
     managerResources: ManagerResources;
     pipeline: Pipeline;
     uniquifier: Uniquifier;
+    functionCache: Record<string, Function>;
 }
 
 export abstract class BaseOrchestratorFactory {

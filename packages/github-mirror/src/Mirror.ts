@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import * as shellEscape from 'shell-escape';
 import {Context} from 'aws-lambda';
 import {Resolver} from '@ddcp/secretsmanager';
-import {info} from '@ddcp/lib-logger';
+import {info} from '@ddcp/logger';
 
 const GITHUB_PR_BRANCH_PREFIX = 'github_pr_';
 const GITHUB_PR_BRANCH_REGEXP = new RegExp(`^refs/heads/${GITHUB_PR_BRANCH_PREFIX}.+/(\\d+)$`);

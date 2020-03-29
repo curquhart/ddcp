@@ -21,6 +21,7 @@
     ]
   },
   "dependencies": {
+    "@ddcp/module-collection": "^1.2.0-104",
     "@aws-cdk/aws-cloudformation": "1.25.0",
     "@aws-cdk/aws-codebuild": "1.25.0",
     "@aws-cdk/aws-codecommit": "1.25.0",

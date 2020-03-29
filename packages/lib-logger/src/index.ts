@@ -1,11 +1,17 @@
-import {debug} from 'debug';
+import * as debug from 'debug';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const error = (requestId: string, formatter: any, ...args: any[]): void => debug('Error').extend(requestId)(formatter, ...args);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const warn = (requestId: string, formatter: any, ...args: any[]): void => debug('Warn').extend(requestId)(formatter, ...args);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const info = (requestId: string, formatter: any, ...args: any[]): void => debug('Info').extend(requestId)(formatter, ...args);
+debug.enable('*');
+
+export const errorLogger = debug.debug('Error');
+export const warnLogger = debug.debug('Warn');
+export const infoLogger = debug.debug('Info');
+
 // eslint-disable-next-line no-console
-info.log = console.log.bind(console);
+infoLogger.log = console.log.bind(console);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const error = (requestId: string, formatter: any, ...args: any[]): void => errorLogger.extend(requestId)(formatter, ...args);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const warn = (requestId: string, formatter: any, ...args: any[]): void => warnLogger.extend(requestId)(formatter, ...args);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const info = (requestId: string, formatter: any, ...args: any[]): void => infoLogger.extend(requestId)(formatter, ...args);
