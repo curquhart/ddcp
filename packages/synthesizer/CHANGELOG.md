@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-beta.97](https://github.com/curquhart/ddcp/compare/v1.1.0-beta.94...v1.1.0-beta.97) (2020-03-29)
+
+
+### Features
+
+* **@ddcp/synthesizer:** options to enable privileged mode, badges, and change compute capacity ([a2b125a](https://github.com/curquhart/ddcp/commit/a2b125a30cd39320ee513970451d2e168f995b15))
+
+
+
+
+
 # [1.1.0-beta.94](https://github.com/curquhart/ddcp/compare/v1.1.0-91...v1.1.0-beta.94) (2020-03-29)
 
 
