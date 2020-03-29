@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0-104](https://github.com/curquhart/ddcp/compare/v1.1.2-102...v1.2.0-104) (2020-03-29)
+
+
+### Features
+
+* single pipeline build project and enable badge ([ac66f05](https://github.com/curquhart/ddcp/commit/ac66f058d2b30b9d17c04d3c452a0037b57b52ab))
+
+
+
+
+
 ## [1.1.2-102](https://github.com/curquhart/ddcp/compare/v1.1.1-100...v1.1.2-102) (2020-03-29)
 
 **Note:** Version bump only for package ddcp
