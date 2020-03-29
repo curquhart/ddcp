@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/publisher",
-  "version": "1.1.0-91",
+  "version": "1.1.0-beta.94",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -32,19 +32,19 @@
     "@aws-cdk/aws-s3-deployment": "1.25.0",
     "@aws-cdk/core": "1.25.0",
     "@aws-cdk/cx-api": "1.25.0",
-    "@ddcp/lib-logger": "^1.1.0-91",
+    "@ddcp/lib-logger": "^1.1.0-beta.94",
     "aws-cdk": "1.25.0",
     "npm-pack-zip": "1.2.7"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/action-counter": "^1.1.0-91",
-    "@ddcp/eslint-config": "^1.1.0-91",
-    "@ddcp/github-mirror": "^1.1.0-91",
-    "@ddcp/manager": "^1.1.0-91",
-    "@ddcp/sns-to-github": "^1.1.0-91",
-    "@ddcp/sns-to-slack": "^1.1.0-91",
-    "@ddcp/synthesizer": "^1.1.0-91",
+    "@ddcp/action-counter": "^1.1.0-beta.94",
+    "@ddcp/eslint-config": "^1.1.0-beta.94",
+    "@ddcp/github-mirror": "^1.1.0-beta.94",
+    "@ddcp/manager": "^1.1.0-beta.94",
+    "@ddcp/sns-to-github": "^1.1.0-beta.94",
+    "@ddcp/sns-to-slack": "^1.1.0-beta.94",
+    "@ddcp/synthesizer": "^1.1.0-beta.94",
     "@ddcp/tools": "^1.0.0",
     "@ddcp/typescript-config": "^1.0.0",
     "@types/jest": "25.1.4",

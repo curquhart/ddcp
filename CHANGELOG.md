@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-beta.94](https://github.com/curquhart/ddcp/compare/v1.1.0-91...v1.1.0-beta.94) (2020-03-29)
+
+
+### Performance Improvements
+
+* **@ddcp/synthesizer:** increase codebuild instance size ([c35efff](https://github.com/curquhart/ddcp/commit/c35efff4c2ac43de87e599ec816b4e4ef9a23ed3))
+
+
+
+
+
 # [1.1.0-91](https://github.com/curquhart/ddcp/compare/v1.0.0...v1.1.0-91) (2020-03-28)
 
 
