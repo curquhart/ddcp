@@ -248,18 +248,12 @@ class CodePipelineOrchestrator implements Orchestrator {
                 }),
                 eventPattern: {
                     detailType: [
-                        'CodePipeline Pipeline Execution State Change',
                         'CodePipeline Stage Execution State Change',
                         'CodePipeline Action Execution State Change',
                     ],
-                    source: ['aws.codepipeline'],
-                    region: [Aws.REGION],
-                    detail: {
-                        pipeline: [
-                            this.props.managerPipeline.pipelineName,
-                            this.codePipeline.pipelineName,
-                        ],
-                    }
+                    resources: [
+                        this.props.managerPipeline.pipelineArn,
+                    ],
                 }
             });
 
