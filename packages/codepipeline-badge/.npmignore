@@ -1,2 +1,3 @@
 *
 !dist/bundled.js
+!assets/*.svg

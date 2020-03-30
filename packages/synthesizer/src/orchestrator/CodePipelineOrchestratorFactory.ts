@@ -1,28 +1,37 @@
 import {
-    BaseOrchestratorFactory, BranchOptions,
-    CodeBuildActionProps, CounterActionProps,
+    BaseOrchestratorFactory,
+    BranchOptions,
+    CodeBuildActionProps,
+    CounterActionProps,
     Orchestrator,
-    OrchestratorProps, S3PublishActionProps,
+    OrchestratorProps,
+    S3PublishActionProps,
     Stage
 } from './BaseOrchestratorFactory';
-import {Pipeline as CodePipeline, IStage as CodePipelineStage, IPipeline, Artifact} from '@aws-cdk/aws-codepipeline';
-import {Aws} from '@aws-cdk/core';
+import {Artifact, IPipeline, IStage as CodePipelineStage, Pipeline as CodePipeline} from '@aws-cdk/aws-codepipeline';
+import {Aws, CfnOutput, RemovalPolicy} from '@aws-cdk/core';
 import {Uniquifier} from '../Uniquifier';
 import {Repository} from '@aws-cdk/aws-codecommit';
 import {
     CacheControl,
     CodeBuildAction,
     CodeCommitSourceAction,
-    CodeCommitTrigger, LambdaInvokeAction,
+    CodeCommitTrigger,
+    LambdaInvokeAction,
     S3DeployAction
 } from '@aws-cdk/aws-codepipeline-actions';
 import * as targets from '@aws-cdk/aws-events-targets';
+import * as events from '@aws-cdk/aws-events';
 import {tOrDefault} from '@ddcp/typehelpers';
 import {ManagerResources} from '../SynthesisHandler';
 import {Artifacts} from '@aws-cdk/aws-codebuild';
 import {throwError} from '@ddcp/errorhandling';
 import {PolicyDocument, PolicyStatement, Role} from '@aws-cdk/aws-iam';
 import * as s3 from '@aws-cdk/aws-s3';
+import {Bucket} from '@aws-cdk/aws-s3';
+import {getFunction} from '../helpers';
+import {LambdaModuleName} from '@ddcp/module-collection';
+import {createHash} from 'crypto';
 
 export const NAME = 'CodePipeline';
 
@@ -181,10 +190,80 @@ class CodePipelineOrchestrator implements Orchestrator {
 
     constructor(
         readonly props: OrchestratorProps,
+        private readonly factory: CodePipelineOrchestratorFactory
     ) {
         this.codePipeline = new CodePipeline(props.scope, props.uniquifier.next('CodePipeline'), {
             pipelineName: props.pipeline.Name
         });
+        if (props.pipeline.EnableBadge === true) {
+            const handler = getFunction({
+                scope: props.scope,
+                functionCache: props.functionCache,
+                managerResources: props.managerResources,
+                moduleName: LambdaModuleName.CodePipelineBadge,
+            });
+
+            if (factory.badgeAssetBucket === undefined) {
+                factory.badgeAssetBucket = new Bucket(props.scope, props.uniquifier.next('BadgeAssets'), {
+                    removalPolicy: RemovalPolicy.DESTROY,
+                });
+            }
+
+            const assetsKey = createHash('sha1').update(props.pipeline.Name ?? '').update(this.props.managerPipeline.pipelineName).digest('hex');
+
+            handler.addToRolePolicy(new PolicyStatement({
+                resources: [
+                    this.codePipeline.pipelineArn,
+                    this.props.managerPipeline.pipelineArn,
+                ],
+                actions: [
+                    'codepipeline:GetPipeline',
+                    'codepipeline:GetPipelineState',
+                ]
+            }));
+            handler.addToRolePolicy(new PolicyStatement({
+                resources: [
+                    factory.badgeAssetBucket.arnForObjects(assetsKey),
+                ],
+                actions: [
+                    's3:PutObject',
+                    's3:PutObjectAcl',
+                ]
+            }));
+
+            new CfnOutput(props.scope, props.uniquifier.next(`${props.pipeline.Name || ''}BadgeUrl`), {
+                value: factory.badgeAssetBucket.urlForObject(assetsKey)
+            });
+
+            this.codePipeline.onStateChange('PipelineStateChange', {
+                target: new targets.LambdaFunction(handler, {
+                    event: events.RuleTargetInput.fromObject({
+                        pipelineName: this.codePipeline.pipelineName,
+                        region: Aws.REGION,
+                        synthesisPipelineName: this.props.managerPipeline.pipelineName,
+                        assetsBucket: factory.badgeAssetBucket.bucketName,
+                        assetsKey,
+                        eventPipelineName: events.EventField.fromPath('$.detail.pipeline'),
+                    })
+                }),
+                eventPattern: {
+                    detailType: [
+                        'CodePipeline Pipeline Execution State Change',
+                        'CodePipeline Stage Execution State Change',
+                        'CodePipeline Action Execution State Change',
+                    ],
+                    source: ['aws.codepipeline'],
+                    region: [Aws.REGION],
+                    detail: {
+                        pipeline: [
+                            this.props.managerPipeline.pipelineName,
+                            this.codePipeline.pipelineName,
+                        ],
+                    }
+                }
+            });
+
+        }
     }
 
     addSources(): void {
@@ -217,6 +296,8 @@ class CodePipelineOrchestrator implements Orchestrator {
 }
 
 export class CodePipelineOrchestratorFactory extends BaseOrchestratorFactory {
+    badgeAssetBucket?: Bucket;
+
     constructor(orchestrators: Record<string, BaseOrchestratorFactory>) {
         super(orchestrators);
     }
@@ -226,6 +307,6 @@ export class CodePipelineOrchestratorFactory extends BaseOrchestratorFactory {
     }
 
     new(props: OrchestratorProps): Orchestrator {
-        return new CodePipelineOrchestrator(props);
+        return new CodePipelineOrchestrator(props, this);
     }
 }
