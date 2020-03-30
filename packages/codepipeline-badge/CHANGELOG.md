@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0-121](https://github.com/curquhart/ddcp/compare/v1.3.1-115...v1.4.0-121) (2020-03-30)
+
+
+### Features
+
+* cachecontrol no-cache ([2f80e87](https://github.com/curquhart/ddcp/commit/2f80e871ef02b03acefef97e78281ec99bc98489))
+
+
+
+
+
 ## [1.3.1-115](https://github.com/curquhart/ddcp/compare/v1.3.0-112...v1.3.1-115) (2020-03-30)
 
 **Note:** Version bump only for package @ddcp/codepipeline-badge
