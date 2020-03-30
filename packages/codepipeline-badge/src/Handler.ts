@@ -64,7 +64,7 @@ export class Handler {
             Bucket: event.assetsBucket,
             Key: event.assetsKey,
             Body: asset,
-            CacheControl: 'max-age=10',
+            CacheControl: 'no-cache',
             ContentType: 'image/svg+xml',
             ACL: 'public-read',
         }).promise();
