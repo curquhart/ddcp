@@ -46,6 +46,8 @@
     "@ddcp/tokenizer": "^1.4.0-121",
     "@ddcp/typehelpers": "^1.4.0-121",
     "adm-zip": "0.4.14",
+    "ajv": "6.12.0",
+    "@ddcp/models": "1.4.0-121",
     "aws-lambda": "1.0.5",
     "aws-sdk": "2.624.0",
     "js-yaml": "3.13.1",

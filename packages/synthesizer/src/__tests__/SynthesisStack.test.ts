@@ -101,7 +101,6 @@ describe('SynthesisStack test', () => {
                     {
                         Type: 'Counter',
                         Name: 'TestCounter',
-                        Alias: 'TestCounter'
                     }
                 ],
                 Pipelines: [
@@ -272,7 +271,7 @@ describe('SynthesisStack test', () => {
                                         Name: 'BuildAction',
                                         Type: 'CodeBuild',
                                         SourceName: 'Source',
-                                        ComputeType: 'CUSTOM_COMPUTE_TYPE',
+                                        ComputeType: 'BUILD_GENERAL1_LARGE',
                                         EnableBadge: true,
                                         BuildImage: 'aws/codebuild/standard:2.0',
                                         PrivilegedMode: true,

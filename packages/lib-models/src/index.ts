@@ -1,6 +1,10 @@
-import * as s3 from '@aws-cdk/aws-s3';
-import {BaseResourceProps} from './resource/BaseResourceFactory';
-import {ComputeType} from '@aws-cdk/aws-codebuild';
+export type ComputeType = 'BUILD_GENERAL1_SMALL' | 'BUILD_GENERAL1_MEDIUM' | 'BUILD_GENERAL1_LARGE' | 'BUILD_GENERAL1_2XLARGE';
+export type BucketAccessControl = 'Private' | 'PublicRead' | 'PublicReadWrite' | 'AuthenticatedRead' | 'LogDeliveryWrite' | 'BucketOwnerRead' | 'BucketOwnerFullControl' | 'AwsExecRead';
+
+export interface BaseResourceProps {
+    Name: string;
+    Type: string;
+}
 
 export enum SourceType {
     CODE_COMMIT = 'CodeCommit',
@@ -20,7 +24,7 @@ export interface Source {
     BranchName?: string;
     BranchPattern?: string;
     Uri?: string;
-    Trigger: 'GitHubWebHook';
+    Trigger?: 'GitHubWebHook';
     Auth?: {
         PrivateKey?: string;
     };
@@ -29,7 +33,6 @@ export interface Source {
 interface Action {
     Name: string;
     Order?: number;
-    Type?: string;
     SourceName?: string;
     Inputs?: Array<string>;
 }
@@ -45,11 +48,11 @@ type CodeBuildBuildSpec = Record<string, unknown> & {
 }
 
 export interface CodeBuildAction extends Action {
+    Type: ActionType.CODE_BUILD;
     BuildSpec: {
         Inline?: CodeBuildBuildSpec;
     };
     InputArtifacts?: Array<string>;
-    Type: ActionType.CODE_BUILD;
     EnableBadge?: boolean;
     BuildImage?: string;
     ComputeType?: ComputeType;
@@ -58,10 +61,10 @@ export interface CodeBuildAction extends Action {
 
 export interface S3PublishAction extends Action {
     Type: ActionType.S3_PUBLISH;
-    AccessControl?: s3.BucketAccessControl;
+    AccessControl?: BucketAccessControl;
     BucketName?: string;
     BucketArn?: string;
-    ObjectKey: string;
+    ObjectKey?: string;
     Extract?: boolean;
     CacheControl?: Array<string>;
 }
@@ -73,21 +76,23 @@ export interface CounterAction extends Action {
     OutputArtifactName: string;
 }
 
-export const isCodeBuildAction = (action: Action): action is CodeBuildAction => {
+export const isCodeBuildAction = (action: { Type: string }): action is CodeBuildAction => {
     return action.Type === ActionType.CODE_BUILD;
 };
 
-export const isS3PublishAction = (action: Action): action is S3PublishAction => {
+export const isS3PublishAction = (action: { Type: string }): action is S3PublishAction => {
     return action.Type === ActionType.S3_PUBLISH;
 };
 
-export const isCounterAction = (action: Action): action is CounterAction => {
+export const isCounterAction = (action: { Type: string }): action is CounterAction => {
     return action.Type === ActionType.COUNTER;
 };
 
+export type StageActionType = CodeBuildAction | S3PublishAction | CounterAction;
+
 interface Stage {
-    Name?: string;
-    Actions?: Array<Action>;
+    Name: string;
+    Actions: Array<StageActionType>;
 }
 
 interface SlackNotificationSetting {
@@ -108,18 +113,19 @@ interface SlackNotification {
 
 export interface Pipeline {
     Orchestrator?: string;
-    Name?: string;
+    Name: string;
     EnableBadge?: boolean;
-    Sources?: Array<Source>;
-    Stages?: Array<Stage>;
+    Sources: Array<Source>;
+    Stages: Array<Stage>;
     Notifications?: {
         Slack?: Array<SlackNotification>;
     };
     GitHub?: {
+        // string allows for a token.
         Auth?: {
             APP_ID?: string;
             PRIVATE_KEY?: string;
-        };
+        } | string;
         Defaults?: {
             Owner?: string;
             Repo?: string;

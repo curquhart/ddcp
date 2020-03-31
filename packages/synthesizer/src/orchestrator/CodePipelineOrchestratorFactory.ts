@@ -137,7 +137,7 @@ class CodePipelineOrchestratorStage implements Stage {
             bucket,
             objectKey: props.action.ObjectKey,
             extract: props.action.Extract,
-            accessControl: props.action.AccessControl,
+            accessControl: props.action.AccessControl as s3.BucketAccessControl,
             runOrder: props.action.Order,
             cacheControl: props.action.CacheControl !== undefined ?
                 props.action.CacheControl.map((entry) => CacheControl.fromString(entry)) :

@@ -1,12 +1,12 @@
 Resources:
   - Type: Counter
     Name: DdcpBuildNumber
-    Alias: BuildNumberCounter
+    '!Alias': BuildNumberCounter
 Pipelines:
   - Name: ddcp-build
     EnableBadge: true
     Notifications:
-      Alias: Notifications
+      '!Alias': Notifications
       Slack:
         - Channel: '#builds'
           UserName: buildbot
@@ -36,7 +36,7 @@ Pipelines:
         Actions:
           - Name: IncrementBuildNumber
             Type: Counter
-            Alias: IncrementCounter
+            '!Alias': IncrementCounter
             Counter:
               '!Path':
                 '!PathForAlias': BuildNumberCounter
@@ -54,7 +54,7 @@ Pipelines:
                     - - OutputArtifactName
             ComputeType: BUILD_GENERAL1_MEDIUM
             BuildSpec:
-              Alias: BuildSpec
+              '!Alias': BuildSpec
               Inline:
                 version: 0.2
                 env:
@@ -218,7 +218,7 @@ Pipelines:
               '!Import': PublicBucketArn
             AccessControl: PublicRead
             CacheControl:
-              - max-age: 86400
+              - 'max-age: 86400'
           - Name: Synthesizer
             Type: S3Publish
             Order: 1

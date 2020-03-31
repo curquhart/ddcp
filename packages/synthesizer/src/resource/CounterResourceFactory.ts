@@ -1,7 +1,6 @@
 import {
     BaseResource,
     BaseResourceFactory,
-    BaseResourceProps
 } from './BaseResourceFactory';
 import {Tokenizer} from '@ddcp/tokenizer';
 import {Construct, RemovalPolicy} from '@aws-cdk/core';
@@ -9,6 +8,7 @@ import {AttributeType, BillingMode, Table} from '@aws-cdk/aws-dynamodb';
 import {Uniquifier} from '../Uniquifier';
 import {PolicyStatement} from '@aws-cdk/aws-iam';
 import {throwError} from '@ddcp/errorhandling';
+import {BaseResourceProps} from '@ddcp/models';
 
 type CounterResourceProps = BaseResourceProps;
 

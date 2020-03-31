@@ -1,5 +1,5 @@
 import {Construct} from '@aws-cdk/core';
-import {CodeBuildAction, CounterAction, Pipeline, S3PublishAction} from '../PipelineConfig';
+import {CodeBuildAction, CounterAction, Pipeline, S3PublishAction} from '@ddcp/models';
 import {IPipeline} from '@aws-cdk/aws-codepipeline';
 import {ManagerResources} from '../SynthesisHandler';
 import {Project} from '@aws-cdk/aws-codebuild';

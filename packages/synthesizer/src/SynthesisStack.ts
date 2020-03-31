@@ -4,13 +4,14 @@ import {
     BuildEnvironmentVariableType,
     BuildSpec,
     CfnProject,
+    ComputeType,
     LinuxBuildImage,
     Project,
     Source
 } from '@aws-cdk/aws-codebuild';
 import {Pipeline} from '@aws-cdk/aws-codepipeline';
 import {Aws, Construct, Duration, Fn, Stack} from '@aws-cdk/core';
-import {isCodeBuildAction, isCounterAction, isS3PublishAction, PipelineConfigs, SourceType} from './PipelineConfig';
+import {isCodeBuildAction, isCounterAction, isS3PublishAction, PipelineConfigs, SourceType} from '@ddcp/models';
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
 import * as kms from '@aws-cdk/aws-kms';
@@ -28,8 +29,10 @@ import {BaseResourceFactory} from './resource/BaseResourceFactory';
 import {GitSourceSync} from './builders/GitSourceSync';
 import {getFunction} from './helpers';
 import {LambdaModuleName} from '@ddcp/module-collection';
-
+import * as Ajv from 'ajv';
 const SECRETS_MANAGER_ARN_REGEXP = /^(arn:[^:]+:secretsmanager:[^:]+:[^:]+:secret:[^:-]+).*$/;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pipelinesSchema = require('@ddcp/models/dist/PipelineConfigs.schema.json');
 
 interface SynthesisStackProps {
     managerResources: ManagerResources;
@@ -51,6 +54,12 @@ export class SynthesisStack extends Stack {
     async init(): Promise<void> {
         const props = this.props;
         const pipelineConfig = props.resolver.resolve(this, props.unresolvedPipelineConfig) as PipelineConfigs;
+
+        // validate schema.
+        const ajv = new Ajv();
+        if (!ajv.validate(pipelinesSchema, pipelineConfig)) {
+            throw new Error(`Validation error(s): ${ajv.errorsText()}. Resolved configuration: ${JSON.stringify(pipelineConfig)}`);
+        }
 
         const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', props.managerResources.arn);
         const functionCache: Record<string, Function> = {};
@@ -168,21 +177,16 @@ export class SynthesisStack extends Stack {
                 );
             }
 
-            for (const stage of tOrDefault(pipeline.Stages, [])) {
+            for (const stage of pipeline.Stages) {
                 if (stage.Name === undefined) {
                     throw new Error('Name is required.');
                 }
 
                 const orchestratedStage = orchestratedPipeline.addStage(stage.Name);
 
-                for (const action of tOrDefault(stage.Actions, [])) {
-                    if (action.Name === undefined) {
-                        throw new Error('Name is required.');
-                    }
+                for (const action of stage.Actions as Array<{Type: string}>) {
                     if (isCodeBuildAction(action)) {
-                        const buildSpec = action.BuildSpec !== undefined && action.BuildSpec.Inline !== undefined ?
-                            action.BuildSpec.Inline :
-                            throwError(new Error('BuildSpec.Inline is required.'));
+                        const buildSpec = action.BuildSpec.Inline ?? throwError(new Error('BuildSpec.Inline is required.'));
 
                         const sourceName = action.SourceName ?? throwError(new Error('SourceName cannot be null.'));
                         const repository = repositories[ sourceName ];
@@ -202,7 +206,7 @@ export class SynthesisStack extends Stack {
                             badge: action.EnableBadge,
                             environment: {
                                 buildImage: action.BuildImage !== undefined ? LinuxBuildImage.fromDockerRegistry(action.BuildImage) : LinuxBuildImage.STANDARD_3_0,
-                                computeType: action.ComputeType,
+                                computeType: action.ComputeType as ComputeType | undefined,
                                 privileged: action.PrivilegedMode,
                                 environmentVariables: {
                                     DDCP_PIPELINE_NAME: {
