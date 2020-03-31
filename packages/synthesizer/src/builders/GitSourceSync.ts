@@ -1,6 +1,6 @@
 import {Function} from '@aws-cdk/aws-lambda';
 import {Construct} from '@aws-cdk/core';
-import {Source} from '../PipelineConfig';
+import {Source} from '@ddcp/models';
 import {PolicyStatement} from '@aws-cdk/aws-iam';
 import {IRepository} from '@aws-cdk/aws-codecommit';
 import {LambdaIntegration, PassthroughBehavior, RestApi} from '@aws-cdk/aws-apigateway';

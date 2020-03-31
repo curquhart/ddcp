@@ -5,6 +5,8 @@ import {ResolveResult} from '../../Resolver';
 type IParameters = Array<string>
 
 export class PathForAlias extends Base<unknown, IParameters> {
+    private aliasCache: Record<string, unknown> = {};
+
     get name(): string {
         return '!PathForAlias';
     }
@@ -13,7 +15,6 @@ export class PathForAlias extends Base<unknown, IParameters> {
         if (parameters.length !== 1) {
             throw new ParameterCountError(this.name, 'exactly 1');
         }
-
 
         return {
             value: this.resolvePath(parameters[0], fullValue),
@@ -29,6 +30,12 @@ export class PathForAlias extends Base<unknown, IParameters> {
         const checkResolved = [input];
         const paths: Array<[unknown, Array<string | number>]> = [];
 
+        if (this.aliasCache[alias] !== undefined) {
+            return this.aliasCache[alias];
+        }
+
+        // It is possible that something resolved into an alias (well, not currently but it could be in the future.)
+        // To handle this, allow us to iterate multiple times when not found.
         while (checkResolved.length > 0) {
             const nextValue = checkResolved.shift();
             const currentPath = [];
@@ -46,8 +53,10 @@ export class PathForAlias extends Base<unknown, IParameters> {
                 }
             }
             else if (typeof nextValue === 'object' && nextValue !== null) {
-                if ((nextValue as Record<string, unknown>).Alias === alias) {
-                    return currentPath;
+                const currentAlias = (nextValue as Record<string, unknown>)['!Alias'];
+                if (typeof currentAlias === 'string') {
+                    delete (nextValue as Record<string, unknown>)['!Alias'];
+                    this.aliasCache[currentAlias] = currentPath;
                 }
 
                 for (const [key, entry] of Object.entries(nextValue)) {
@@ -55,6 +64,10 @@ export class PathForAlias extends Base<unknown, IParameters> {
                     checkResolved.push(entry);
                 }
             }
+        }
+
+        if (this.aliasCache[alias] !== undefined) {
+            return this.aliasCache[alias];
         }
 
         throw new Error(`Could not resolve ${alias}`);

@@ -8,7 +8,7 @@ export interface BaseResolver<T, U> {
 
 export abstract class Base<T, U extends Array<unknown>> implements BaseResolver<T, U> {
     constructor(
-        protected readonly allResolvers: Record<string, Base<unknown, Array<unknown>>>
+        protected readonly allResolvers: Record<string, BaseResolver<unknown, Array<unknown>>>
     ) {
     }
 

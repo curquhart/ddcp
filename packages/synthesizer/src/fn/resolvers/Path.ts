@@ -2,7 +2,8 @@ import {Base} from '../Base';
 import {ParameterCountError} from '../errors/ParameterCountError';
 import {StringParameterTypeError} from '../errors/StringParameterTypeError';
 import {ResolveResult} from '../../Resolver';
-import {BaseResourceFactory, BaseResourceProps} from '../../resource/BaseResourceFactory';
+import {BaseResourceFactory} from '../../resource/BaseResourceFactory';
+import {BaseResourceProps} from '@ddcp/models';
 import {throwError} from '@ddcp/errorhandling';
 
 type IParameters = Array<string | number>
