@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/s3-resolver",
-  "version": "1.4.0-121",
+  "version": "1.5.0-123",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/eslint-config": "^1.4.0-121",
+    "@ddcp/eslint-config": "^1.5.0-123",
     "@ddcp/tools": "^1.0.0",
     "@ddcp/typescript-config": "^1.0.0",
     "@types/aws-lambda": "8.10.44",

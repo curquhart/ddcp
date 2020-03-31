@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0-123](https://github.com/curquhart/ddcp/compare/v1.4.0-121...v1.5.0-123) (2020-03-31)
+
+**Note:** Version bump only for package @ddcp/stringutils
+
+
+
+
+
 # [1.4.0-121](https://github.com/curquhart/ddcp/compare/v1.3.1-115...v1.4.0-121) (2020-03-30)
 
 **Note:** Version bump only for package @ddcp/stringutils
