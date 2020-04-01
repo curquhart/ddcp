@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/module-collection",
-  "version": "1.5.1-138",
+  "version": "1.5.2-140",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
