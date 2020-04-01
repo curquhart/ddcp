@@ -32,6 +32,7 @@ import {Bucket} from '@aws-cdk/aws-s3';
 import {getFunction} from '../helpers';
 import {LambdaModuleName} from '@ddcp/module-collection';
 import {createHash} from 'crypto';
+import {SynthesizedEventRule} from '@ddcp/models';
 
 export const NAME = 'CodePipeline';
 
@@ -81,7 +82,7 @@ class CodePipelineOrchestratorStage implements Stage {
                         pipeline: [this.props.managerPipeline.pipelineName],
                         state: ['SUCCEEDED']
                     }
-                }
+                } as SynthesizedEventRule
             });
         }
     }

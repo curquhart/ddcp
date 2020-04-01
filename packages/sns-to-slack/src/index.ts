@@ -1,6 +1,6 @@
 import * as https from 'https';
 import {SNSEvent} from 'aws-lambda';
-import {Payload} from '@ddcp/sns-models';
+import {CodeBuildPayload} from '@ddcp/models';
 import {Resolver} from '@ddcp/secretsmanager';
 import {toWords} from '@ddcp/stringutils';
 
@@ -19,7 +19,7 @@ const resolver = new Resolver();
 
 export const handler = async (event: SNSEvent): Promise<void> => {
     for (const record of event.Records) {
-        const payload = JSON.parse(record.Sns.Message) as Payload;
+        const payload = JSON.parse(record.Sns.Message) as CodeBuildPayload;
 
         if (payload.slackSettings === undefined) {
             continue;

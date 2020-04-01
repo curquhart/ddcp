@@ -4,6 +4,7 @@ import {error, info, warn} from '@ddcp/logger';
 import {Context} from 'aws-lambda';
 import {throwError} from '@ddcp/errorhandling';
 import {BaseEvent, CodeCommitEvent, CodePipelineEvent} from './Events';
+import {SynthesizedEvent, SynthesizedEventDetail} from '@ddcp/models';
 
 const isCodePipelineEvent = (event: BaseEvent): event is CodePipelineEvent => {
     return event.source === 'aws.codepipeline';
@@ -35,6 +36,7 @@ export class SelectorHandler {
         const cw = new CloudWatchEvents();
 
         info(context.awsRequestId, 'Emitting CodePipeline Pipeline Finished event.');
+
         await cw.putEvents({
             Entries: [{
                 EventBusName: event.detail.eventBusName,
@@ -51,8 +53,8 @@ export class SelectorHandler {
                     referenceName: item.Item?.referenceName.S,
                     state: 'SUCCEEDED',
                     filesChanged: item.Item?.filesChanged.SS,
-                })
-            }],
+                } as SynthesizedEventDetail)
+            } as SynthesizedEvent],
         }).promise();
     }
 
@@ -150,8 +152,8 @@ export class SelectorHandler {
                         referenceName: event.detail.referenceName,
                         state: 'SUCCEEDED',
                         filesChanged,
-                    })
-                }],
+                    } as SynthesizedEventDetail)
+                } as SynthesizedEvent],
             }).promise();
 
             for (const resItem of tOrDefault(res.Entries, [])) {

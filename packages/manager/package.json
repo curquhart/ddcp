@@ -36,6 +36,7 @@
     "@aws-cdk/core": "1.25.0",
     "@aws-cdk/cx-api": "1.25.0",
     "@ddcp/module-collection": "^1.5.1-138",
+    "@ddcp/selector": "^1.5.1-138",
     "aws-cdk": "1.25.0",
     "js-yaml": "3.13.1",
     "tmp": "0.1.0"

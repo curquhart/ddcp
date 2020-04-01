@@ -41,7 +41,7 @@
     "@ddcp/errorhandling": "^1.5.1-138",
     "@ddcp/logger": "^1.5.1-138",
     "@ddcp/secretsmanager": "^1.5.1-138",
-    "@ddcp/sns-models": "^1.5.1-138",
+    "@ddcp/models": "^1.5.1-138",
     "@octokit/app": "4.2.0",
     "@octokit/auth-app": "2.4.3",
     "@octokit/request": "5.3.2",
