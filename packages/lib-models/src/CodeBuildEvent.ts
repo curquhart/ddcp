@@ -5,38 +5,37 @@ export enum CodeBuildStatus {
     Stopped = 'STOPPED',
 }
 
-export interface StatusSetting {
+export interface CodeBuildStatusSetting {
     emoji?: string;
 }
 
-export interface EnvVar {
+export interface CodeBuildEnvVar {
     name?: string;
     value?: string;
 }
 
-export interface Payload {
+export interface CodeBuildPayload {
     buildStatus: CodeBuildStatus;
     projectName: string;
     repositoryName: string;
     branchName?: string;
     buildId: string;
     region: string;
-    icon: string;
-    buildEnvironment?: Array<EnvVar>;
+    buildEnvironment?: Array<CodeBuildEnvVar>;
     slackSettings: Array<{
         uri: string;
         channel: string;
         username: string;
-        statuses?: Record<string, StatusSetting>;
+        statuses?: Record<string, CodeBuildStatusSetting>;
     }>;
     githubSettings: {
-       auth: {
-           APP_ID: string;
-           PRIVATE_KEY: string;
-       };
-       defaults: {
-           owner: string;
-           repo: string;
-       };
+        auth: {
+            APP_ID: string;
+            PRIVATE_KEY: string;
+        };
+        defaults: {
+            owner: string;
+            repo: string;
+        };
     };
 }

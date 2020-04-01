@@ -1,7 +1,7 @@
 import {Context, SNSEvent} from 'aws-lambda';
 import {Octokit} from '@octokit/rest';
 import {createAppAuth} from '@octokit/auth-app';
-import {CodeBuildStatus, Payload} from '@ddcp/sns-models';
+import {CodeBuildStatus, CodeBuildPayload} from '@ddcp/models';
 import {Resolver} from '@ddcp/secretsmanager';
 import {throwError} from '@ddcp/errorhandling';
 import {info} from '@ddcp/logger';
@@ -11,7 +11,7 @@ const resolver = new Resolver();
 export class Handler {
     async handle(event: SNSEvent, context: Context): Promise<void> {
         for (const record of event.Records) {
-            const payload = JSON.parse(record.Sns.Message) as Payload;
+            const payload = JSON.parse(record.Sns.Message) as CodeBuildPayload;
 
             if (payload.githubSettings?.auth === undefined) {
                 continue;

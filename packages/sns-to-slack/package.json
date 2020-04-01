@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@ddcp/secretsmanager": "^1.5.1-138",
-    "@ddcp/sns-models": "^1.5.1-138",
+    "@ddcp/models": "^1.5.1-138",
     "@ddcp/stringutils": "^1.5.1-138",
     "aws-lambda": "1.0.5"
   },

@@ -11,7 +11,15 @@ import {
 } from '@aws-cdk/aws-codebuild';
 import {Pipeline} from '@aws-cdk/aws-codepipeline';
 import {Aws, Construct, Duration, Fn, Stack} from '@aws-cdk/core';
-import {isCodeBuildAction, isCounterAction, isS3PublishAction, PipelineConfigs, SourceType} from '@ddcp/models';
+import {
+    CodeBuildEnvVar,
+    CodeBuildPayload,
+    isCodeBuildAction,
+    isCounterAction,
+    isS3PublishAction,
+    PipelineConfigs,
+    SourceType
+} from '@ddcp/models';
 import {ManagerResources} from './SynthesisHandler';
 import * as events from '@aws-cdk/aws-events';
 import * as kms from '@aws-cdk/aws-kms';
@@ -298,7 +306,7 @@ export class SynthesisStack extends Stack {
                                         region: events.EventField.fromPath('$.region'),
                                         repositoryName: repository.repositoryName,
                                         branchName: branchName ?? undefined,
-                                        buildEnvironment: events.EventField.fromPath('$.detail.additional-information.environment.environment-variables'),
+                                        buildEnvironment: events.EventField.fromPath('$.detail.additional-information.environment.environment-variables') as unknown as Array<CodeBuildEnvVar>,
                                         slackSettings: slackSettings?.map((slackSetting) => {
                                             return {
                                                 // TODO: return a token to resolve from secrets manager and set lambda permissions appropriately for such.
@@ -315,7 +323,7 @@ export class SynthesisStack extends Stack {
                                                 repo: githubSettings.Defaults?.Repo,
                                             }
                                         } : undefined,
-                                    })
+                                    } as CodeBuildPayload)
                                 }),
                             });
                         }
