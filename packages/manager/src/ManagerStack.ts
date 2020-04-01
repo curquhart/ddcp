@@ -1,7 +1,7 @@
-import {Aws, CfnParameter, Construct, Duration, Fn, Stack, StackProps} from '@aws-cdk/core';
+import {Aws, CfnParameter, Construct, Duration, Fn, RemovalPolicy, Stack, StackProps} from '@aws-cdk/core';
 import {Repository} from '@aws-cdk/aws-codecommit';
 import {DISABLE_METADATA_STACK_TRACE} from '@aws-cdk/cx-api';
-import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
+import * as codepipeline from '@aws-cdk/aws-codepipeline';
 import {CfnFunction, Code, Function, Runtime} from '@aws-cdk/aws-lambda';
 import {Bucket} from '@aws-cdk/aws-s3';
 import {
@@ -17,6 +17,7 @@ import * as fs from 'fs';
 import {CfnPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
+import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
 import {LambdaInputArtifacts, LambdaModuleName, LambdaOutputArtifacts} from '@ddcp/module-collection';
 
@@ -46,7 +47,7 @@ export class ManagerStack extends Stack {
 
         const localBucket = Bucket.fromBucketName(this, 'S3Bucket', localStorageBucketNameParameter.valueAsString);
 
-        const pipeline = new Pipeline(this, 'Pipeline', { pipelineName, artifactBucket: localBucket });
+        const pipeline = new codepipeline.Pipeline(this, 'Pipeline', { pipelineName, artifactBucket: localBucket });
 
         const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketNameParameter.valueAsString);
 
@@ -112,12 +113,21 @@ export class ManagerStack extends Stack {
             lambdaOutputs[moduleName as LambdaModuleName] = resolverCr.getAtt('DestKey').toString();
         });
 
-        const handlerFunction = new Function(this, 'DDCpMainHandler', {
-            code: Code.fromBucket(localBucket, lambdaOutputs[LambdaModuleName.Synthesizer]),
+        const executionsTable = new dynamodb.Table(this, 'ExecutionsTable', {
+            partitionKey: {
+                name: 'executionId',
+                type: dynamodb.AttributeType.STRING
+            },
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+            removalPolicy: RemovalPolicy.DESTROY,
+            timeToLiveAttribute: 'expiryTimestamp',
+        });
+
+        const selectorHandlerFunction = new Function(this, 'DDCpSelectorHandler', {
+            code: Code.fromBucket(localBucket, lambdaOutputs[LambdaModuleName.Selector]),
             handler: 'dist/bundled.handler',
             runtime: Runtime.NODEJS_12_X,
-            timeout: Duration.minutes(5),
-            memorySize: 512,
+            timeout: Duration.seconds(5),
             initialPolicy: [
                 // Might want to deploy a single version of this lambda. Its events are constructed to support that,
                 // but if doing so, we will need to * the resources.
@@ -133,6 +143,13 @@ export class ManagerStack extends Stack {
                     actions: ['events:PutEvents'],
                     resources: [eventBus.eventBusArn],
                 }),
+                new PolicyStatement({
+                    actions: [
+                        'dynamodb:PutItem',
+                        'dynamodb:GetItem',
+                    ],
+                    resources: [executionsTable.tableArn],
+                }),
             ],
             environment: {
                 // Due to a 1000 byte limit in the lambda configuration, this must be in an env var (more storage)
@@ -141,9 +158,9 @@ export class ManagerStack extends Stack {
                 ASSET_KEYS: JSON.stringify(lambdaOutputs)
             }
         });
-        const handlerFunctionNode = handlerFunction.node.defaultChild as CfnFunction;
-        handlerFunctionNode.node.addInfo('cfn_nag disabled.');
-        handlerFunctionNode
+        const selectorHandlerFunctionNode = selectorHandlerFunction.node.defaultChild as CfnFunction;
+        selectorHandlerFunctionNode.node.addInfo('cfn_nag disabled.');
+        selectorHandlerFunctionNode
             .addOverride('Metadata', {
                 'cfn_nag': {
                     'rules_to_suppress': [
@@ -155,40 +172,52 @@ export class ManagerStack extends Stack {
                 }
             });
 
-        const handlerDefaultPolicy = handlerFunction?.role?.node.findChild('DefaultPolicy').node.findChild('Resource') as CfnPolicy;
-        handlerDefaultPolicy.node.addInfo('cfn_nag disabled.');
-        handlerDefaultPolicy
-            .addOverride('Metadata', {
-                'cfn_nag': {
-                    'rules_to_suppress': [
-                        {
-                            id: 'W12',
-                            reason: 'CodePipeline PutJobSuccessResult and PutJobFailureResult both require *.',
-                        },
-                    ]
-                }
-            });
-
-        inputRepo.onCommit('EventRule', {
-            target: new targets.LambdaFunction(handlerFunction, {
+        pipeline.onStateChange('PipelineStateChange', {
+            target: new targets.LambdaFunction(selectorHandlerFunction, {
                 event: events.RuleTargetInput.fromObject({
+                    source: events.EventField.fromPath('$.source'),
                     detail: {
-                        oldCommitId: events.EventField.fromPath('$.detail.oldCommitId'),
-                        commitId: events.EventField.fromPath('$.detail.commitId'),
+                        executionId: events.EventField.fromPath('$.detail.execution-id'),
                         repositoryName: inputRepo.repositoryName,
                         repositoryArn: inputRepo.repositoryArn,
                         pipelineName,
                         pipelineArn,
                         eventBusName: eventBus.eventBusName,
-                        inputFile: 'pipeline-config.yaml'
+                        executionsTableName: executionsTable.tableName,
+                        inputFiles: ['pipeline-config.yaml']
+                    },
+                })
+            }),
+            eventPattern: {
+                detail: {
+                    state: ['SUCCEEDED']
+                }
+            }
+        });
+        inputRepo.onCommit('EventRule', {
+            target: new targets.LambdaFunction(selectorHandlerFunction, {
+                event: events.RuleTargetInput.fromObject({
+                    source: events.EventField.fromPath('$.source'),
+                    detail: {
+                        oldCommitId: events.EventField.fromPath('$.detail.oldCommitId'),
+                        commitId: events.EventField.fromPath('$.detail.commitId'),
+                        referenceType: events.EventField.fromPath('$.detail.referenceType'),
+                        referenceName: events.EventField.fromPath('$.detail.referenceName'),
+                        repositoryName: inputRepo.repositoryName,
+                        repositoryArn: inputRepo.repositoryArn,
+                        pipelineName,
+                        pipelineArn,
+                        eventBusName: eventBus.eventBusName,
+                        executionsTableName: executionsTable.tableName,
+                        inputFiles: ['pipeline-config.yaml']
                     },
                 })
             }),
             branches: [MANAGER_BRANCH],
         });
 
-        const sourceArtifact = new Artifact();
-        const synthesizedPipeline = new Artifact('synthesized');
+        const sourceArtifact = new codepipeline.Artifact();
+        const synthesizedPipeline = new codepipeline.Artifact('synthesized');
 
         pipeline.addStage({
             stageName: 'Source',
@@ -202,8 +231,35 @@ export class ManagerStack extends Stack {
             ]
         });
 
+        const synthHandlerFunction = new Function(this, 'DDCpSynthHandler', {
+            code: Code.fromBucket(localBucket, lambdaOutputs[LambdaModuleName.Synthesizer]),
+            handler: 'dist/bundled.handler',
+            runtime: Runtime.NODEJS_12_X,
+            timeout: Duration.minutes(5),
+            memorySize: 512,
+            environment: {
+                // Due to a 1000 byte limit in the lambda configuration, this must be in an env var (more storage)
+                // If/when it gets much bigger, will need to minify it in some manner, probably by just providing
+                // a prefix.
+                ASSET_KEYS: JSON.stringify(lambdaOutputs)
+            }
+        });
+        const synthHandlerFunctionNode = synthHandlerFunction.node.defaultChild as CfnFunction;
+        synthHandlerFunctionNode.node.addInfo('cfn_nag disabled.');
+        synthHandlerFunctionNode
+            .addOverride('Metadata', {
+                'cfn_nag': {
+                    'rules_to_suppress': [
+                        {
+                            id: 'W58',
+                            reason: 'AWSLambdaBasicExecutionRole is applied which provides CloudWatch write.',
+                        },
+                    ]
+                }
+            });
+
         const synthAction = new LambdaInvokeAction({
-            lambda: handlerFunction,
+            lambda: synthHandlerFunction,
             actionName: 'SynthesizePipeline',
             inputs: [
                 sourceArtifact
@@ -225,6 +281,27 @@ export class ManagerStack extends Stack {
             },
             runOrder: 1
         });
+        const originalBind = synthAction.bind.bind(synthAction);
+        synthAction.bind = (scope: Construct, stage: codepipeline.IStage, options: codepipeline.ActionBindOptions): codepipeline.ActionConfig => {
+            const res = originalBind(scope, stage, options);
+
+            // policy is not created until synthesis, so we have to delay adding our lint exclusion.
+            const synthHandlerDefaultPolicy = synthHandlerFunction.role?.node.findChild('DefaultPolicy').node.findChild('Resource') as CfnPolicy;
+            synthHandlerDefaultPolicy.node.addInfo('cfn_nag disabled.');
+            synthHandlerDefaultPolicy
+                .addOverride('Metadata', {
+                    'cfn_nag': {
+                        'rules_to_suppress': [
+                            {
+                                id: 'W12',
+                                reason: 'CodePipeline PutJobSuccessResult and PutJobFailureResult both require *.',
+                            },
+                        ]
+                    }
+                });
+
+            return res;
+        };
 
         const changeSetAction = new CloudFormationCreateReplaceChangeSetAction({
             actionName: 'CreateChangeSet',

@@ -72,10 +72,10 @@ class CodePipelineOrchestratorStage implements Stage {
                 target: new targets.CodePipeline(this.props.pipeline.codePipeline),
                 eventPattern: {
                     detailType: [
-                        'CodePipeline Pipeline Execution State Change',
+                        'CodePipeline Pipeline Finished',
                         'CodePipeline Pipeline Skipped'
                     ],
-                    source: ['aws.codepipeline', 'synth.codepipeline'],
+                    source: ['synth.codepipeline'],
                     region: [Aws.REGION],
                     detail: {
                         pipeline: [this.props.managerPipeline.pipelineName],
