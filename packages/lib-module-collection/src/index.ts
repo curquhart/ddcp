@@ -1,5 +1,6 @@
 export enum LambdaModuleName {
     Synthesizer = '@ddcp/synthesizer',
+    Selector = '@ddcp/selector',
     SnsToGitHub = '@ddcp/sns-to-github',
     SnsToSlack = '@ddcp/sns-to-slack',
     CodePipelineBadge = '@ddcp/codepipeline-badge',
@@ -20,6 +21,7 @@ export type LambdaModuleCollection = {
 };
 
 export const LambdaInputArtifacts: LambdaModuleCollection = {
+    [LambdaModuleName.Selector]: 'node_modules/@ddcp/selector/dist/@ddcpselector.zip',
     [LambdaModuleName.Synthesizer]: 'node_modules/@ddcp/synthesizer/dist/@ddcpsynthesizer.zip',
     [LambdaModuleName.SnsToGitHub]: 'node_modules/@ddcp/sns-to-github/dist/@ddcpsns-to-github.zip',
     [LambdaModuleName.SnsToSlack]: 'node_modules/@ddcp/sns-to-slack/dist/@ddcpsns-to-slack.zip',

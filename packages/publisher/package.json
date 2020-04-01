@@ -45,6 +45,7 @@
     "@ddcp/manager": "^1.5.0-123",
     "@ddcp/sns-to-github": "^1.5.0-123",
     "@ddcp/sns-to-slack": "^1.5.0-123",
+    "@ddcp/selector": "^1.5.0-123",
     "@ddcp/synthesizer": "^1.5.0-123",
     "@ddcp/tools": "^1.0.0",
     "@ddcp/typescript-config": "^1.0.0",
