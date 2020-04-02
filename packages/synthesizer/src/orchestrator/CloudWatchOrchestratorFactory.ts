@@ -16,8 +16,8 @@ import {throwError} from '@ddcp/errorhandling';
 import {EventField, RuleTargetInput} from '@aws-cdk/aws-events';
 import {getFunction} from '../helpers';
 import {LambdaModuleName} from '@ddcp/module-collection';
-import {PolicyStatement} from "@aws-cdk/aws-iam";
-import {CodeBuildCloudWatchEvent} from "@ddcp/models";
+import {PolicyStatement} from '@aws-cdk/aws-iam';
+import {CodeBuildCloudWatchEvent} from '@ddcp/models';
 
 export const NAME = 'CloudWatch';
 
