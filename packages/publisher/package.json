@@ -39,6 +39,7 @@
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
     "@ddcp/action-counter": "^1.5.2-140",
+    "@ddcp/branch-filter": "^1.5.1-140",
     "@ddcp/codepipeline-badge": "^1.5.2-140",
     "@ddcp/eslint-config": "^1.5.2-140",
     "@ddcp/github-mirror": "^1.5.2-140",

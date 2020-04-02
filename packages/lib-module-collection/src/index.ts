@@ -6,6 +6,7 @@ export enum LambdaModuleName {
     CodePipelineBadge = '@ddcp/codepipeline-badge',
     ActionCounter = '@ddcp/action-counter',
     GitHubMirror = '@ddcp/github-mirror',
+    BranchFilter = '@ddcp/branch-filter',
 }
 
 export enum ModuleName {
@@ -28,6 +29,7 @@ export const LambdaInputArtifacts: LambdaModuleCollection = {
     [LambdaModuleName.CodePipelineBadge]: 'node_modules/@ddcp/codepipeline-badge/dist/@ddcpcodepipeline-badge.zip',
     [LambdaModuleName.ActionCounter]: 'node_modules/@ddcp/action-counter/dist/@ddcpaction-counter.zip',
     [LambdaModuleName.GitHubMirror]: 'node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip',
+    [LambdaModuleName.BranchFilter]: 'node_modules/@ddcp/branch-filter/dist/@ddcpbranch-filter.zip',
 };
 
 export const InputArtifacts: ModuleCollection = {

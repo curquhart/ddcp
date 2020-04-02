@@ -241,6 +241,7 @@ Pipelines:
       - Name: Source
         Type: CodeCommit
         RepositoryName: ddcp
+        BranchPattern: '^(?!master$)'
     Stages:
       - Name: BuildStage
         Actions:
