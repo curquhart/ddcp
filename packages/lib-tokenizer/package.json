@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/tokenizer",
-  "version": "1.5.2-140",
+  "version": "1.6.0-146",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/eslint-config": "^1.5.2-140",
+    "@ddcp/eslint-config": "^1.6.0-146",
     "@ddcp/typescript-config": "^1.0.0",
     "@types/jest": "25.1.4",
     "@typescript-eslint/eslint-plugin": "2.21.0",

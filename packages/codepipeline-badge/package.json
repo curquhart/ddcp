@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/codepipeline-badge",
-  "version": "1.5.2-140",
+  "version": "1.6.0-146",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
@@ -23,8 +23,8 @@
     ]
   },
   "dependencies": {
-    "@ddcp/errorhandling": "^1.5.2-140",
-    "@ddcp/logger": "^1.5.2-140",
+    "@ddcp/errorhandling": "^1.6.0-146",
+    "@ddcp/logger": "^1.6.0-146",
     "aws-lambda": "1.0.5",
     "aws-sdk": "2.648.0",
     "debug": "4.1.1"
