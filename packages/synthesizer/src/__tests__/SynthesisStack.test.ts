@@ -28,6 +28,7 @@ const MANAGER_RESOURCES: ManagerResources = {
         [LambdaModuleName.GitHubMirror]: 'fn5',
         [LambdaModuleName.CodePipelineBadge]: 'fn6',
         [LambdaModuleName.Selector]: 'fn7',
+        [LambdaModuleName.BranchFilter]: 'fn8',
     },
 };
 
