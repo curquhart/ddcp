@@ -2,6 +2,15 @@ Resources:
   - Type: Counter
     Name: DdcpBuildNumber
     '!Alias': BuildNumberCounter
+  - Type: S3Bucket
+    Name: DistCfnBucket
+    '!Alias': DistCfnBucket
+    RequesterPays: false
+  - Type: S3Bucket
+    Name: DistLambdasBucket
+    '!Alias': DistLambdasBucket
+    RequesterPays: true
+
 Pipelines:
   - Name: ddcp-build
     EnableBadge: true
@@ -191,16 +200,22 @@ Pipelines:
                                 git push origin master
                               fi
                             fi
+
+                            # Versioned artifacts
+                            mkdir -p dist/manager/${BUILD_VERSION}
+                            cp packages/manager/dist/manager.yaml dist/manager/${BUILD_VERSION}
+                            mkdir -p dist/lambdas/${BUILD_VERSION}
+                            cp packages/*/dist/*.zip dist/lambdas/${BUILD_VERSION}
                 artifacts:
                   secondary-artifacts:
                     Manager:
                       files:
-                        - packages/manager/dist/manager.yaml
-                      discard-paths: yes
-                    Synthesizer:
+                        - dist/manager/${BUILD_VERSION}/*
+                      base-path: dist/manager/
+                    Lambdas:
                       files:
-                        - packages/synthesizer/dist/@ddcpsynthesizer.zip
-                      discard-paths: yes
+                        - dist/lambdas/${BUILD_VERSION}/*
+                      base-path: dist/lambdas/
                 reports:
                   'test-results':
                     files:
@@ -215,17 +230,26 @@ Pipelines:
             SourceName: Manager
             Extract: true
             BucketArn:
-              '!Import': PublicBucketArn
+              '!Path':
+                '!Join':
+                  - '!PathForAlias': DistCfnBucket
+                  - - Outputs
+                    - BucketArn
             AccessControl: PublicRead
             CacheControl:
               - 'max-age: 86400'
-          - Name: Synthesizer
+          - Name: Lambdas
             Type: S3Publish
             Order: 1
-            SourceName: Synthesizer
+            SourceName: Lambdas
             Extract: true
             BucketArn:
-              '!Import': PrivateBucketArn
+              '!Path':
+                '!Join':
+                  - '!PathForAlias': DistLambdasBucket
+                  - - Outputs
+                    - BucketArn
+            AccessControl: PublicRead
   - Name: ddcp-branch-build
     GitHub:
       Auth:

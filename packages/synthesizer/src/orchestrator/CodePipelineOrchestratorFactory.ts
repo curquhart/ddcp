@@ -141,7 +141,7 @@ class CodePipelineOrchestratorStage implements Stage {
             accessControl: props.action.AccessControl as s3.BucketAccessControl,
             runOrder: props.action.Order,
             cacheControl: props.action.CacheControl !== undefined ?
-                props.action.CacheControl.map((entry) => CacheControl.fromString(entry)) :
+                props.action.CacheControl.map((entry: string) => CacheControl.fromString(entry)) :
                 undefined,
             role: new Role(this.props.pipeline.props.scope, this.props.uniquifier.next('Role'), {
                 assumedBy: this.props.pipeline.codePipeline.role,
@@ -168,15 +168,15 @@ class CodePipelineOrchestratorStage implements Stage {
             this.props.artifacts[artifactName] = new Artifact(artifactName);
         }
 
-        props.lambda.addToRolePolicy(props.counter.getOutput('WritePolicy') as PolicyStatement);
+        props.lambda.addToRolePolicy(props.counter.getOutput('WritePolicy', this.props.pipeline.props.scope) as PolicyStatement);
 
         this.stage.addAction(new LambdaInvokeAction({
             actionName: props.action.Name,
             lambda: props.lambda,
             userParameters: {
                 Operation: props.action.Operation,
-                TableName: props.counter.getOutput('TableName'),
-                CounterId: props.counter.getOutput('CounterId'),
+                TableName: props.counter.getOutput('TableName', this.props.pipeline.props.scope),
+                CounterId: props.counter.getOutput('CounterId', this.props.pipeline.props.scope),
             },
             outputs: [
                 this.props.artifacts[artifactName]

@@ -1,6 +1,6 @@
 import {UnresolvedDependencyError} from './errors/UnresolvedDependencyError';
 import {ResolveResult, isResolved} from '../Resolver';
-import {Stack} from '@aws-cdk/core';
+import {Construct} from '@aws-cdk/core';
 
 export interface BaseResolver<T, U> {
     resolve(parameters: U, fullValue: Record<string, unknown>): ResolveResult<T>;
@@ -18,7 +18,7 @@ export abstract class Base<T, U extends Array<unknown>> implements BaseResolver<
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    withScope(scope: Stack): BaseResolver<T, U> {
+    withScope(scope: Construct): BaseResolver<T, U> {
         return this;
     }
 
