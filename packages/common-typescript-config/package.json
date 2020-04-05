@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/typescript-config",
-  "version": "1.7.1-154",
+  "version": "1.7.2-156",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
