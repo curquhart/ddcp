@@ -75,7 +75,7 @@ export class SynthesisStack extends Stack {
         // create resources
         for (const resource of tOrDefault(pipelineConfig.Resources, [])) {
             const factory = props.resourceFactories[resource.Type ?? throwError(new Error('Resource Type is required.'))] ?? throwError(new Error(`Unknown resource type: ${resource.Type}`));
-            factory.new(resource).constructCdk(this);
+            factory.new(resource).constructCdk(this, props.managerResources);
         }
 
         for (const pipeline of tOrDefault(pipelineConfig.Pipelines, [])) {

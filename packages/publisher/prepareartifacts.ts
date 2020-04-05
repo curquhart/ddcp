@@ -25,17 +25,30 @@ for (const [ moduleName, artifactFn ] of Object.entries(allArtifacts)) {
     }
 }
 
-// (2) Prepare bundle
-const outFile = 'dist/dist.zip';
-if (fs.existsSync(outFile)) {
-    fs.unlinkSync(outFile);
+// (2) Prepare bundles
+const lambdasOutFile = 'dist/dist-lambdas.zip';
+if (fs.existsSync(lambdasOutFile)) {
+    fs.unlinkSync(lambdasOutFile);
+}
+const managerOutFile = 'dist/dist-manager.zip';
+if (fs.existsSync(managerOutFile)) {
+    fs.unlinkSync(managerOutFile);
 }
 
-infoLogger('Creating zip...')
-const zip = new AdmZip();
-for (const artifactFn of Object.values(allArtifacts)) {
+infoLogger('Creating lambdas zip...')
+const lambdaZip = new AdmZip();
+for (const artifactFn of Object.values(LambdaInputArtifacts)) {
     infoLogger(`Adding ${artifactFn}...`)
-    zip.addLocalFile(artifactFn);
+    lambdaZip.addLocalFile(artifactFn);
 }
-infoLogger(`Writing ${outFile}...`)
-zip.writeZip(outFile);
+infoLogger(`Writing ${lambdasOutFile}...`)
+lambdaZip.writeZip(lambdasOutFile);
+
+infoLogger('Creating manager zip...')
+const managerZip = new AdmZip();
+for (const artifactFn of Object.values(InputArtifacts)) {
+    infoLogger(`Adding ${artifactFn}...`)
+    managerZip.addLocalFile(artifactFn);
+}
+infoLogger(`Writing ${managerOutFile}...`)
+managerZip.writeZip(managerOutFile);

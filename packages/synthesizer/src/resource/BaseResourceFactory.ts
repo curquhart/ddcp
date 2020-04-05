@@ -1,9 +1,10 @@
 import {Construct} from '@aws-cdk/core';
 import {BaseResourceProps} from '@ddcp/models';
+import {ManagerResources} from '../SynthesisHandler';
 
 export interface BaseResource {
     getOutput(name: string | number, scope: Construct): unknown;
-    constructCdk(scope: Construct): void;
+    constructCdk(scope: Construct, managerResources?: ManagerResources): void;
 }
 
 export abstract class BaseResourceFactory {

@@ -3,16 +3,18 @@ import {Repository} from '@aws-cdk/aws-codecommit';
 import {BlockPublicAccess, Bucket, BucketAccessControl} from '@aws-cdk/aws-s3';
 import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
 import {CfnStack} from '@aws-cdk/aws-cloudformation';
-import {createHash} from 'crypto';
-import * as fs from 'fs';
-import {errorLogger} from '@ddcp/logger';
+import {throwError} from '@ddcp/errorhandling';
 
 const app = new App();
 
-const distZipLocation = `${__dirname}/../dist/dist.zip`;
+const distLambdasLocation = `${__dirname}/../dist/dist-lambdas.zip`;
+const distManagerLocation = `${__dirname}/../dist/dist-manager.zip`;
+
+const lambdasDistBucketName = process.env.LAMBDA_DIST_BUCKET_NAME ?? throwError(new Error('LAMBDA_DIST_BUCKET_NAME is required.'));
+const managerDistBucketName = process.env.MANAGER_DIST_BUCKET_NAME ?? throwError(new Error('MANAGER_DIST_BUCKET_NAME is required.'));
 
 class PublisherPipelineInitStack extends Stack {
-    constructor(distHash: string, scope?: Construct, id?: string, props?: StackProps) {
+    constructor(scope?: Construct, id?: string, props?: StackProps) {
         super(scope, id, props);
 
         const repo = new Repository(this, 'Repo', {
@@ -24,52 +26,44 @@ class PublisherPipelineInitStack extends Stack {
             accessControl: BucketAccessControl.PRIVATE,
             blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
         });
-        const publicBucket = new Bucket(this, 'PublicBucket', {
-            removalPolicy: RemovalPolicy.DESTROY,
-            accessControl: BucketAccessControl.PUBLIC_READ,
-        });
 
-        const assetsPrefix = `managerassets/${distHash}/`;
+        const assetsPrefix = `${process.env.BUILD_VERSION}/`;
 
-        const deployment = new BucketDeployment(this, 'DeployArtifacts', {
+        const lambdaBucket = Bucket.fromBucketName(this, 'LambdasBucket', lambdasDistBucketName);
+        const managerBucket = Bucket.fromBucketName(this, 'ManagerBucket', managerDistBucketName);
+
+
+        const lambdaDeployment = new BucketDeployment(this, 'DeployLambdaArtifacts', {
             sources: [
-                Source.asset(distZipLocation),
+                Source.asset(distLambdasLocation),
             ],
-            destinationBucket: privateBucket,
+            destinationBucket: lambdaBucket,
+            destinationKeyPrefix: assetsPrefix
+        });
+        const managerDeployment = new BucketDeployment(this, 'DeployManagerArtifact', {
+            sources: [
+                Source.asset(distManagerLocation),
+            ],
+            destinationBucket: managerBucket,
             destinationKeyPrefix: assetsPrefix
         });
 
         const managerStack = new CfnStack(this, 'PipelineManager', {
-            templateUrl: privateBucket.urlForObject(`${assetsPrefix}manager.yaml`),
+            templateUrl: managerBucket.urlForObject(`${assetsPrefix}manager.yaml`),
             parameters: {
-                SourceS3BucketName: privateBucket.bucketName,
                 LocalStorageS3BucketName: privateBucket.bucketName,
-                SourceS3Prefix: assetsPrefix,
                 RepositoryName: repo.repositoryName,
                 SynthPipelineName: 'synthesizer',
                 StackName: 'ddcp-pipeline',
             }
         });
-        managerStack.node.addDependency(deployment);
+        managerStack.node.addDependency(lambdaDeployment, managerDeployment);
 
         new CfnOutput(this, 'PrivateBucketArn', {
             exportName: 'PrivateBucketArn',
             value: privateBucket.bucketArn
         });
-
-        new CfnOutput(this, 'PublicBucketArn', {
-            exportName: 'PublicBucketArn',
-            value: publicBucket.bucketArn
-        });
     }
 }
 
-const distReadStream = fs.createReadStream(distZipLocation);
-const shasum = createHash('sha1');
-distReadStream.on('data', (data) => shasum.update(data));
-distReadStream.on('end', () => new PublisherPipelineInitStack(shasum.digest('hex'), app, 'ddcp'));
-distReadStream.on('error', (err: Error) => {
-    errorLogger(err);
-    // eslint-disable-next-line no-process-exit
-    process.exit(1);
-});
+new PublisherPipelineInitStack(app, 'ddcp');

@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
+    "@ddcp/errorhandling": "^1.8.1-161",
     "@ddcp/action-counter": "^1.8.1-161",
     "@ddcp/branch-filter": "^1.8.1-161",
     "@ddcp/codepipeline-badge": "^1.8.1-161",
@@ -45,6 +46,7 @@
     "@ddcp/github-mirror": "^1.8.1-161",
     "@ddcp/manager": "^1.8.1-161",
     "@ddcp/selector": "^1.8.1-161",
+    "@ddcp/s3-requesterpays": "^1.8.1-161",
     "@ddcp/sns-to-github": "^1.8.1-161",
     "@ddcp/sns-to-slack": "^1.8.1-161",
     "@ddcp/synthesizer": "^1.8.1-161",

@@ -67,6 +67,13 @@ Pipelines:
               Inline:
                 version: 0.2
                 env:
+                  variables:
+                    LAMBDA_DIST_BUCKET_NAME:
+                      '!Path':
+                        '!Join':
+                          - '!PathForAlias': DistLambdasBucket
+                          - - Outputs
+                            - BucketName
                   'secrets-manager':
                     NPM_TOKEN: 'NpmPublish:NPM_TOKEN'
                     GITHUB_USER: 'GithubPush:USERNAME'

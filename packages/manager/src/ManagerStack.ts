@@ -20,9 +20,9 @@ import * as events from '@aws-cdk/aws-events';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
 import {LambdaInputArtifacts, LambdaModuleName, LambdaOutputArtifacts} from '@ddcp/module-collection';
+import {throwError} from '@ddcp/errorhandling';
 
 const MANAGER_BRANCH = 'master';
-
 
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
@@ -30,9 +30,10 @@ export class ManagerStack extends Stack {
 
         this.node.setContext(DISABLE_METADATA_STACK_TRACE, true);
 
-        const sourceBucketNameParameter = new CfnParameter(this, 'SourceS3BucketName');
+        const sourceBucketName = process.env.LAMBDA_DIST_BUCKET_NAME ?? throwError(new Error('LAMBDA_DIST_BUCKET_NAME is required.'));
+        const sourceBucketPrefix = process.env.BUILD_VERSION ?? throwError(new Error('BUILD_VERSION is required.'));
+
         const localStorageBucketNameParameter = new CfnParameter(this, 'LocalStorageS3BucketName');
-        const sourceBucketPrefixParameter = new CfnParameter(this, 'SourceS3Prefix');
         const repositoryNameParameter = new CfnParameter(this, 'RepositoryName');
         const synthPipelineNameParameter = new CfnParameter(this, 'SynthPipelineName');
         const stackNameParameter = new CfnParameter(this, 'StackName');
@@ -49,7 +50,7 @@ export class ManagerStack extends Stack {
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', { pipelineName, artifactBucket: localBucket });
 
-        const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketNameParameter.valueAsString);
+        const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketName);
 
         // TODO: use custom event bus once https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/44 is completed.
         const eventBus = events.EventBus.fromEventBusArn(this, 'CustomEventBus', `arn:aws:events:${Aws.REGION}:${Aws.ACCOUNT_ID}:event-bus/default`);
@@ -66,7 +67,7 @@ export class ManagerStack extends Stack {
             handler: 'index.handler',
             initialPolicy: [
                 new PolicyStatement({
-                    resources: Object.values(LambdaInputArtifacts).map((assetPath) => sourceBucket.arnForObjects(`${sourceBucketPrefixParameter.valueAsString}${assetPath.split('/').pop()}`)),
+                    resources: Object.values(LambdaInputArtifacts).map((assetPath) => sourceBucket.arnForObjects(`${sourceBucketPrefix}/${assetPath.split('/').pop()}`)),
                     actions: [
                         's3:GetObject'
                     ],
@@ -104,8 +105,8 @@ export class ManagerStack extends Stack {
             const resolverCr = new CustomResource(this, `DDCP${moduleName}`, {
                 provider: CustomResourceProvider.fromLambda(s3resolver),
                 properties: {
-                    SourceBucketName: sourceBucketNameParameter.valueAsString,
-                    SourceKey: `${sourceBucketPrefixParameter.valueAsString}${assetPath.split('/').pop()}`,
+                    SourceBucketName: sourceBucketName,
+                    SourceKey: `${sourceBucketPrefix}/${assetPath.split('/').pop()}`,
                     DestBucketName: localBucket.bucketName,
                     StackUuid: stackUuid,
                 },

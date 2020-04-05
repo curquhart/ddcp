@@ -29,6 +29,7 @@ const MANAGER_RESOURCES: ManagerResources = {
         [LambdaModuleName.CodePipelineBadge]: 'fn6',
         [LambdaModuleName.Selector]: 'fn7',
         [LambdaModuleName.BranchFilter]: 'fn8',
+        [LambdaModuleName.S3RequesterPays]: 'fn9',
     },
 };
 

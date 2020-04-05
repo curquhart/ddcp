@@ -1,23 +1,26 @@
-import {
-    BaseResource,
-    BaseResourceFactory,
-} from './BaseResourceFactory';
-import {Construct} from '@aws-cdk/core';
+import {BaseResource, BaseResourceFactory,} from './BaseResourceFactory';
+import {Construct, RemovalPolicy} from '@aws-cdk/core';
 import {Uniquifier} from '../Uniquifier';
 import {PolicyStatement} from '@aws-cdk/aws-iam';
 import {throwError} from '@ddcp/errorhandling';
 import {S3BucketResourceProps} from '@ddcp/models';
 import {Bucket} from '@aws-cdk/aws-s3';
 import {Function} from '@aws-cdk/aws-lambda';
+import {getFunction} from '../helpers';
+import {ManagerResources} from '../SynthesisHandler';
+import {LambdaModuleName} from '@ddcp/module-collection';
+import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
 
 interface S3BucketResourceSharedData {
     requesterPaysLambda?: Function;
+    functionCache: Record<string, Function>;
 }
 
 class S3BucketResource implements BaseResource {
     private readPolicy?: PolicyStatement;
     private writePolicy?: PolicyStatement;
     private s3Bucket?: Bucket;
+    private s3BucketConfigured = false;
 
     constructor(
         private readonly uniquifier: Uniquifier,
@@ -45,13 +48,35 @@ class S3BucketResource implements BaseResource {
         throw new Error(`Unknown output: ${name}.`);
     }
 
-    constructCdk(scope: Construct): void {
+    constructCdk(scope: Construct, managerResources?: ManagerResources): void {
         if (this.s3Bucket === undefined) {
             this.s3Bucket = new Bucket(scope, this.uniquifier.next('Bucket'));
+        }
 
-            if (this.props.RequesterPays === true) {
-                // TODO: requestor pays CR
-            }
+        if (this.props.RequesterPays === true && !this.s3BucketConfigured && managerResources !== undefined) {
+            this.s3BucketConfigured = true;
+
+            const fn = getFunction({
+                scope,
+                functionCache: this.sharedData.functionCache,
+                managerResources,
+                moduleName: LambdaModuleName.S3RequesterPays,
+            });
+            fn.addToRolePolicy(new PolicyStatement({
+                resources: [
+                    this.s3Bucket.bucketArn,
+                ],
+                actions: [
+                    's3:PutBucketRequestPayment',
+                ],
+            }));
+            new CustomResource(scope, this.uniquifier.next('BucketCr'), {
+                provider: CustomResourceProvider.fromLambda(fn),
+                properties: {
+                    BucketName: this.s3Bucket.bucketName,
+                },
+                removalPolicy: RemovalPolicy.RETAIN,
+            });
         }
 
         const resources = [
@@ -88,7 +113,9 @@ export class S3BucketResourceFactory extends BaseResourceFactory {
     }
 
     readonly name = 'S3Bucket';
-    private sharedData: S3BucketResourceSharedData = {};
+    private sharedData: S3BucketResourceSharedData = {
+        functionCache: {},
+    };
     private buckets: Record<string, S3BucketResource> = {};
 
     new(props: S3BucketResourceProps): S3BucketResource {

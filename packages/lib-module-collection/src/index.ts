@@ -7,6 +7,7 @@ export enum LambdaModuleName {
     ActionCounter = '@ddcp/action-counter',
     GitHubMirror = '@ddcp/github-mirror',
     BranchFilter = '@ddcp/branch-filter',
+    S3RequesterPays = '@ddcp/s3-requesterpays',
 }
 
 export enum ModuleName {
@@ -30,6 +31,7 @@ export const LambdaInputArtifacts: LambdaModuleCollection = {
     [LambdaModuleName.ActionCounter]: 'node_modules/@ddcp/action-counter/dist/@ddcpaction-counter.zip',
     [LambdaModuleName.GitHubMirror]: 'node_modules/@ddcp/github-mirror/dist/@ddcpgithub-mirror.zip',
     [LambdaModuleName.BranchFilter]: 'node_modules/@ddcp/branch-filter/dist/@ddcpbranch-filter.zip',
+    [LambdaModuleName.S3RequesterPays]: 'node_modules/@ddcp/s3-requesterpays/dist/@ddcps3-requesterpays.zip',
 };
 
 export const InputArtifacts: ModuleCollection = {
