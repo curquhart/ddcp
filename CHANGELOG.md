@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.1-161](https://github.com/curquhart/ddcp/compare/v1.8.0-159...v1.8.1-161) (2020-04-05)
+
+
+### Reverts
+
+* Revert "chore: discard paths" ([609126f](https://github.com/curquhart/ddcp/commit/609126fb3563b8e3faa54b3998f41a4df26fbd99))
+
+
+
+
+
 # [1.8.0-159](https://github.com/curquhart/ddcp/compare/v1.7.1-154...v1.8.0-159) (2020-04-05)
 
 
