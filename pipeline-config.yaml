@@ -205,17 +205,17 @@ Pipelines:
                             mkdir -p dist/manager/${BUILD_VERSION}
                             cp packages/manager/dist/manager.yaml dist/manager/${BUILD_VERSION}
                             mkdir -p dist/lambdas/${BUILD_VERSION}
-                            cp packages/*/dist/*.zip dist/lambdas/${BUILD_VERSION}
+                            cp packages/*/dist/@ddcp*.zip dist/lambdas/${BUILD_VERSION}
                 artifacts:
                   secondary-artifacts:
                     Manager:
                       files:
                         - dist/manager/${BUILD_VERSION}/*
-                      base-path: dist/manager/
+                      base-directory: dist/manager/
                     Lambdas:
                       files:
                         - dist/lambdas/${BUILD_VERSION}/*
-                      base-path: dist/lambdas/
+                      base-directory: dist/lambdas/
                 reports:
                   'test-results':
                     files:
