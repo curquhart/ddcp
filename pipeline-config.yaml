@@ -6,6 +6,12 @@ Resources:
     Name: DistCfnBucket
     '!Alias': DistCfnBucket
     RequesterPays: false
+    BucketPolicy:
+      - Effect: Allow
+        ServicePrincipals:
+          - serverlessrepo.amazonaws.com
+        Actions:
+          - s3:GetObject
   - Type: S3Bucket
     Name: DistLambdasBucket
     '!Alias': DistLambdasBucket
@@ -209,17 +215,11 @@ Pipelines:
                             fi
 
                             # Versioned artifacts
-                            mkdir -p dist/manager/${BUILD_VERSION}
-                            cp packages/manager/dist/manager.yaml dist/manager/${BUILD_VERSION}
                             mkdir -p dist/lambdas/${BUILD_VERSION}
                             cp packages/*/dist/@ddcp*.zip dist/lambdas/${BUILD_VERSION}
                             echo ${BUILD_VERSION} > dist/version
                 artifacts:
                   secondary-artifacts:
-                    Manager:
-                      files:
-                        - '**/*'
-                      base-directory: dist/manager
                     Lambdas:
                       files:
                         - '**/*'
@@ -236,20 +236,6 @@ Pipelines:
                     file-format: JunitXml
       - Name: PublishStage
         Actions:
-          - Name: Manager
-            Type: S3Publish
-            Order: 1
-            SourceName: Manager
-            Extract: true
-            BucketArn:
-              '!Path':
-                '!Join':
-                  - '!PathForAlias': DistCfnBucket
-                  - - Outputs
-                    - BucketArn
-            AccessControl: PublicRead
-            CacheControl:
-              - 'max-age: 86400'
           - Name: Lambdas
             Type: S3Publish
             Order: 1
@@ -262,7 +248,7 @@ Pipelines:
                   - - Outputs
                     - BucketArn
             AccessControl: PublicRead
-          - Name: Sam
+          - Name: SamPublish
             Type: CodeBuild
             Order: 2
             SourceName: Source
@@ -290,8 +276,9 @@ Pipelines:
                       - 'export BUILD_VERSION=$(cat ${CODEBUILD_SRC_DIR_BuildVersion}/version)'
                   build:
                     commands:
-                      - 'echo Build version: ${BUILD_VERSION}'
-                      - sam --version
+                      - sam package --s3-bucket ${DIST_BUCKET_NAME} --template packages/manager/dist/manager.yaml --output-template-file dist/sam.yaml
+                      # this won't work yet, just testing.
+                      - sam publish -t dist/sam.yaml --region ${AWS_REGION}
   - Name: ddcp-branch-build
     GitHub:
       Auth:
