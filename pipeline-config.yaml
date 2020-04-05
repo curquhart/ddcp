@@ -220,6 +220,12 @@ Pipelines:
                             echo ${BUILD_VERSION} > dist/version
                 artifacts:
                   secondary-artifacts:
+                    Manager:
+                      files:
+                        - packages/manager/dist/manager.yaml
+                        - LICENSE
+                        - README.md
+                      discard-paths: yes
                     Lambdas:
                       files:
                         - '**/*'
@@ -254,6 +260,7 @@ Pipelines:
             SourceName: Source
             InputArtifacts:
               - BuildVersion
+              - Manager
             BuildSpec:
               Inline:
                 version: 0.2
@@ -276,7 +283,8 @@ Pipelines:
                       - 'export BUILD_VERSION=$(cat ${CODEBUILD_SRC_DIR_BuildVersion}/version)'
                   build:
                     commands:
-                      - sam package --s3-bucket ${DIST_BUCKET_NAME} --template packages/manager/dist/manager.yaml --output-template-file dist/sam.yaml
+                      - mkdir -p dist/
+                      - sam package --s3-bucket ${DIST_BUCKET_NAME} --template ${CODEBUILD_SRC_DIR_Manager}/manager.yaml --output-template-file dist/sam.yaml
                       # this won't work yet, just testing.
                       - sam publish -t dist/sam.yaml --region ${AWS_REGION}
   - Name: ddcp-branch-build
