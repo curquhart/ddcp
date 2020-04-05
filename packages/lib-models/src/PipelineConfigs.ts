@@ -6,6 +6,15 @@ export interface BaseResourceProps {
     Type: string;
 }
 
+export interface CounterResourceProps extends BaseResourceProps {
+    Type: 'Counter';
+}
+
+export interface S3BucketResourceProps extends BaseResourceProps {
+    Type: 'S3Bucket';
+    RequesterPays?: boolean;
+}
+
 export enum SourceType {
     CODE_COMMIT = 'CodeCommit',
     GIT = 'Git'
@@ -135,5 +144,5 @@ export interface Pipeline {
 
 export interface PipelineConfigs {
     Pipelines?: Array<Pipeline>;
-    Resources?: Array<BaseResourceProps>;
+    Resources?: Array<CounterResourceProps | S3BucketResourceProps>;
 }

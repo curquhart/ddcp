@@ -1,10 +1,11 @@
-import {Base} from '../Base';
+import {Base, BaseResolver} from '../Base';
 import {ParameterCountError} from '../errors/ParameterCountError';
 import {StringParameterTypeError} from '../errors/StringParameterTypeError';
 import {ResolveResult} from '../../Resolver';
 import {BaseResourceFactory} from '../../resource/BaseResourceFactory';
 import {BaseResourceProps} from '@ddcp/models';
 import {throwError} from '@ddcp/errorhandling';
+import {Construct} from '@aws-cdk/core';
 
 type IParameters = Array<string | number>
 
@@ -20,28 +21,25 @@ export class Path extends Base<unknown, IParameters> {
         return '!Path';
     }
 
-    resolve(parameters: IParameters, fullValue: Record<string, unknown>): ResolveResult<unknown> {
+    withScope(scope: Construct): BaseResolver<unknown, IParameters> {
+        return {
+            resolve: (parameters: IParameters, fullValue: Record<string, unknown>): ResolveResult<unknown> => {
+                return this.resolveWithScope(parameters, fullValue, scope);
+            }
+        };
+    }
+
+    resolve(): never {
+        throw new Error('Scope is required.');
+    }
+
+    private resolveWithScope(parameters: IParameters, fullValue: Record<string, unknown>, scope: Construct): ResolveResult<unknown> {
         if (parameters.length === 0) {
             throw new ParameterCountError(this.name, 'at least 1');
         }
 
         let resolved: unknown = undefined;
         for (let index = 0; index < parameters.length; index++) {
-            // I am undecided whether I want this to be a thing or not..
-            if (index === 2 && parameters[0] === 'Resources' && !isNaN(Number(parameters[1])) && parameters[2] === 'Outputs') {
-                if (parameters.length !== 3) {
-                    throw new Error('Lookups within Resource Outputs can only be one level deep.');
-                }
-                const typedResolved = resolved as BaseResourceProps;
-                const resourceType = typedResolved.Type ?? throwError(new Error('Type is required in Resources.'));
-                const resourceFactory = this.allResourceFactories[ resourceType ] ?? throwError(new Error(`Invalid resource type: ${resourceType}`));
-
-                return {
-                    value: resourceFactory.new(typedResolved).getOutput(parameters[3]),
-                    performedWork: true
-                };
-            }
-
             const value: unknown = parameters[index];
             this.checkResolved(value);
 
@@ -50,7 +48,17 @@ export class Path extends Base<unknown, IParameters> {
                 throw new StringParameterTypeError(index);
             }
 
-            resolved = Path.resolvePath(value, resolved === undefined ? fullValue : resolved);
+            if (parameters.length >= 4 && index === 2 && parameters[0] === 'Resources' && !isNaN(Number(parameters[1])) && parameters[2] === 'Outputs') {
+                const typedResolved = resolved as BaseResourceProps;
+                const resourceType = typedResolved.Type ?? throwError(new Error('Type is required in Resources.'));
+                const resourceFactory = this.allResourceFactories[ resourceType ] ?? throwError(new Error(`Invalid resource type: ${resourceType}`));
+
+                resolved = resourceFactory.new(typedResolved).getOutput(parameters[3], scope);
+                index++;
+            }
+            else {
+                resolved = Path.resolvePath(value, resolved === undefined ? fullValue : resolved);
+            }
 
             if (resolved === undefined) {
                 throw new Error(`Could not resolve path from ${JSON.stringify(parameters)}`);

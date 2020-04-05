@@ -28,6 +28,7 @@ import {Param} from './fn/resolvers/Param';
 import {GitSourceSync} from './builders/GitSourceSync';
 import {error} from '@ddcp/logger';
 import {LambdaOutputArtifacts} from '@ddcp/module-collection';
+import {S3BucketResourceFactory} from './resource/S3BucketResourceFactory';
 const STACK_ID = 'generated';
 
 export interface ManagerResources {
@@ -153,7 +154,8 @@ export class SynthesisHandler {
             new CodePipelineOrchestratorFactory(orchestratorFactories).init();
             new CloudWatchOrchestratorFactory(orchestratorFactories).init();
 
-            new CounterResourceFactory(resourceFactories, tokenizer, uniquifier).init();
+            new CounterResourceFactory(resourceFactories, uniquifier).init();
+            new S3BucketResourceFactory(resourceFactories, uniquifier).init();
 
             const gitSourceBuilder = new GitSourceSync();
 

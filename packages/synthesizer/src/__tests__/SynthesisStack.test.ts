@@ -90,7 +90,7 @@ describe('SynthesisStack test', () => {
         const uniquifier = new Uniquifier();
         const tokenizer = new Tokenizer();
         const gitSourceBuilder = new GitSourceSync();
-        new CounterResourceFactory(resourceFactories, tokenizer, uniquifier).init();
+        new CounterResourceFactory(resourceFactories, uniquifier).init();
         const orchestrators = {};
         new CodePipelineOrchestratorFactory(orchestrators).init();
 
@@ -172,7 +172,7 @@ describe('SynthesisStack test', () => {
         const uniquifier = new Uniquifier();
         const tokenizer = new Tokenizer();
         const gitSourceBuilder = new GitSourceSync();
-        new CounterResourceFactory(resourceFactories, tokenizer, uniquifier).init();
+        new CounterResourceFactory(resourceFactories, uniquifier).init();
         const orchestrators = {};
         new CodePipelineOrchestratorFactory(orchestrators).init();
 
@@ -243,7 +243,7 @@ describe('SynthesisStack test', () => {
         const uniquifier = new Uniquifier();
         const tokenizer = new Tokenizer();
         const gitSourceBuilder = new GitSourceSync();
-        new CounterResourceFactory(resourceFactories, tokenizer, uniquifier).init();
+        new CounterResourceFactory(resourceFactories, uniquifier).init();
         const orchestrators = {};
         new CodePipelineOrchestratorFactory(orchestrators).init();
 

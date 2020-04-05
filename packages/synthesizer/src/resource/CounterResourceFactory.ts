@@ -2,15 +2,12 @@ import {
     BaseResource,
     BaseResourceFactory,
 } from './BaseResourceFactory';
-import {Tokenizer} from '@ddcp/tokenizer';
 import {Construct, RemovalPolicy} from '@aws-cdk/core';
 import {AttributeType, BillingMode, Table} from '@aws-cdk/aws-dynamodb';
 import {Uniquifier} from '../Uniquifier';
 import {PolicyStatement} from '@aws-cdk/aws-iam';
 import {throwError} from '@ddcp/errorhandling';
-import {BaseResourceProps} from '@ddcp/models';
-
-type CounterResourceProps = BaseResourceProps;
+import {CounterResourceProps} from '@ddcp/models';
 
 interface CounterResourceSharedData {
     table?: Table;
@@ -21,14 +18,15 @@ class CounterResource implements BaseResource {
     private writePolicy?: PolicyStatement;
 
     constructor(
-        private readonly tokenizer: Tokenizer,
         private readonly uniquifier: Uniquifier,
         private readonly sharedData: CounterResourceSharedData,
         private readonly props: CounterResourceProps
     ) {
     }
 
-    getOutput(name: string | number): PolicyStatement | string {
+    getOutput(name: string | number, scope: Construct): PolicyStatement | string {
+        this.constructCdk(scope);
+
         if (this.sharedData.table === undefined) {
             throw new Error('outputs requested before resource construction!');
         }
@@ -74,28 +72,31 @@ class CounterResource implements BaseResource {
             },
         };
 
-        this.readPolicy = new PolicyStatement({
-            actions: [
-                'dynamodb:GetItem',
-            ],
-            resources,
-            conditions,
-        });
+        if (this.readPolicy === undefined) {
+            this.readPolicy = new PolicyStatement({
+                actions: [
+                    'dynamodb:GetItem',
+                ],
+                resources,
+                conditions,
+            });
+        }
 
-        this.writePolicy = new PolicyStatement({
-            actions: [
-                'dynamodb:UpdateItem',
-            ],
-            resources,
-            conditions,
-        });
+        if (this.writePolicy === undefined) {
+            this.writePolicy = new PolicyStatement({
+                actions: [
+                    'dynamodb:UpdateItem',
+                ],
+                resources,
+                conditions,
+            });
+        }
     }
 }
 
 export class CounterResourceFactory extends BaseResourceFactory {
     constructor(
         resources: Record<string, BaseResourceFactory>,
-        private readonly tokenizer: Tokenizer,
         private readonly uniquifier: Uniquifier
     ) {
         super(resources);
@@ -105,14 +106,14 @@ export class CounterResourceFactory extends BaseResourceFactory {
     private sharedData: CounterResourceSharedData = {};
     private counters: Record<string, CounterResource> = {};
 
-    new(props: BaseResourceProps): CounterResource {
+    new(props: CounterResourceProps): CounterResource {
         this.checkProps(props);
 
         if (this.counters[props.Name] !== undefined) {
             return this.counters[props.Name];
         }
 
-        this.counters[props.Name] = new CounterResource(this.tokenizer, this.uniquifier, this.sharedData, props);
+        this.counters[props.Name] = new CounterResource(this.uniquifier, this.sharedData, props);
 
         return this.counters[props.Name];
     }
