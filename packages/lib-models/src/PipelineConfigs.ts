@@ -10,9 +10,17 @@ export interface CounterResourceProps extends BaseResourceProps {
     Type: 'Counter';
 }
 
+export interface IamPolicy {
+    Effect?: 'Allow' | 'Deny';
+    ServicePrincipals?: Array<string>;
+    Actions: Array<string>;
+    Resources?: Array<string>;
+}
+
 export interface S3BucketResourceProps extends BaseResourceProps {
     Type: 'S3Bucket';
     RequesterPays?: boolean;
+    BucketPolicy?: Array<IamPolicy>;
 }
 
 export enum SourceType {
@@ -67,6 +75,7 @@ export interface CodeBuildAction extends Action {
     BuildImage?: string;
     ComputeType?: ComputeType;
     PrivilegedMode?: boolean;
+    Policies?: Array<IamPolicy>;
 }
 
 export interface S3PublishAction extends Action {

@@ -2,8 +2,9 @@ import {Base} from '../Base';
 import {ResolveResult} from '../../Resolver';
 import {ParameterCountError} from '../errors/ParameterCountError';
 import {ManagerResources} from '../../SynthesisHandler';
+import {Aws} from '@aws-cdk/core';
 
-type IParameters = Array<string>
+type IParameters = ['AssetBucketName' | 'Region' | 'AccountNumber']
 
 export class Param extends Base<unknown, IParameters> {
     constructor(allResolvers: Record<string, Base<unknown, Array<unknown>>>, private readonly synthPipeline: ManagerResources) {
@@ -22,6 +23,19 @@ export class Param extends Base<unknown, IParameters> {
         if (parameters[0] === 'AssetBucketName') {
             return {
                 value: this.synthPipeline.assetBucketName,
+                performedWork: true
+            };
+        }
+        // TODO: find a more sensible home for aws env.
+        else if (parameters[0] === 'Region') {
+            return {
+                value: Aws.REGION,
+                performedWork: true
+            };
+        }
+        else if (parameters[0] === 'AccountNumber') {
+            return {
+                value: Aws.ACCOUNT_ID,
                 performedWork: true
             };
         }

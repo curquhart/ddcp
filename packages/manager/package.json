@@ -6,7 +6,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "mkdir -p dist && cdk synth > dist/manager.yaml",
+    "build": "mkdir -p dist && cdk synth --version-reporting=false > dist/manager.yaml",
     "clean": "rm -rf node_modules dist",
     "lint": "eslint --ext .ts src/",
     "artifact-lint": "cfn-lint -i W3005 -- dist/manager.yaml && cfn_nag_scan --fail-on-warnings --input-path dist/manager.yaml",
