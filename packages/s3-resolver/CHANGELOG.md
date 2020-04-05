@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.1-154](https://github.com/curquhart/ddcp/compare/v1.7.0-152...v1.7.1-154) (2020-04-05)
+
+**Note:** Version bump only for package @ddcp/s3-resolver
+
+
+
+
+
 # [1.7.0-152](https://github.com/curquhart/ddcp/compare/v1.6.1-148...v1.7.0-152) (2020-04-05)
 
 **Note:** Version bump only for package @ddcp/s3-resolver

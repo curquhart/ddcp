@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.1-154](https://github.com/curquhart/ddcp/compare/v1.7.0-152...v1.7.1-154) (2020-04-05)
+
+
+### Bug Fixes
+
+* **ddcp:** do not publish aggregate and fix base dir ([e3e56e2](https://github.com/curquhart/ddcp/commit/e3e56e2daa37f45e3ca2aa43f2f228df4641329b))
+
+
+
+
+
 # [1.7.0-152](https://github.com/curquhart/ddcp/compare/v1.6.1-148...v1.7.0-152) (2020-04-05)
 
 
