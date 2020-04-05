@@ -38,6 +38,9 @@ class S3BucketResource implements BaseResource {
         if (name === 'BucketArn') {
             return this.s3Bucket?.bucketArn ?? throwError(new Error('Internal error: bucketArn is undefined.'));
         }
+        if (name === 'BucketName') {
+            return this.s3Bucket?.bucketName ?? throwError(new Error('Internal error: bucketName is undefined.'));
+        }
 
         throw new Error(`Unknown output: ${name}.`);
     }

@@ -206,6 +206,7 @@ Pipelines:
                             cp packages/manager/dist/manager.yaml dist/manager/${BUILD_VERSION}
                             mkdir -p dist/lambdas/${BUILD_VERSION}
                             cp packages/*/dist/@ddcp*.zip dist/lambdas/${BUILD_VERSION}
+                            echo ${BUILD_VERSION} > dist/version
                 artifacts:
                   secondary-artifacts:
                     Manager:
@@ -216,6 +217,10 @@ Pipelines:
                       files:
                         - ${BUILD_VERSION}/*
                       base-directory: dist/lambdas/
+                    BuildVersion:
+                      files:
+                        - dist/version
+                      discard-paths: yes
                 reports:
                   'test-results':
                     files:
@@ -250,6 +255,35 @@ Pipelines:
                   - - Outputs
                     - BucketArn
             AccessControl: PublicRead
+          - Name: Sam
+            Type: CodeBuild
+            Order: 2
+            SourceName: Source
+            InputArtifacts:
+              - BuildVersion
+            BuildSpec:
+              Inline:
+                version: 0.2
+                env:
+                  DIST_BUCKET_NAME:
+                    '!Path':
+                      '!Join':
+                        - '!PathForAlias': DistCfnBucket
+                        - - Outputs
+                          - BucketName
+                phases:
+                  install:
+                    runtime-versions:
+                      python: 3.8
+                    commands:
+                      - pip3 install aws-sam-cli
+                  pre_build:
+                    commands:
+                      - 'export BUILD_VERSION=$(cat ${CODEBUILD_SRC_DIR_BuildVersion}/version)'
+                  build:
+                    commands:
+                      - echo Build version: ${BUILD_VERSION}
+                      - sam --version
   - Name: ddcp-branch-build
     GitHub:
       Auth:
