@@ -52,6 +52,7 @@ type CodeBuildBuildSpec = Record<string, unknown> & {
     };
     reports?: Record<string, unknown>;
     env?: {
+        'variables'?: Record<string, string>;
         'secrets-manager'?: Record<string, string>;
     };
 }

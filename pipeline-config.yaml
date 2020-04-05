@@ -265,12 +265,13 @@ Pipelines:
               Inline:
                 version: 0.2
                 env:
-                  DIST_BUCKET_NAME:
-                    '!Path':
-                      '!Join':
-                        - '!PathForAlias': DistCfnBucket
-                        - - Outputs
-                          - BucketName
+                  variables:
+                    DIST_BUCKET_NAME:
+                      '!Path':
+                        '!Join':
+                          - '!PathForAlias': DistCfnBucket
+                          - - Outputs
+                            - BucketName
                 phases:
                   install:
                     runtime-versions:
