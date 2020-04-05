@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.1-148](https://github.com/curquhart/ddcp/compare/v1.6.0-146...v1.6.1-148) (2020-04-05)
+
+**Note:** Version bump only for package @ddcp/typescript-config
+
+
+
+
+
 # [1.0.0](https://github.com/curquhart/ddcp/compare/v0.0.1-beta.88...v1.0.0) (2020-03-28)
 
 **Note:** Version bump only for package @ddcp/typescript-config
