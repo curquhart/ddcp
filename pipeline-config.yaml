@@ -210,11 +210,11 @@ Pipelines:
                   secondary-artifacts:
                     Manager:
                       files:
-                        - dist/manager/${BUILD_VERSION}/*
+                        - ${BUILD_VERSION}/*
                       base-directory: dist/manager/
                     Lambdas:
                       files:
-                        - dist/lambdas/${BUILD_VERSION}/*
+                        - ${BUILD_VERSION}/*
                       base-directory: dist/lambdas/
                 reports:
                   'test-results':
