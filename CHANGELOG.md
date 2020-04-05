@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0-152](https://github.com/curquhart/ddcp/compare/v1.6.1-148...v1.7.0-152) (2020-04-05)
+
+
+### Features
+
+* **@ddcp/models,@ddcp/synthesizer,ddcp:** s3 bucket resource ([87c140a](https://github.com/curquhart/ddcp/commit/87c140a2445ed5c6dbbe15ce1faddbac0097a863))
+
+
+
+
+
 ## [1.6.1-148](https://github.com/curquhart/ddcp/compare/v1.6.0-146...v1.6.1-148) (2020-04-05)
 
 **Note:** Version bump only for package ddcp

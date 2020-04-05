@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/manager",
-  "version": "1.6.1-148",
+  "version": "1.7.0-152",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -35,17 +35,17 @@
     "@aws-cdk/aws-sns": "1.25.0",
     "@aws-cdk/core": "1.25.0",
     "@aws-cdk/cx-api": "1.25.0",
-    "@ddcp/module-collection": "^1.6.1-148",
-    "@ddcp/selector": "^1.6.1-148",
+    "@ddcp/module-collection": "^1.7.0-152",
+    "@ddcp/selector": "^1.7.0-152",
     "aws-cdk": "1.25.0",
     "js-yaml": "3.13.1",
     "tmp": "0.1.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/eslint-config": "^1.6.1-148",
-    "@ddcp/s3-resolver": "^1.6.1-148",
-    "@ddcp/typescript-config": "^1.6.1-148",
+    "@ddcp/eslint-config": "^1.7.0-152",
+    "@ddcp/s3-resolver": "^1.7.0-152",
+    "@ddcp/typescript-config": "^1.7.0-152",
     "@types/jest": "25.1.4",
     "@types/js-yaml": "3.12.1",
     "@types/node": "13.7.4",
