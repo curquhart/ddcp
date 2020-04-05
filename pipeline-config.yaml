@@ -211,12 +211,12 @@ Pipelines:
                   secondary-artifacts:
                     Manager:
                       files:
-                        - ${BUILD_VERSION}/*
-                      base-directory: dist/manager/
+                        - '**/*'
+                      base-directory: dist/manager
                     Lambdas:
                       files:
-                        - ${BUILD_VERSION}/*
-                      base-directory: dist/lambdas/
+                        - '**/*'
+                      base-directory: dist/lambdas
                     BuildVersion:
                       files:
                         - dist/version
