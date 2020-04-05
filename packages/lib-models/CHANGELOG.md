@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0-157](https://github.com/curquhart/ddcp/compare/v1.7.1-154...v1.8.0-157) (2020-04-05)
+
+
+### Features
+
+* **@ddcp/models:** support raw env vars ([5ca4578](https://github.com/curquhart/ddcp/commit/5ca45788f2aefe1082e8ca4a009819d64ac74685))
+
+
+
+
+
 ## [1.7.1-154](https://github.com/curquhart/ddcp/compare/v1.7.0-152...v1.7.1-154) (2020-04-05)
 
 **Note:** Version bump only for package @ddcp/models

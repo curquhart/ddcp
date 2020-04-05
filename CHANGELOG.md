@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0-157](https://github.com/curquhart/ddcp/compare/v1.7.1-154...v1.8.0-157) (2020-04-05)
+
+
+### Bug Fixes
+
+* **ddcp:** base-dir fix ([35a7dac](https://github.com/curquhart/ddcp/commit/35a7dac89bec219b3fc8b6439058c74d4301c3b1))
+
+
+### Features
+
+* **@ddcp/models:** support raw env vars ([5ca4578](https://github.com/curquhart/ddcp/commit/5ca45788f2aefe1082e8ca4a009819d64ac74685))
+* initial sam codebuild ([9424608](https://github.com/curquhart/ddcp/commit/9424608a010cbdf3930158292bbf1666a86491c4))
+
+
+
+
+
 ## [1.7.1-154](https://github.com/curquhart/ddcp/compare/v1.7.0-152...v1.7.1-154) (2020-04-05)
 
 
