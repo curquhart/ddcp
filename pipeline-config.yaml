@@ -283,7 +283,7 @@ Pipelines:
                       - 'export BUILD_VERSION=$(cat ${CODEBUILD_SRC_DIR_BuildVersion}/version)'
                   build:
                     commands:
-                      - echo Build version: ${BUILD_VERSION}
+                      - 'echo Build version: ${BUILD_VERSION}'
                       - sam --version
   - Name: ddcp-branch-build
     GitHub:
