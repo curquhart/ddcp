@@ -213,12 +213,10 @@ Pipelines:
                       files:
                         - '**/*'
                       base-directory: dist/manager
-                      discard-paths: yes
                     Lambdas:
                       files:
                         - '**/*'
                       base-directory: dist/lambdas
-                      discard-paths: yes
                     BuildVersion:
                       files:
                         - dist/version
