@@ -246,6 +246,28 @@ Pipelines:
                       - reports/junit.xml
                     discard-paths: yes
                     file-format: JunitXml
+          - Name: Audit
+            Type: CodeBuild
+            # Perform audit AFTER publish so we can let npm update our package-locks to include proper refs to our internal deps.
+            Order: 3
+            SourceName: Source
+            ComputeType: BUILD_GENERAL1_MEDIUM
+            BuildSpec:
+              Inline:
+                version: 0.2
+                env:
+                phases:
+                  install:
+                    runtime-versions:
+                      nodejs: 12
+                    commands:
+                      - npm install
+                      # use npm install to update package locks.
+                      - npx lerna exec npm install
+                  build:
+                    commands:
+                      - npx audit-ci
+                      - npx lerna exec $PWD/node_modules/.bin/audit-ci -- --low
       - Name: PublishStage
         Actions:
           - Name: Lambdas
