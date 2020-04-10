@@ -255,7 +255,6 @@ Pipelines:
             BuildSpec:
               Inline:
                 version: 0.2
-                env:
                 phases:
                   install:
                     runtime-versions:
