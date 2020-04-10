@@ -1,7 +1,7 @@
 import {
     BaseOrchestratorFactory,
     BranchOptions,
-    CodeBuildActionProps,
+    CodeBuildActionProps, LambdaInvokeActionProps,
     Orchestrator,
     OrchestratorProps,
     Stage
@@ -17,7 +17,7 @@ import {EventField, RuleTargetInput} from '@aws-cdk/aws-events';
 import {getFunction} from '../helpers';
 import {LambdaModuleName} from '@ddcp/module-collection';
 import {PolicyStatement} from '@aws-cdk/aws-iam';
-import {CodeBuildCloudWatchEvent} from '@ddcp/models';
+import {CodeBuildCloudWatchEvent, LambdaInvokeCloudWatchEvent} from '@ddcp/models';
 
 export const NAME = 'CloudWatch';
 
@@ -117,6 +117,40 @@ class CloudWatchOrchestratorStage implements Stage {
 
     addCounterAction(): void {
         throw new Error('Counter is not supported on CloudWatch orchestrated pipelines.');
+    }
+
+    addLambdaInvokeAction(props: LambdaInvokeActionProps): void {
+        const sourceName = props.action.SourceName ?? throwError(new Error('SourceName is required.'));
+        const sourceRepo = this.props.repositories[ sourceName ];
+
+        if (sourceRepo === undefined) {
+            throw new Error(`Lookup of repository for ${sourceName} failed.`);
+        }
+
+        const targetProps = {
+            event: RuleTargetInput.fromObject({
+                sourceVersion: EventField.fromPath('$.detail.commitId'),
+                branchName: EventField.fromPath('$.detail.referenceName'),
+                parameters: props.action.Parameters,
+            } as LambdaInvokeCloudWatchEvent)
+        };
+        const targetEventPattern = {
+            detail: {
+                referenceType: [ 'branch' ],
+            }
+        };
+
+        if (sourceRepo.repositoryBranch.BranchPattern === undefined) {
+            sourceRepo.repository.onCommit(this.props.uniquifier.next('OnCommit'), {
+                target: new targets.LambdaFunction(props.lambda, targetProps),
+                eventPattern: targetEventPattern,
+                branches: sourceRepo.repositoryBranch.BranchName !== undefined ? [sourceRepo.repositoryBranch.BranchName] : undefined
+            });
+        }
+        else {
+            // may support this later but I don't have a use for it right now.
+            throw new Error('BranchPattern is unsupported for LambdaInvoke actions on CloudWatch orchestrated pipelines.');
+        }
     }
 }
 

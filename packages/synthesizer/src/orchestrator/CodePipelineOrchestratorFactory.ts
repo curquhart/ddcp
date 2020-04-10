@@ -2,7 +2,7 @@ import {
     BaseOrchestratorFactory,
     BranchOptions,
     CodeBuildActionProps,
-    CounterActionProps,
+    CounterActionProps, LambdaInvokeActionProps,
     Orchestrator,
     OrchestratorProps,
     S3PublishActionProps,
@@ -181,6 +181,16 @@ class CodePipelineOrchestratorStage implements Stage {
             outputs: [
                 this.props.artifacts[artifactName]
             ],
+        }));
+    }
+
+    addLambdaInvokeAction(props: LambdaInvokeActionProps): void {
+        this.stage.addAction(new LambdaInvokeAction({
+            actionName: props.action.Name,
+            lambda: props.lambda,
+            userParameters: props.action.Parameters,
+            inputs: props.action.InputArtifacts?.map((artifactName) => this.props.artifacts[artifactName] ?? throwError(new Error(`Artifact named ${artifactName} is invalid.`))),
+            outputs: props.action.OutputArtifacts?.map((artifactName) => this.props.artifacts[artifactName] ?? throwError(new Error(`Artifact named ${artifactName} is invalid.`))),
         }));
     }
 }

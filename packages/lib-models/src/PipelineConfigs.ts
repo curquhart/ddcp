@@ -31,7 +31,8 @@ export enum SourceType {
 export enum ActionType {
     CODE_BUILD = 'CodeBuild',
     S3_PUBLISH = 'S3Publish',
-    COUNTER = 'Counter'
+    COUNTER = 'Counter',
+    LAMBDA_INVOKE = 'LambdaInvoke'
 }
 
 export interface Source {
@@ -95,6 +96,14 @@ export interface CounterAction extends Action {
     OutputArtifactName: string;
 }
 
+export interface LambdaInvokeAction extends Action {
+    Type: ActionType.LAMBDA_INVOKE;
+    FunctionArn: string;
+    Parameters?: Record<string, unknown>;
+    InputArtifacts?: Array<string>;
+    OutputArtifacts?: Array<string>;
+}
+
 export const isCodeBuildAction = (action: { Type: string }): action is CodeBuildAction => {
     return action.Type === ActionType.CODE_BUILD;
 };
@@ -107,7 +116,11 @@ export const isCounterAction = (action: { Type: string }): action is CounterActi
     return action.Type === ActionType.COUNTER;
 };
 
-export type StageActionType = CodeBuildAction | S3PublishAction | CounterAction;
+export const isLambdaInvokeAction = (action: { Type: string }): action is LambdaInvokeAction => {
+    return action.Type === ActionType.LAMBDA_INVOKE;
+};
+
+export type StageActionType = CodeBuildAction | S3PublishAction | CounterAction | LambdaInvokeAction;
 
 interface Stage {
     Name: string;

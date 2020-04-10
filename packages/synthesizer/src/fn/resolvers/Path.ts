@@ -1,5 +1,4 @@
 import {Base, BaseResolver} from '../Base';
-import {ParameterCountError} from '../errors/ParameterCountError';
 import {StringParameterTypeError} from '../errors/StringParameterTypeError';
 import {ResolveResult} from '../../Resolver';
 import {BaseResourceFactory} from '../../resource/BaseResourceFactory';
