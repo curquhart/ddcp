@@ -11,8 +11,11 @@ const distLambdasLocation = `${__dirname}/../dist/dist-lambdas.zip`;
 const distManagerLocation = `${__dirname}/../dist/dist-manager.zip`;
 
 const lambdasDistBucketName = process.env.LAMBDA_DIST_BUCKET_NAME ?? throwError(new Error('LAMBDA_DIST_BUCKET_NAME is required.'));
-const managerDistBucketName = process.env.MANAGER_DIST_BUCKET_NAME ?? throwError(new Error('MANAGER_DIST_BUCKET_NAME is required.'));
+const cfnDistBucketName = process.env.CFN_DIST_BUCKET_NAME ?? throwError(new Error('CFN_DIST_BUCKET_NAME is required.'));
 
+/**
+ * This is used for local account bootstrapping. It is NOT used for automated deploys.
+ */
 class PublisherPipelineInitStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
         super(scope, id, props);
@@ -21,7 +24,7 @@ class PublisherPipelineInitStack extends Stack {
             repositoryName: 'ddcp',
         });
 
-        const privateBucket = new Bucket(this, 'PrivateBucket', {
+        const localStorageBucket = new Bucket(this, 'PrivateBucket', {
             removalPolicy: RemovalPolicy.DESTROY,
             accessControl: BucketAccessControl.PRIVATE,
             blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
@@ -30,8 +33,7 @@ class PublisherPipelineInitStack extends Stack {
         const assetsPrefix = `${process.env.BUILD_VERSION}/`;
 
         const lambdaBucket = Bucket.fromBucketName(this, 'LambdasBucket', lambdasDistBucketName);
-        const managerBucket = Bucket.fromBucketName(this, 'ManagerBucket', managerDistBucketName);
-
+        const cfnBucket = Bucket.fromBucketName(this, 'CfnBucket', cfnDistBucketName);
 
         const lambdaDeployment = new BucketDeployment(this, 'DeployLambdaArtifacts', {
             sources: [
@@ -40,29 +42,24 @@ class PublisherPipelineInitStack extends Stack {
             destinationBucket: lambdaBucket,
             destinationKeyPrefix: assetsPrefix
         });
-        const managerDeployment = new BucketDeployment(this, 'DeployManagerArtifact', {
+        const cfnDeployment = new BucketDeployment(this, 'DeployManagerArtifact', {
             sources: [
                 Source.asset(distManagerLocation),
             ],
-            destinationBucket: managerBucket,
+            destinationBucket: cfnBucket,
             destinationKeyPrefix: assetsPrefix
         });
 
         const managerStack = new CfnStack(this, 'PipelineManager', {
-            templateUrl: managerBucket.urlForObject(`${assetsPrefix}manager.yaml`),
+            templateUrl: cfnBucket.urlForObject(`${assetsPrefix}manager.yaml`),
             parameters: {
-                LocalStorageS3BucketName: privateBucket.bucketName,
+                LocalStorageS3BucketName: localStorageBucket.bucketName,
                 RepositoryName: repo.repositoryName,
                 SynthPipelineName: 'synthesizer',
                 StackName: 'ddcp-pipeline',
             }
         });
-        managerStack.node.addDependency(lambdaDeployment, managerDeployment);
-
-        new CfnOutput(this, 'PrivateBucketArn', {
-            exportName: 'PrivateBucketArn',
-            value: privateBucket.bucketArn
-        });
+        managerStack.node.addDependency(lambdaDeployment, cfnDeployment);
     }
 }
 

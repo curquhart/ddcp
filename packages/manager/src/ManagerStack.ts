@@ -31,7 +31,7 @@ export class ManagerStack extends Stack {
         this.node.setContext(DISABLE_METADATA_STACK_TRACE, true);
 
         const sourceBucketName = process.env.LAMBDA_DIST_BUCKET_NAME ?? throwError(new Error('LAMBDA_DIST_BUCKET_NAME is required.'));
-        const sourceBucketPrefix = process.env.BUILD_VERSION ?? throwError(new Error('BUILD_VERSION is required.'));
+        const buildVersion = process.env.BUILD_VERSION ?? throwError(new Error('BUILD_VERSION is required.'));
 
         const localStorageBucketNameParameter = new CfnParameter(this, 'LocalStorageS3BucketName');
         const repositoryNameParameter = new CfnParameter(this, 'RepositoryName');
@@ -67,7 +67,7 @@ export class ManagerStack extends Stack {
             handler: 'index.handler',
             initialPolicy: [
                 new PolicyStatement({
-                    resources: Object.values(LambdaInputArtifacts).map((assetPath) => sourceBucket.arnForObjects(`${sourceBucketPrefix}/${assetPath.split('/').pop()}`)),
+                    resources: Object.values(LambdaInputArtifacts).map((assetPath) => sourceBucket.arnForObjects(`${buildVersion}/${assetPath.split('/').pop()}`)),
                     actions: [
                         's3:GetObject'
                     ],
@@ -106,7 +106,7 @@ export class ManagerStack extends Stack {
                 provider: CustomResourceProvider.fromLambda(s3resolver),
                 properties: {
                     SourceBucketName: sourceBucketName,
-                    SourceKey: `${sourceBucketPrefix}/${assetPath.split('/').pop()}`,
+                    SourceKey: `${buildVersion}/${assetPath.split('/').pop()}`,
                     DestBucketName: localBucket.bucketName,
                     StackUuid: stackUuid,
                 },

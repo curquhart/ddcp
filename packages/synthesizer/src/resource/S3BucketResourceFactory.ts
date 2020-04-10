@@ -1,7 +1,7 @@
 import {BaseResource, BaseResourceFactory,} from './BaseResourceFactory';
 import {Construct, RemovalPolicy} from '@aws-cdk/core';
 import {Uniquifier} from '../Uniquifier';
-import {PolicyStatement} from '@aws-cdk/aws-iam';
+import {Effect, PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {throwError} from '@ddcp/errorhandling';
 import {S3BucketResourceProps} from '@ddcp/models';
 import {Bucket} from '@aws-cdk/aws-s3';
@@ -50,7 +50,21 @@ class S3BucketResource implements BaseResource {
 
     constructCdk(scope: Construct, managerResources?: ManagerResources): void {
         if (this.s3Bucket === undefined) {
-            this.s3Bucket = new Bucket(scope, this.uniquifier.next('Bucket'));
+            this.s3Bucket = new Bucket(scope, this.uniquifier.next(`Bucket${this.props.Name}`));
+
+            if (this.props.BucketPolicy !== undefined) {
+                for (const policy of this.props.BucketPolicy) {
+                    this.s3Bucket.addToResourcePolicy(new PolicyStatement({
+                        effect: policy.Effect as Effect | undefined,
+                        principals: policy.ServicePrincipals?.map((principal) => new ServicePrincipal(principal)),
+                        actions: policy.Actions,
+                        resources: policy.Resources ?? [
+                            this.s3Bucket.arnForObjects('*'),
+                            this.s3Bucket.bucketArn,
+                        ]
+                    }));
+                }
+            }
         }
 
         if (this.props.RequesterPays === true && !this.s3BucketConfigured && managerResources !== undefined) {

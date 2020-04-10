@@ -1,5 +1,5 @@
 import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
-import {PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
+import {Effect, PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {
     BuildEnvironmentVariableType,
     BuildSpec,
@@ -249,6 +249,15 @@ export class SynthesisStack extends Stack {
                                 resources: [
                                     `arn:aws:codebuild:${Aws.REGION}:${Aws.ACCOUNT_ID}:report-group/${codeBuildProjectName}-${reportName}`
                                 ]
+                            }));
+                        }
+
+                        for (const policy of action.Policies ?? []) {
+                            codeBuildProject.addToRolePolicy(new PolicyStatement({
+                                effect: policy.Effect as Effect | undefined,
+                                principals: policy.ServicePrincipals?.map((principal) => new ServicePrincipal(principal)),
+                                actions: policy.Actions,
+                                resources: policy.Resources,
                             }));
                         }
 
