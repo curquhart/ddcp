@@ -1,4 +1,4 @@
-import {App, CfnOutput, Construct, RemovalPolicy, Stack, StackProps} from '@aws-cdk/core';
+import {App, Construct, RemovalPolicy, Stack, StackProps} from '@aws-cdk/core';
 import {Repository} from '@aws-cdk/aws-codecommit';
 import {BlockPublicAccess, Bucket, BucketAccessControl} from '@aws-cdk/aws-s3';
 import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
