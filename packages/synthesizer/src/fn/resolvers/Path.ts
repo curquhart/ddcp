@@ -35,7 +35,10 @@ export class Path extends Base<unknown, IParameters> {
 
     private resolveWithScope(parameters: IParameters, fullValue: Record<string, unknown>, scope: Construct): ResolveResult<unknown> {
         if (parameters.length === 0) {
-            throw new ParameterCountError(this.name, 'at least 1');
+            return {
+                value: fullValue,
+                performedWork: true
+            };
         }
 
         let resolved: unknown = undefined;

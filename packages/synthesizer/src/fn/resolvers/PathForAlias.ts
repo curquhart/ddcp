@@ -15,6 +15,9 @@ export class PathForAlias extends Base<unknown, IParameters> {
         if (parameters.length !== 1) {
             throw new ParameterCountError(this.name, 'exactly 1');
         }
+        if (typeof parameters[0] !== 'string') {
+            throw new Error('Expected a single string parameter.');
+        }
 
         return {
             value: this.resolvePath(parameters[0], fullValue),
@@ -23,7 +26,7 @@ export class PathForAlias extends Base<unknown, IParameters> {
     }
 
     private resolvePath(alias: string, input: unknown): unknown {
-        if (typeof input !== 'object' || input === null) {
+        if (typeof input !== 'object' || input === null || Array.isArray(input)) {
             throw new TypeError();
         }
 
@@ -70,6 +73,6 @@ export class PathForAlias extends Base<unknown, IParameters> {
             return this.aliasCache[alias];
         }
 
-        throw new Error(`Could not resolve ${alias}`);
+        throw new Error(`Could not resolve ${alias}.`);
     }
 }
