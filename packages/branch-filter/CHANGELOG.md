@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0-204](https://github.com/curquhart/ddcp/compare/v1.10.1-198...v1.11.0-204) (2020-04-10)
+
+
+### Features
+
+* **ddcp:** add coverage badge ([9e54f6b](https://github.com/curquhart/ddcp/commit/9e54f6bce55a480fffee5bfaa8eef3205789ce9a))
+
+
+
+
+
 ## [1.10.1-198](https://github.com/curquhart/ddcp/compare/v1.10.0-195...v1.10.1-198) (2020-04-10)
 
 **Note:** Version bump only for package @ddcp/branch-filter

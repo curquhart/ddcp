@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0-204](https://github.com/curquhart/ddcp/compare/v1.10.1-198...v1.11.0-204) (2020-04-10)
+
+
+### Bug Fixes
+
+* run coveralls via npx ([9e05059](https://github.com/curquhart/ddcp/commit/9e050599d2cd557c3963102ee0ed013d950e5c43))
+
+
+### Features
+
+* **@ddcp/synthesizer:** add some tests ([f61f9d0](https://github.com/curquhart/ddcp/commit/f61f9d03785c3f0c31e8282e38eafbb6de951588))
+* **ddcp:** add coverage badge ([9e54f6b](https://github.com/curquhart/ddcp/commit/9e54f6bce55a480fffee5bfaa8eef3205789ce9a))
+
+
+
+
+
 ## [1.10.1-198](https://github.com/curquhart/ddcp/compare/v1.10.0-195...v1.10.1-198) (2020-04-10)
 
 
