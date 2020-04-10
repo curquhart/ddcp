@@ -194,7 +194,6 @@ Pipelines:
                       - npx lerna run lint
                       - npx lerna run pack
                       - npm t
-                      - npx coveralls < reports/coverage/lcov.info
                       - npx lerna run artifact-lint
                   post_build:
                     commands:
@@ -203,6 +202,8 @@ Pipelines:
                             #!/usr/bin/env bash
 
                             set -e
+
+                            npx coveralls < reports/coverage/lcov.info
 
                             if [[ ${CODEBUILD_BUILD_SUCCEEDING} -eq 1 ]]
                             then
