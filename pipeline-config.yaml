@@ -194,7 +194,7 @@ Pipelines:
                       - npx lerna run lint
                       - npx lerna run pack
                       - npm t
-                      - coveralls < reports/coverage/lcov.info
+                      - npx coveralls < reports/coverage/lcov.info
                       - npx lerna run artifact-lint
                   post_build:
                     commands:
