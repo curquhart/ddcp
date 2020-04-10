@@ -17,6 +17,7 @@ import {
     isCodeBuildAction,
     isCounterAction,
     isS3PublishAction,
+    isLambdaInvokeAction,
     PipelineConfigs,
     SourceType
 } from '@ddcp/models';
@@ -359,6 +360,14 @@ export class SynthesisStack extends Stack {
                             action,
                             lambda,
                             counter: props.resourceFactories.Counter.new(action.Counter),
+                        });
+                    }
+                    else if (isLambdaInvokeAction(action)) {
+                        const lambda = Function.fromFunctionArn(this, props.uniquifier.next('LambdaVirtual'), action.FunctionArn);
+
+                        orchestratedStage.addLambdaInvokeAction({
+                            action,
+                            lambda,
                         });
                     }
                     else {

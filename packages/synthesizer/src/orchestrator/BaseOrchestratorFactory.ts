@@ -1,5 +1,5 @@
 import {Construct} from '@aws-cdk/core';
-import {CodeBuildAction, CounterAction, Pipeline, S3PublishAction} from '@ddcp/models';
+import {CodeBuildAction, CounterAction, LambdaInvokeAction, Pipeline, S3PublishAction} from '@ddcp/models';
 import {IPipeline} from '@aws-cdk/aws-codepipeline';
 import {ManagerResources} from '../SynthesisHandler';
 import {Project} from '@aws-cdk/aws-codebuild';
@@ -22,6 +22,11 @@ export interface CounterActionProps {
     counter: BaseResource;
 }
 
+export interface LambdaInvokeActionProps {
+    action: LambdaInvokeAction;
+    lambda: IFunction;
+}
+
 export interface BranchOptions {
     BranchName?: string;
     BranchPattern?: string;
@@ -32,6 +37,7 @@ export interface Stage {
     addCodeBuildAction(props: CodeBuildActionProps): void;
     addS3PublishAction(props: S3PublishActionProps): void;
     addCounterAction(props: CounterActionProps): void;
+    addLambdaInvokeAction(props: LambdaInvokeActionProps): void;
 }
 
 export interface Orchestrator {

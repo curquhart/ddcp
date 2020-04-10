@@ -303,4 +303,76 @@ describe('SynthesisStack test', () => {
             JSON.parse(fs.readFileSync(`${__dirname}/../__fixtures__/SynthesisStackTest/PipelineWithCodeBuildOverrides.json`).toString())
         );
     });
+
+    it('synthesizes with Lambda invoke action', async () => {
+        const app = new App({
+            outdir: tmpDir.name,
+        });
+
+        const resolvers = {};
+        const resourceFactories = {};
+
+        new Path(resolvers, resourceFactories).init();
+        new PathForAlias(resolvers).init();
+
+        const resolver = new Resolver(resolvers, 'NA');
+        const uniquifier = new Uniquifier();
+        const tokenizer = new Tokenizer();
+        const gitSourceBuilder = new GitSourceSync();
+        new CounterResourceFactory(resourceFactories, uniquifier).init();
+        const orchestrators = {};
+        new CodePipelineOrchestratorFactory(orchestrators).init();
+
+        const stackId = 'stack';
+        const stack = new SynthesisStack(app, stackId, {
+            managerResources: MANAGER_RESOURCES,
+            resolver: resolver,
+            unresolvedPipelineConfig: {
+                Pipelines: [
+                    {
+                        Name: 'foo',
+                        Sources: [
+                            {
+                                Name: 'Source',
+                                Type: 'Git',
+                                Uri: 'git@github.com:foo/bar.git',
+                                Trigger: 'GitHubWebHook',
+                                RepositoryName: 'baz',
+                                BranchName: 'foobar',
+                            }
+                        ],
+                        Stages: [
+                            {
+                                Name: 'BuildStage',
+                                Actions: [
+                                    {
+                                        Name: 'BuildAction',
+                                        Type: 'LambdaInvoke',
+                                        SourceName: 'Source',
+                                        FunctionArn: 'arn:xxxxx',
+                                        Parameters: {
+                                            foo: 'bar'
+                                        },
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            orchestratorFactories: orchestrators,
+            resourceFactories: resourceFactories,
+            uniquifier,
+            tokenizer,
+            artifactStore: {},
+            gitSourceBuilder,
+        });
+
+        await stack.init();
+
+        const synth = app.synth();
+        expect(synth.getStackArtifact(stackId).template).toEqual(
+            JSON.parse(fs.readFileSync(`${__dirname}/../__fixtures__/SynthesisStackTest/PipelineWithLambdaInvoke.json`).toString())
+        );
+    });
 });
