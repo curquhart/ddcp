@@ -86,10 +86,12 @@ Pipelines:
                           - '!PathForAlias': DistLambdasBucket
                           - - Outputs
                             - BucketName
+                    COVERALLS_GIT_BRANCH: master
                   'secrets-manager':
                     NPM_TOKEN: 'NpmPublish:NPM_TOKEN'
                     GITHUB_USER: 'GithubPush:USERNAME'
                     GITHUB_PRIVATE_KEY: 'GitHubVersioningPrivateKey'
+                    COVERALLS_REPO_TOKEN: 'CoverallsToken'
                 phases:
                   install:
                     runtime-versions:
@@ -190,6 +192,7 @@ Pipelines:
                     commands:
                       - npx lerna run build
                       - npm t
+                      - coveralls < reports/coverage/lcov.info
                       - npx lerna run lint
                       - npx lerna run pack
                       - npx lerna run artifact-lint
