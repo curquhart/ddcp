@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0-206](https://github.com/curquhart/ddcp/compare/v1.11.0-204...v1.12.0-206) (2020-04-10)
+
+
+### Features
+
+* **@ddcp/models,@ddcp/synthesizer:** add lambda invoke ([92f18b5](https://github.com/curquhart/ddcp/commit/92f18b52e54356d02da9fcd4da9146fcaf6c4d17))
+
+
+
+
+
 # [1.11.0-204](https://github.com/curquhart/ddcp/compare/v1.10.1-198...v1.11.0-204) (2020-04-10)
 
 
