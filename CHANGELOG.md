@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.1-198](https://github.com/curquhart/ddcp/compare/v1.10.0-195...v1.10.1-198) (2020-04-10)
+
+
+### Bug Fixes
+
+* **ddcp:** fix yaml ([611988a](https://github.com/curquhart/ddcp/commit/611988a8d8f6d70bd0bb587e7693f24aeb39c6e9))
+
+
+
+
+
 # [1.10.0-195](https://github.com/curquhart/ddcp/compare/v1.9.2-171...v1.10.0-195) (2020-04-10)
 
 
