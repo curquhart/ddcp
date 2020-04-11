@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/s3-requesterpays",
-  "version": "1.12.1-208",
+  "version": "1.12.2-210",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
@@ -29,9 +29,9 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/eslint-config": "^1.12.1-208",
-    "@ddcp/tools": "^1.12.1-208",
-    "@ddcp/typescript-config": "^1.12.1-208",
+    "@ddcp/eslint-config": "^1.12.2-210",
+    "@ddcp/tools": "^1.12.2-210",
+    "@ddcp/typescript-config": "^1.12.2-210",
     "@types/aws-lambda": "8.10.44",
     "@types/cfn-response": "1.0.1",
     "@types/jest": "25.1.4",
