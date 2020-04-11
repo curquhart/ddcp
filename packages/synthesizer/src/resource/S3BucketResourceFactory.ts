@@ -12,7 +12,6 @@ import {LambdaModuleName} from '@ddcp/module-collection';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
 
 interface S3BucketResourceSharedData {
-    requesterPaysLambda?: Function;
     functionCache: Record<string, Function>;
 }
 
@@ -89,7 +88,7 @@ class S3BucketResource implements BaseResource {
                 properties: {
                     BucketName: this.s3Bucket.bucketName,
                 },
-                removalPolicy: RemovalPolicy.RETAIN,
+                removalPolicy: RemovalPolicy.DESTROY,
             });
         }
 

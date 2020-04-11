@@ -20,15 +20,13 @@ export const handler = async (event: CloudFormationCustomResourceEvent, context:
         const bucketName = event.ResourceProperties.BucketName;
         const s3 = new S3();
 
-        if (event.RequestType === 'Update' || event.RequestType === 'Create') {
-            physicalResourceId = bucketName;
-            await s3.putBucketRequestPayment({
-                Bucket: bucketName,
-                RequestPaymentConfiguration: {
-                    Payer: 'Requester'
-                }
-            }).promise();
-        }
+        physicalResourceId = bucketName;
+        await s3.putBucketRequestPayment({
+            Bucket: bucketName,
+            RequestPaymentConfiguration: {
+                Payer: event.RequestType === 'Update' || event.RequestType === 'Create' ? 'Requester' : 'BucketOwner'
+            }
+        }).promise();
 
         await sendResponsePromise(
             SUCCESS,
