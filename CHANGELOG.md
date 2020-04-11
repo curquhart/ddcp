@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0-212](https://github.com/curquhart/ddcp/compare/v1.12.2-210...v1.13.0-212) (2020-04-11)
+
+
+### Features
+
+* add DELETE support to requester pays lambda ([f3aeb26](https://github.com/curquhart/ddcp/commit/f3aeb263401685c680f6d71e0a883ad2856f8703))
+
+
+
+
+
 ## [1.12.2-210](https://github.com/curquhart/ddcp/compare/v1.12.1-208...v1.12.2-210) (2020-04-11)
 
 
