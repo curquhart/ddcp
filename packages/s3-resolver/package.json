@@ -7,10 +7,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc && cat dist/node_modules/**/*.js dist/src/index.js | sed 's#require(\"cfn-response\")#exports#' | jsmin > dist/bundled.js",
+    "build": "tsc",
     "clean": "rm -rf node_modules dist",
     "lint": "eslint --ext .ts src/",
-    "artifact-lint": "check-filesize dist/bundled.js min=1024 max=4096",
+    "prepack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js",
+    "pack": "npm-pack-zip --dst dist/",
     "test": "jest"
   },
   "engines": {
@@ -39,7 +40,8 @@
     "eslint": "^7.0.0-alpha.3",
     "eslint-plugin-node": "11.0.0",
     "jest": "25.1.0",
-    "jsmin": "1.0.1",
+    "npm-pack-zip": "1.2.7",
+    "parcel": "1.12.4",
     "ts-jest": "25.2.1",
     "typescript": "3.8.2"
   }

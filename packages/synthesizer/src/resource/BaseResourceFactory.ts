@@ -1,6 +1,6 @@
 import {Construct} from '@aws-cdk/core';
 import {BaseResourceProps} from '@ddcp/models';
-import {ManagerResources} from '../SynthesisHandler';
+import {ManagerResources} from '@ddcp/models';
 
 export interface BaseResource {
     getOutput(name: string | number, scope: Construct): unknown;

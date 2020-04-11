@@ -21,7 +21,7 @@ import {
     PipelineConfigs,
     SourceType
 } from '@ddcp/models';
-import {ManagerResources} from './SynthesisHandler';
+import {ManagerResources} from '@ddcp/models';
 import * as events from '@aws-cdk/aws-events';
 import * as kms from '@aws-cdk/aws-kms';
 import * as targets from '@aws-cdk/aws-events-targets';
@@ -36,7 +36,7 @@ import {Tokenizer} from '@ddcp/tokenizer';
 import {tOrDefault} from '@ddcp/typehelpers';
 import {BaseResourceFactory} from './resource/BaseResourceFactory';
 import {GitSourceSync} from './builders/GitSourceSync';
-import {getFunction} from './helpers';
+import {FunctionCache, getFunction} from './helpers';
 import {LambdaModuleName} from '@ddcp/module-collection';
 import * as Ajv from 'ajv';
 const SECRETS_MANAGER_ARN_REGEXP = /^(arn:[^:]+:secretsmanager:[^:]+:[^:]+:secret:[^:-]+).*$/;
@@ -53,6 +53,7 @@ interface SynthesisStackProps {
     tokenizer: Tokenizer;
     artifactStore: Record<string, Buffer>;
     gitSourceBuilder: GitSourceSync;
+    functionCache: FunctionCache;
 }
 
 export class SynthesisStack extends Stack {
@@ -71,7 +72,6 @@ export class SynthesisStack extends Stack {
         }
 
         const codePipelineSynthPipeline = Pipeline.fromPipelineArn(this, 'SynthPipeline', props.managerResources.arn);
-        const functionCache: Record<string, Function> = {};
 
         // create resources
         for (const resource of tOrDefault(pipelineConfig.Resources, [])) {
@@ -96,7 +96,7 @@ export class SynthesisStack extends Stack {
                 managerResources: props.managerResources,
                 pipeline,
                 uniquifier: props.uniquifier,
-                functionCache,
+                functionCache: props.functionCache,
             });
 
             const slackSettings = pipeline.Notifications?.Slack !== undefined && pipeline.Notifications?.Slack.length > 0 ? pipeline.Notifications?.Slack : undefined;
@@ -123,7 +123,7 @@ export class SynthesisStack extends Stack {
             if (snsTopic !== undefined && slackSettings !== undefined) {
                 const handler = getFunction({
                     scope: this,
-                    functionCache,
+                    functionCache: props.functionCache,
                     managerResources: props.managerResources,
                     moduleName: LambdaModuleName.SnsToSlack,
                 });
@@ -134,7 +134,7 @@ export class SynthesisStack extends Stack {
             if (snsTopic !== undefined && githubSettings !== undefined) {
                 const handler = getFunction({
                     scope: this,
-                    functionCache,
+                    functionCache: props.functionCache,
                     managerResources: props.managerResources,
                     moduleName: LambdaModuleName.SnsToGitHub,
                 });
@@ -156,7 +156,7 @@ export class SynthesisStack extends Stack {
                 if (source.Type === SourceType.GIT) {
                     const mirrorFn = getFunction({
                         scope: this,
-                        functionCache,
+                        functionCache: props.functionCache,
                         managerResources: props.managerResources,
                         moduleName: LambdaModuleName.GitHubMirror,
                         memorySize: 512,
@@ -351,7 +351,7 @@ export class SynthesisStack extends Stack {
                     else if (isCounterAction(action)) {
                         const lambda = getFunction({
                             scope: this,
-                            functionCache,
+                            functionCache: props.functionCache,
                             managerResources: props.managerResources,
                             moduleName: LambdaModuleName.ActionCounter,
                         });

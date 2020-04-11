@@ -1,11 +1,9 @@
 {
   "extends": "@ddcp/typescript-config",
   "files": [
-    "src/index.ts",
-    "node_modules/cfn-response/index.js"
+    "src/index.ts"
   ],
   "compilerOptions": {
-    "allowJs": true,
     "outDir": "dist"
   }
 }

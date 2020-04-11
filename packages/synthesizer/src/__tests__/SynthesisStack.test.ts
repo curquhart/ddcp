@@ -1,3 +1,7 @@
+process.env.BUILD_VERSION ='0.0.0-test';
+process.env.LAMBDA_DIST_BUCKET_NAME ='lambda-dist';
+
+import {initFunctionCache} from '../helpers';
 import {SynthesisStack} from '../SynthesisStack';
 import {App} from '@aws-cdk/core';
 import {Resolver} from '../Resolver';
@@ -6,12 +10,11 @@ import {GitSourceSync} from '../builders/GitSourceSync';
 import {Tokenizer} from '@ddcp/tokenizer';
 import * as tmp from 'tmp';
 import * as fs from 'fs';
-import {ManagerResources} from '../SynthesisHandler';
+import {ManagerResources} from '@ddcp/models';
 import {CounterResourceFactory} from '../resource/CounterResourceFactory';
 import {CodePipelineOrchestratorFactory} from '../orchestrator/CodePipelineOrchestratorFactory';
 import {Path} from '../fn/resolvers/Path';
 import {PathForAlias} from '../fn/resolvers/PathForAlias';
-import {LambdaModuleName} from '@ddcp/module-collection';
 
 const MANAGER_RESOURCES: ManagerResources = {
     arn: 'arn:aws:codepipeline:us-east-1:111111111111:synthesizer',
@@ -20,17 +23,8 @@ const MANAGER_RESOURCES: ManagerResources = {
     sourceRepoName: 'foo',
     eventBusArn: 'arn:aws:events:us-east-1:111111111111:event-bus/default',
     assetBucketName: 'bar',
-    assetKeys: {
-        [LambdaModuleName.Synthesizer]: 'fn1',
-        [LambdaModuleName.SnsToGitHub]: 'fn2',
-        [LambdaModuleName.SnsToSlack]: 'fn3',
-        [LambdaModuleName.ActionCounter]: 'fn4',
-        [LambdaModuleName.GitHubMirror]: 'fn5',
-        [LambdaModuleName.CodePipelineBadge]: 'fn6',
-        [LambdaModuleName.Selector]: 'fn7',
-        [LambdaModuleName.BranchFilter]: 'fn8',
-        [LambdaModuleName.S3RequesterPays]: 'fn9',
-    },
+    stackUuid: '1111',
+    s3resolverArn: 'arn:xxxx',
 };
 
 describe('SynthesisStack test', () => {
@@ -68,6 +62,7 @@ describe('SynthesisStack test', () => {
             tokenizer,
             artifactStore: {},
             gitSourceBuilder,
+            functionCache: initFunctionCache(),
         });
 
         await stack.init();
@@ -148,6 +143,7 @@ describe('SynthesisStack test', () => {
             tokenizer,
             artifactStore: {},
             gitSourceBuilder,
+            functionCache: initFunctionCache(),
         });
 
         await stack.init();
@@ -219,6 +215,7 @@ describe('SynthesisStack test', () => {
             tokenizer,
             artifactStore: {},
             gitSourceBuilder,
+            functionCache: initFunctionCache(),
         });
 
         await stack.init();
@@ -294,6 +291,7 @@ describe('SynthesisStack test', () => {
             tokenizer,
             artifactStore: {},
             gitSourceBuilder,
+            functionCache: initFunctionCache(),
         });
 
         await stack.init();
@@ -366,6 +364,7 @@ describe('SynthesisStack test', () => {
             tokenizer,
             artifactStore: {},
             gitSourceBuilder,
+            functionCache: initFunctionCache(),
         });
 
         await stack.init();

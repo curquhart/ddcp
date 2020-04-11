@@ -1,11 +1,12 @@
 import {Construct} from '@aws-cdk/core';
 import {CodeBuildAction, CounterAction, LambdaInvokeAction, Pipeline, S3PublishAction} from '@ddcp/models';
 import {IPipeline} from '@aws-cdk/aws-codepipeline';
-import {ManagerResources} from '../SynthesisHandler';
+import {ManagerResources} from '@ddcp/models';
 import {Project} from '@aws-cdk/aws-codebuild';
 import {Uniquifier} from '../Uniquifier';
-import {Function, IFunction} from '@aws-cdk/aws-lambda';
+import {IFunction} from '@aws-cdk/aws-lambda';
 import {BaseResource} from '../resource/BaseResourceFactory';
+import {FunctionCache} from '../helpers';
 
 export interface CodeBuildActionProps {
     action: CodeBuildAction;
@@ -51,7 +52,7 @@ export interface OrchestratorProps {
     managerResources: ManagerResources;
     pipeline: Pipeline;
     uniquifier: Uniquifier;
-    functionCache: Record<string, Function>;
+    functionCache: FunctionCache;
 }
 
 export abstract class BaseOrchestratorFactory {

@@ -611,6 +611,18 @@
         ]
       }
     },
+    "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06Cr": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "DestBucketName": "bar",
+        "ServiceToken": "arn:xxxx",
+        "SourceBucketName": "lambda-dist",
+        "SourceKey": "0.0.0-test/@ddcpgithub-mirror.zip",
+        "StackUuid": "1111"
+      },
+      "Type": "AWS::CloudFormation::CustomResource",
+      "UpdateReplacePolicy": "Delete"
+    },
     "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06ServiceRole6492E68E": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -687,7 +699,12 @@
       "Properties": {
         "Code": {
           "S3Bucket": "bar",
-          "S3Key": "fn5"
+          "S3Key": {
+            "Fn::GetAtt": [
+              "ddcpgithubmirror5b1e9de318f4686efcefb0bac81eff06Cr",
+              "DestKey"
+            ]
+          }
         },
         "Handler": "dist/bundled.handler",
         "Role": {
