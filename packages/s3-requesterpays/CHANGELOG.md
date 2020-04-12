@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.2-244](https://github.com/curquhart/ddcp/compare/v1.14.1-242...v1.14.2-244) (2020-04-12)
+
+
+### Bug Fixes
+
+* upgrade aws-sdk from 2.642.0 to 2.643.0 ([fc95981](https://github.com/curquhart/ddcp/commit/fc95981c78b90c2562576e189ae59919c770f824))
+
+
+
+
+
 ## [1.14.1-242](https://github.com/curquhart/ddcp/compare/v1.14.0-240...v1.14.1-242) (2020-04-12)
 
 **Note:** Version bump only for package @ddcp/s3-requesterpays
