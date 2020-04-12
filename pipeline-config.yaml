@@ -387,6 +387,8 @@ Pipelines:
                           - '!PathForAlias': DistCfnBucket
                           - - Outputs
                             - BucketName
+                    ACCOUNT_NUMBER:
+                      '!Param': AccountNumber
                 phases:
                   install:
                     runtime-versions:
