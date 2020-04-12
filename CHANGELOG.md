@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.3-247](https://github.com/curquhart/ddcp/compare/v1.14.2-244...v1.14.3-247) (2020-04-12)
+
+
+### Bug Fixes
+
+* fix lerna publish error handling ([f9f0be5](https://github.com/curquhart/ddcp/commit/f9f0be570cadfb8674ea48d8c34c66f8eb41d740))
+
+
+
+
+
 ## [1.14.2-244](https://github.com/curquhart/ddcp/compare/v1.14.1-242...v1.14.2-244) (2020-04-12)
 
 
