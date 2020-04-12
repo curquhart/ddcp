@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.14.0-240](https://github.com/curquhart/ddcp/compare/v1.13.0-212...v1.14.0-240) (2020-04-12)
+
+**Note:** Version bump only for package @ddcp/s3-requesterpays
+
+
+
+
+
 # [1.13.0-212](https://github.com/curquhart/ddcp/compare/v1.12.2-210...v1.13.0-212) (2020-04-11)
 
 

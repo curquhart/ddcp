@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.14.0-240](https://github.com/curquhart/ddcp/compare/v1.13.0-212...v1.14.0-240) (2020-04-12)
+
+
+### Features
+
+* **ddcp,@ddcp/models,@ddcp/manager,@ddcp/s3-resolver,@ddcp/synthesizer:** SAM publish and deploy ([903ee8f](https://github.com/curquhart/ddcp/commit/903ee8fc450ccda8067ca0a0c42c49eb2629b72e))
+
+
+
+
+
 # [1.13.0-212](https://github.com/curquhart/ddcp/compare/v1.12.2-210...v1.13.0-212) (2020-04-11)
 
 **Note:** Version bump only for package @ddcp/manager
