@@ -4,7 +4,7 @@ import {S3, CodePipeline} from 'aws-sdk';
 import * as AdmZip from 'adm-zip';
 import {CodePipelineEvent, Context} from 'aws-lambda';
 import * as tmp from 'tmp';
-import {EMPTY_VOID_FN} from './helpers';
+import {EMPTY_VOID_FN, FunctionCache, initFunctionCache} from './helpers';
 import {Resolver} from './Resolver';
 import * as yaml from 'js-yaml';
 import {BaseOrchestratorFactory} from './orchestrator/BaseOrchestratorFactory';
@@ -27,19 +27,9 @@ import {ArtifactStore} from './index';
 import {Param} from './fn/resolvers/Param';
 import {GitSourceSync} from './builders/GitSourceSync';
 import {error} from '@ddcp/logger';
-import {LambdaOutputArtifacts} from '@ddcp/module-collection';
 import {S3BucketResourceFactory} from './resource/S3BucketResourceFactory';
+import {ManagerResources} from '@ddcp/models';
 const STACK_ID = 'generated';
-
-export interface ManagerResources {
-    arn: string;
-    sourceBranch: string;
-    sourceType: 'CodeCommit';
-    sourceRepoName: string;
-    eventBusArn: string;
-    assetBucketName: string;
-    assetKeys: LambdaOutputArtifacts;
-}
 
 const getArtifactS3Client = (event: CodePipelineEvent): S3 => {
     const accessKeyId = event['CodePipeline.job'].data.artifactCredentials.accessKeyId;
@@ -62,6 +52,7 @@ export interface SynthesisHandlerProps {
     tokenizer: Tokenizer;
     artifactStore: Record<string, Buffer>;
     gitSourceBuilder: GitSourceSync;
+    functionCache: FunctionCache;
 }
 
 interface SynthesisHandlerManagerProps {
@@ -95,6 +86,7 @@ export class SynthesisHandler {
             tokenizer: props.tokenizer,
             artifactStore: props.artifactStore,
             gitSourceBuilder: props.gitSourceBuilder,
+            functionCache: props.functionCache,
         }).init();
         const template = app.synth().getStackArtifact(STACK_ID).template;
 
@@ -155,7 +147,10 @@ export class SynthesisHandler {
             new CloudWatchOrchestratorFactory(orchestratorFactories).init();
 
             new CounterResourceFactory(resourceFactories, uniquifier).init();
-            new S3BucketResourceFactory(resourceFactories, uniquifier).init();
+
+            const functionCache = initFunctionCache();
+
+            new S3BucketResourceFactory(resourceFactories, uniquifier, functionCache).init();
 
             const gitSourceBuilder = new GitSourceSync();
 
@@ -167,9 +162,6 @@ export class SynthesisHandler {
                 cleanupCb = cdkOutDir.removeCallback;
             }
 
-            Object.assign(synthPipeline, {
-                assetKeys: JSON.parse(process.env.ASSET_KEYS ?? throwError(new Error('ASSET_KEYS env var is missing.')))
-            });
             await this.handle({
                 event,
                 resolver,
@@ -180,7 +172,8 @@ export class SynthesisHandler {
                 artifactStore,
                 synthPipeline,
                 cdkOutDir: cdkOutDir.name,
-                gitSourceBuilder
+                gitSourceBuilder,
+                functionCache,
             });
             await cp.putJobSuccessResult({jobId: event['CodePipeline.job'].id}).promise();
         }

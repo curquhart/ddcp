@@ -5,15 +5,10 @@ import {Effect, PolicyStatement, ServicePrincipal} from '@aws-cdk/aws-iam';
 import {throwError} from '@ddcp/errorhandling';
 import {S3BucketResourceProps} from '@ddcp/models';
 import {Bucket} from '@aws-cdk/aws-s3';
-import {Function} from '@aws-cdk/aws-lambda';
-import {getFunction} from '../helpers';
-import {ManagerResources} from '../SynthesisHandler';
+import {FunctionCache, getFunction} from '../helpers';
+import {ManagerResources} from '@ddcp/models';
 import {LambdaModuleName} from '@ddcp/module-collection';
 import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
-
-interface S3BucketResourceSharedData {
-    functionCache: Record<string, Function>;
-}
 
 class S3BucketResource implements BaseResource {
     private readPolicy?: PolicyStatement;
@@ -23,7 +18,7 @@ class S3BucketResource implements BaseResource {
 
     constructor(
         private readonly uniquifier: Uniquifier,
-        private readonly sharedData: S3BucketResourceSharedData,
+        private readonly functionCache: FunctionCache,
         private readonly props: S3BucketResourceProps
     ) {
     }
@@ -71,7 +66,7 @@ class S3BucketResource implements BaseResource {
 
             const fn = getFunction({
                 scope,
-                functionCache: this.sharedData.functionCache,
+                functionCache: this.functionCache,
                 managerResources,
                 moduleName: LambdaModuleName.S3RequesterPays,
             });
@@ -120,15 +115,13 @@ class S3BucketResource implements BaseResource {
 export class S3BucketResourceFactory extends BaseResourceFactory {
     constructor(
         resources: Record<string, BaseResourceFactory>,
-        private readonly uniquifier: Uniquifier
+        private readonly uniquifier: Uniquifier,
+        private readonly functionCache: FunctionCache,
     ) {
         super(resources);
     }
 
     readonly name = 'S3Bucket';
-    private sharedData: S3BucketResourceSharedData = {
-        functionCache: {},
-    };
     private buckets: Record<string, S3BucketResource> = {};
 
     new(props: S3BucketResourceProps): S3BucketResource {
@@ -138,7 +131,7 @@ export class S3BucketResourceFactory extends BaseResourceFactory {
             return this.buckets[props.Name];
         }
 
-        this.buckets[props.Name] = new S3BucketResource(this.uniquifier, this.sharedData, props);
+        this.buckets[props.Name] = new S3BucketResource(this.uniquifier, this.functionCache, props);
 
         return this.buckets[props.Name];
     }

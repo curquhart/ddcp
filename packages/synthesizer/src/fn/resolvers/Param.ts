@@ -1,7 +1,7 @@
 import {Base} from '../Base';
 import {ResolveResult} from '../../Resolver';
 import {ParameterCountError} from '../errors/ParameterCountError';
-import {ManagerResources} from '../../SynthesisHandler';
+import {ManagerResources} from '@ddcp/models';
 import {Aws} from '@aws-cdk/core';
 
 type IParameters = ['AssetBucketName' | 'Region' | 'AccountNumber']

@@ -23,7 +23,7 @@ import {
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import {tOrDefault} from '@ddcp/typehelpers';
-import {ManagerResources} from '../SynthesisHandler';
+import {ManagerResources} from '@ddcp/models';
 import {Artifacts} from '@aws-cdk/aws-codebuild';
 import {throwError} from '@ddcp/errorhandling';
 import {PolicyDocument, PolicyStatement, Role} from '@aws-cdk/aws-iam';

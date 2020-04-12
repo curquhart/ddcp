@@ -9,7 +9,7 @@ import {
 import {IPipeline} from '@aws-cdk/aws-codepipeline';
 import {tOrDefault} from '@ddcp/typehelpers';
 import {Uniquifier} from '../Uniquifier';
-import {ManagerResources} from '../SynthesisHandler';
+import {ManagerResources} from '@ddcp/models';
 import {IRepository, Repository} from '@aws-cdk/aws-codecommit';
 import * as targets from '@aws-cdk/aws-events-targets';
 import {throwError} from '@ddcp/errorhandling';

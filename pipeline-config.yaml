@@ -13,6 +13,16 @@ Resources:
         Actions:
           - s3:GetObject
   - Type: S3Bucket
+    Name: DistManagerLambdasBucket
+    '!Alias': DistManagerLambdasBucket
+    RequesterPays: false
+    BucketPolicy:
+      - Effect: Allow
+        ServicePrincipals:
+          - serverlessrepo.amazonaws.com
+        Actions:
+          - s3:GetObject
+  - Type: S3Bucket
     Name: DistLambdasBucket
     '!Alias': DistLambdasBucket
     RequesterPays: true
@@ -86,7 +96,15 @@ Pipelines:
                           - '!PathForAlias': DistLambdasBucket
                           - - Outputs
                             - BucketName
+                    MANAGER_LAMBDA_DIST_BUCKET_NAME:
+                      '!Path':
+                        '!Join':
+                          - '!PathForAlias': DistManagerLambdasBucket
+                          - - Outputs
+                            - BucketName
                     COVERALLS_GIT_BRANCH: master
+                    ACCOUNT_NUMBER:
+                      '!Param': AccountNumber
                   'secrets-manager':
                     NPM_TOKEN: 'NpmPublish:NPM_TOKEN'
                     GITHUB_USER: 'GithubPush:USERNAME'
@@ -204,6 +222,8 @@ Pipelines:
                             set -e
 
                             npx coveralls < reports/coverage/lcov.info
+                            LF="
+                            "
 
                             if [[ ${CODEBUILD_BUILD_SUCCEEDING} -eq 1 ]]
                             then
@@ -212,6 +232,26 @@ Pipelines:
                               then
                                 git config user.email "ci@chelseau.com"
                                 git config user.name "DDCP CI"
+
+                                # Update regions in README.md...
+                                REGIONSTABLE="|        Region        |                    Click and Deploy                     |${LF}"
+                                REGIONSTABLE="${REGIONSTABLE}| :----------------: | :----------------------------------------------------------: |${LF}"
+
+                                for region in $(cat regions.txt)
+                                do
+                                    REGIONSTABLE="${REGIONSTABLE}|  **${region}**  |[![](https://img.shields.io/badge/SAR-Deploy%20Now-yellow.svg)](https://deploy.serverlessrepo.app/${region}/?app=arn:aws:serverlessrepo:${region}:${ACCOUNT_NUMBER}:applications/ddcp)|${LF}"
+                                done
+
+                                mkdir -p dist/
+                                echo "${REGIONSTABLE}" > dist/regions.md
+                                # Remove old
+                                sed -i -n '/Deploy from SAR console/{p; :a; N; /Deploy from CLI/!ba; s/.*\n//}; p' README.md
+                                # Append new
+                                sed -i "/Deploy from SAR console.*/ r dist/regions.md" README.md
+
+                                git add README.md
+                                git commit -m "docs: update regions in README" || true
+
                                 echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
                                 npx lerna publish ${BUILD_VERSION} --conventional-commits --no-push --yes | tee /tmp/publish-results && grep -qv "lerna ERR\|WARN" < /tmp/publish-results
 
@@ -225,21 +265,27 @@ Pipelines:
                             fi
 
                             # Versioned artifacts
-                            mkdir -p dist/cfn/${BUILD_VERSION}
                             mkdir -p dist/lambdas/${BUILD_VERSION}
-                            cp packages/manager/dist/manager.yaml dist/cfn/${BUILD_VERSION}
+                            mkdir -p dist/manager-lambdas/${BUILD_VERSION}
                             cp packages/*/dist/@ddcp*.zip dist/lambdas/${BUILD_VERSION}
+                            mv dist/lambdas/${BUILD_VERSION}/@ddcpselector.zip dist/lambdas/${BUILD_VERSION}/@ddcpsynthesizer.zip dist/lambdas/${BUILD_VERSION}/@ddcps3-resolver.zip dist/manager-lambdas/${BUILD_VERSION}
                             echo ${BUILD_VERSION} > dist/version
                 artifacts:
                   secondary-artifacts:
                     Manager:
                       files:
-                        - '**/*'
-                      base-directory: dist/cfn
+                          - packages/manager/dist/manager.yaml
+                          - LICENSE
+                          - README.md
+                      discard-paths: yes
                     Lambdas:
                       files:
                         - '**/*'
                       base-directory: dist/lambdas
+                    ManagerLambdas:
+                      files:
+                        - '**/*'
+                      base-directory: dist/manager-lambdas
                     BuildVersion:
                       files:
                         - dist/version
@@ -285,18 +331,119 @@ Pipelines:
                   - - Outputs
                     - BucketArn
             AccessControl: PublicRead
-          - Name: Manager
+          - Name: ManagerLambdas
             Type: S3Publish
             Order: 1
-            SourceName: Manager
+            SourceName: ManagerLambdas
             Extract: true
             BucketArn:
               '!Path':
                 '!Join':
-                  - '!PathForAlias': DistCfnBucket
+                  - '!PathForAlias': DistManagerLambdasBucket
                   - - Outputs
                     - BucketArn
             AccessControl: PublicRead
+          - Name: SamPackageAndPublish
+            Type: CodeBuild
+            Order: 2
+            SourceName: Source
+            InputArtifacts:
+              - BuildVersion
+              - Manager
+            Policies:
+              - Actions:
+                  - 'serverlessrepo:CreateApplication'
+                Resources:
+                  - '*'
+              - Actions:
+                  - 'serverlessrepo:UpdateApplication'
+                  - 'serverlessrepo:CreateApplicationVersion'
+                  - 'serverlessrepo:PutApplicationPolicy'
+                Resources:
+                  - '!Join':
+                      - 'arn:aws:serverlessrepo:'
+                      - '*'
+                      - ':'
+                      - '!Param': 'AccountNumber'
+                      - ':applications/ddcp'
+              - Actions:
+                  - 's3:PutObject'
+                Resources:
+                  - '!Join':
+                      - '!Path':
+                          '!Join':
+                            - '!PathForAlias': DistCfnBucket
+                            - - Outputs
+                              - BucketArn
+                      - '/*'
+            BuildSpec:
+              Inline:
+                version: 0.2
+                env:
+                  variables:
+                    CFN_DIST_BUCKET_NAME:
+                      '!Path':
+                        '!Join':
+                          - '!PathForAlias': DistCfnBucket
+                          - - Outputs
+                            - BucketName
+                phases:
+                  install:
+                    runtime-versions:
+                      python: 3.8
+                    commands:
+                      - pip3 install aws-sam-cli
+                  pre_build:
+                    commands:
+                      - 'export BUILD_VERSION=$(cat ${CODEBUILD_SRC_DIR_BuildVersion}/version)'
+                  build:
+                    commands:
+                      - '!Script':
+                          Bin: |
+                            #!/usr/bin/env bash
+
+                            set -e
+
+                            echo Build version: ${BUILD_VERSION}
+                            mkdir -p dist/
+                            sam package --s3-bucket ${CFN_DIST_BUCKET_NAME} --template ${CODEBUILD_SRC_DIR_Manager}/manager.yaml --output-template-file dist/sam.yaml
+
+                            for region in $(cat regions.txt)
+                            do
+                              sam publish --semantic-version ${BUILD_VERSION} -t dist/sam.yaml --region ${region}
+                              aws --region ${region} serverlessrepo put-application-policy --application-id arn:aws:serverlessrepo:${region}:${ACCOUNT_NUMBER}:applications/ddcp --statements Actions=Deploy,Principals=*,StatementId=public-access-enabled
+                            done
+          - Name: SamDeploy
+            Type: CodeBuild
+            Order: 3
+            SourceName: Source
+            InputArtifacts:
+              - BuildVersion
+            Policies:
+              # TODO: restrict this to what the manager actually needs.
+              - Actions:
+                  - '*'
+                Resources:
+                  - '*'
+            BuildSpec:
+              Inline:
+                version: 0.2
+                env:
+                  variables:
+                    ACCOUNT_NUMBER:
+                      '!Param': AccountNumber
+                phases:
+                  install:
+                    runtime-versions:
+                      python: 3.8
+                  pre_build:
+                    commands:
+                      - 'export BUILD_VERSION=$(cat ${CODEBUILD_SRC_DIR_BuildVersion}/version)'
+                  build:
+                    commands:
+                      - export TEMPLATE_URL=$(aws --region ${AWS_REGION} serverlessrepo create-cloud-formation-template --application-id arn:aws:serverlessrepo:${AWS_REGION}:${ACCOUNT_NUMBER}:applications/ddcp --semantic-version ${BUILD_VERSION} | jq -r .TemplateUrl)
+                      - aws cloudformation update-stack --stack-name ddcp-PipelineManager-HVSH7KLRYJ9I --template-url ${TEMPLATE_URL} --parameters '[{"ParameterKey":"LocalStorageS3BucketName","UsePreviousValue":true},{"ParameterKey":"RepositoryName","UsePreviousValue":true},{"ParameterKey":"StackName","UsePreviousValue":true},{"ParameterKey":"SynthPipelineName","UsePreviousValue":true}]' --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+                      - aws cloudformation wait stack-update-complete --stack-name ddcp-PipelineManager-HVSH7KLRYJ9I
   - Name: ddcp-branch-build
     GitHub:
       Auth:
@@ -335,6 +482,12 @@ Pipelines:
                       '!Path':
                         '!Join':
                           - '!PathForAlias': DistLambdasBucket
+                          - - Outputs
+                            - BucketName
+                    MANAGER_LAMBDA_DIST_BUCKET_NAME:
+                      '!Path':
+                        '!Join':
+                          - '!PathForAlias': DistManagerLambdasBucket
                           - - Outputs
                             - BucketName
                 phases:

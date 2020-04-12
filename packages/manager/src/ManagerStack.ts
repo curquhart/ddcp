@@ -13,14 +13,13 @@ import {
     ManualApprovalAction,
     S3DeployAction
 } from '@aws-cdk/aws-codepipeline-actions';
-import * as fs from 'fs';
 import {CfnPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
 import * as targets from '@aws-cdk/aws-events-targets';
 import * as events from '@aws-cdk/aws-events';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
-import {CustomResource, CustomResourceProvider} from '@aws-cdk/aws-cloudformation';
-import {LambdaInputArtifacts, LambdaModuleName, LambdaOutputArtifacts} from '@ddcp/module-collection';
 import {throwError} from '@ddcp/errorhandling';
+import {LambdaInputArtifacts} from '@ddcp/module-collection';
+import {ManagerResources} from '@ddcp/models';
 
 const MANAGER_BRANCH = 'master';
 
@@ -30,8 +29,24 @@ export class ManagerStack extends Stack {
 
         this.node.setContext(DISABLE_METADATA_STACK_TRACE, true);
 
-        const sourceBucketName = process.env.LAMBDA_DIST_BUCKET_NAME ?? throwError(new Error('LAMBDA_DIST_BUCKET_NAME is required.'));
+        const managerLambdaBucketName = process.env.MANAGER_LAMBDA_DIST_BUCKET_NAME ?? throwError(new Error('MANAGER_LAMBDA_DIST_BUCKET_NAME is required.'));
+        const lambdaBucketName = process.env.LAMBDA_DIST_BUCKET_NAME ?? throwError(new Error('LAMBDA_DIST_BUCKET_NAME is required.'));
         const buildVersion = process.env.BUILD_VERSION ?? throwError(new Error('BUILD_VERSION is required.'));
+
+        this.addTransform('AWS::Serverless-2016-10-31');
+        this.templateOptions.metadata = {
+            'AWS::ServerlessRepo::Application': {
+                Name: 'ddcp',
+                Description: 'Data driven CodePipeline synthesizer.',
+                Author: 'Chelsea Urquhart',
+                SpdxLicenseId: 'MIT',
+                LicenseUrl: 'LICENSE',
+                ReadmeUrl: 'README.md',
+                HomePageUrl: 'https://github.com/curquhart/ddcp',
+                SemanticVersion: buildVersion,
+                SourceCodeUrl: 'https://github.com/curquhart/ddcp',
+            }
+        };
 
         const localStorageBucketNameParameter = new CfnParameter(this, 'LocalStorageS3BucketName');
         const repositoryNameParameter = new CfnParameter(this, 'RepositoryName');
@@ -50,7 +65,7 @@ export class ManagerStack extends Stack {
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', { pipelineName, artifactBucket: localBucket });
 
-        const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', sourceBucketName);
+        const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', managerLambdaBucketName);
 
         // TODO: use custom event bus once https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/44 is completed.
         const eventBus = events.EventBus.fromEventBusArn(this, 'CustomEventBus', `arn:aws:events:${Aws.REGION}:${Aws.ACCOUNT_ID}:event-bus/default`);
@@ -63,8 +78,8 @@ export class ManagerStack extends Stack {
 
         const s3resolver = new Function(this, 'S3Resolver', {
             runtime: Runtime.NODEJS_12_X,
-            code: Code.fromInline(fs.readFileSync(`${__dirname}/../node_modules/@ddcp/s3-resolver/dist/bundled.js`).toString()),
-            handler: 'index.handler',
+            code: Code.fromBucket(sourceBucket, `${buildVersion}/@ddcps3-resolver.zip`),
+            handler: 'dist/bundled.handler',
             initialPolicy: [
                 new PolicyStatement({
                     resources: Object.values(LambdaInputArtifacts).map((assetPath) => sourceBucket.arnForObjects(`${buildVersion}/${assetPath.split('/').pop()}`)),
@@ -97,23 +112,6 @@ export class ManagerStack extends Stack {
                 }
             });
 
-        const lambdaOutputs = {} as LambdaOutputArtifacts;
-
-        // Copy all required lambdas into local storage. (this in the future will be requester pays which is why we
-        // don't just reference the source bucket directly.)
-        Object.entries(LambdaInputArtifacts).forEach(([moduleName, assetPath]) => {
-            const resolverCr = new CustomResource(this, `DDCP${moduleName}`, {
-                provider: CustomResourceProvider.fromLambda(s3resolver),
-                properties: {
-                    SourceBucketName: sourceBucketName,
-                    SourceKey: `${buildVersion}/${assetPath.split('/').pop()}`,
-                    DestBucketName: localBucket.bucketName,
-                    StackUuid: stackUuid,
-                },
-            });
-            lambdaOutputs[moduleName as LambdaModuleName] = resolverCr.getAtt('DestKey').toString();
-        });
-
         const executionsTable = new dynamodb.Table(this, 'ExecutionsTable', {
             partitionKey: {
                 name: 'executionId',
@@ -125,7 +123,7 @@ export class ManagerStack extends Stack {
         });
 
         const selectorHandlerFunction = new Function(this, 'DDCpSelectorHandler', {
-            code: Code.fromBucket(localBucket, lambdaOutputs[LambdaModuleName.Selector]),
+            code: Code.fromBucket(sourceBucket, `${buildVersion}/@ddcpselector.zip`),
             handler: 'dist/bundled.handler',
             runtime: Runtime.NODEJS_12_X,
             timeout: Duration.seconds(5),
@@ -152,12 +150,6 @@ export class ManagerStack extends Stack {
                     resources: [executionsTable.tableArn],
                 }),
             ],
-            environment: {
-                // Due to a 1000 byte limit in the lambda configuration, this must be in an env var (more storage)
-                // If/when it gets much bigger, will need to minify it in some manner, probably by just providing
-                // a prefix.
-                ASSET_KEYS: JSON.stringify(lambdaOutputs)
-            }
         });
         const selectorHandlerFunctionNode = selectorHandlerFunction.node.defaultChild as CfnFunction;
         selectorHandlerFunctionNode.node.addInfo('cfn_nag disabled.');
@@ -233,16 +225,14 @@ export class ManagerStack extends Stack {
         });
 
         const synthHandlerFunction = new Function(this, 'DDCpSynthHandler', {
-            code: Code.fromBucket(localBucket, lambdaOutputs[LambdaModuleName.Synthesizer]),
+            code: Code.fromBucket(sourceBucket, `${buildVersion}/@ddcpsynthesizer.zip`),
             handler: 'dist/bundled.handler',
             runtime: Runtime.NODEJS_12_X,
             timeout: Duration.minutes(5),
             memorySize: 512,
             environment: {
-                // Due to a 1000 byte limit in the lambda configuration, this must be in an env var (more storage)
-                // If/when it gets much bigger, will need to minify it in some manner, probably by just providing
-                // a prefix.
-                ASSET_KEYS: JSON.stringify(lambdaOutputs)
+                LAMBDA_DIST_BUCKET_NAME: lambdaBucketName,
+                BUILD_VERSION: buildVersion,
             }
         });
         const synthHandlerFunctionNode = synthHandlerFunction.node.defaultChild as CfnFunction;
@@ -259,6 +249,17 @@ export class ManagerStack extends Stack {
                 }
             });
 
+        const managerResources: ManagerResources = {
+            arn: pipelineArn,
+            sourceType: 'CodeCommit',
+            sourceBranch: MANAGER_BRANCH,
+            sourceRepoName: inputRepo.repositoryName,
+            eventBusArn: eventBus.eventBusArn,
+            assetBucketName: localStorageBucketNameParameter.valueAsString,
+            s3resolverArn: s3resolver.functionArn,
+            stackUuid,
+        };
+
         const synthAction = new LambdaInvokeAction({
             lambda: synthHandlerFunction,
             actionName: 'SynthesizePipeline',
@@ -271,14 +272,7 @@ export class ManagerStack extends Stack {
             userParameters: {
                 scratchDir: '/tmp/',
                 scratchDirCleanup: true,
-                synthPipeline: {
-                    arn: pipelineArn,
-                    sourceType: 'CodeCommit',
-                    sourceBranch: MANAGER_BRANCH,
-                    sourceRepoName: inputRepo.repositoryName,
-                    eventBusArn: eventBus.eventBusArn,
-                    assetBucketName: localStorageBucketNameParameter.valueAsString,
-                }
+                synthPipeline: managerResources,
             },
             runOrder: 1
         });

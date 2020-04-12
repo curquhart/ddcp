@@ -2,8 +2,6 @@ import {CloudFormationCustomResourceEvent, Context} from 'aws-lambda';
 import {S3} from 'aws-sdk';
 import {send as sendResponse, SUCCESS, FAILED, ResponseStatus} from 'cfn-response';
 
-// separate from the main handler as this will be inlined and responsible for authorized cross-account fetching.
-
 export const handler = async (event: CloudFormationCustomResourceEvent, context: Context): Promise<void> => {
     let physicalResourceId = 'default';
 
