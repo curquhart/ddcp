@@ -253,7 +253,7 @@ Pipelines:
                                 git commit -m "docs: update regions in README" || true
 
                                 echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-                                npx lerna publish ${BUILD_VERSION} --conventional-commits --no-push --yes | tee /tmp/publish-results && grep -qv "lerna ERR\|WARN" < /tmp/publish-results
+                                npx lerna publish ${BUILD_VERSION} --conventional-commits --no-push --yes 2>&1 | tee /tmp/publish-results && ! grep -q "lerna ERR\|WARN" < /tmp/publish-results
 
                                 eval $(ssh-agent -s)
                                 echo "${GITHUB_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
