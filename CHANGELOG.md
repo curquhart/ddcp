@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.1-242](https://github.com/curquhart/ddcp/compare/v1.14.0-240...v1.14.1-242) (2020-04-12)
+
+
+### Bug Fixes
+
+* add missing ACCOUNT_NUMBER to SamPackageAndPublish ([a197741](https://github.com/curquhart/ddcp/commit/a197741c150933215983b26236ccca2f5bee04d5))
+
+
+
+
+
 # [1.14.0-240](https://github.com/curquhart/ddcp/compare/v1.13.0-212...v1.14.0-240) (2020-04-12)
 
 
