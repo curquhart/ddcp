@@ -12,7 +12,6 @@ Please see [Enhancement Issues](https://github.com/curquhart/ddcp/labels/enhance
 submit any feature requests.
 
 ### Deploy from SAR console
-
 |        Region        |                    Click and Deploy                     |
 | :----------------: | :----------------------------------------------------------: |
 |  **ap-northeast-1**  |[![](https://img.shields.io/badge/SAR-Deploy%20Now-yellow.svg)](https://deploy.serverlessrepo.app/ap-northeast-1/?app=arn:aws:serverlessrepo:ap-northeast-1:901151029385:applications/ddcp)|
