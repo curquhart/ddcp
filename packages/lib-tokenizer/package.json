@@ -22,7 +22,7 @@
     ]
   },
   "dependencies": {
-    "aws-sdk": "2.643.0",
+    "aws-sdk": "2.644.0",
     "escape-string-regexp": "2.0.0"
   },
   "devDependencies": {
