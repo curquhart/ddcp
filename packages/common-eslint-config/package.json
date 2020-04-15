@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/eslint-config",
-  "version": "1.14.3-247",
+  "version": "1.14.4-249",
   "license": "MIT",
   "main": "eslintrc.js",
   "publishConfig": {
