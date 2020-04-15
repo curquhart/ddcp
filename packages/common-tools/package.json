@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/tools",
-  "version": "1.14.4-249",
+  "version": "1.14.5-251",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -16,7 +16,7 @@
     "check-filesize": "dist/check-filesize.js"
   },
   "devDependencies": {
-    "@ddcp/typescript-config": "^1.14.4-249",
+    "@ddcp/typescript-config": "^1.14.5-251",
     "typescript": "3.8.2"
   }
 }
