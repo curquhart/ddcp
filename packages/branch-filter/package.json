@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/branch-filter",
-  "version": "1.14.5-251",
+  "version": "1.14.6-253",
   "main": "dist/bundled.js",
   "license": "MIT",
   "publishConfig": {
@@ -23,12 +23,12 @@
     ]
   },
   "dependencies": {
-    "@ddcp/errorhandling": "^1.14.5-251",
-    "@ddcp/logger": "^1.14.5-251",
-    "@ddcp/models": "^1.14.5-251",
-    "@ddcp/module-collection": "^1.14.5-251",
-    "@ddcp/tokenizer": "^1.14.5-251",
-    "@ddcp/typehelpers": "^1.14.5-251",
+    "@ddcp/errorhandling": "^1.14.6-253",
+    "@ddcp/logger": "^1.14.6-253",
+    "@ddcp/models": "^1.14.6-253",
+    "@ddcp/module-collection": "^1.14.6-253",
+    "@ddcp/tokenizer": "^1.14.6-253",
+    "@ddcp/typehelpers": "^1.14.6-253",
     "adm-zip": "0.4.14",
     "ajv": "6.12.0",
     "aws-lambda": "1.0.5",
@@ -38,8 +38,8 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/eslint-config": "^1.14.5-251",
-    "@ddcp/typescript-config": "^1.14.5-251",
+    "@ddcp/eslint-config": "^1.14.6-253",
+    "@ddcp/typescript-config": "^1.14.6-253",
     "@types/adm-zip": "0.4.32",
     "@types/aws-lambda": "8.10.44",
     "@types/jest": "25.1.4",
