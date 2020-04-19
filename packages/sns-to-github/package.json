@@ -43,7 +43,7 @@
     "@ddcp/models": "^1.14.7-255",
     "@ddcp/secretsmanager": "^1.14.7-255",
     "@octokit/app": "4.2.0",
-    "@octokit/auth-app": "2.4.3",
+    "@octokit/auth-app": "2.4.4",
     "@octokit/request": "5.3.4",
     "@octokit/rest": "17.1.0",
     "@types/lru-cache": "5.1.0",
