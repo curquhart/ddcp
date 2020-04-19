@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.8-257](https://github.com/curquhart/ddcp/compare/v1.14.7-255...v1.14.8-257) (2020-04-19)
+
+
+### Bug Fixes
+
+* update lockfile ([0584ffc](https://github.com/curquhart/ddcp/commit/0584ffccc8957744abd7ff72573df736660afb59))
+* upgrade @octokit/auth-app from 2.4.3 to 2.4.4 ([109e190](https://github.com/curquhart/ddcp/commit/109e190ea696e762daf451f87150be0cc63f45ea))
+
+
+
+
+
 ## [1.14.7-255](https://github.com/curquhart/ddcp/compare/v1.14.6-253...v1.14.7-255) (2020-04-19)
 
 
