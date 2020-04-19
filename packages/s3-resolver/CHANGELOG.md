@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.9-259](https://github.com/curquhart/ddcp/compare/v1.14.8-257...v1.14.9-259) (2020-04-19)
+
+
+### Bug Fixes
+
+* upgrade aws-sdk from 2.644.0 to 2.648.0 ([5183b61](https://github.com/curquhart/ddcp/commit/5183b61210b46c822eb35c6285ec1b863c7582f8))
+
+
+
+
+
 ## [1.14.8-257](https://github.com/curquhart/ddcp/compare/v1.14.7-255...v1.14.8-257) (2020-04-19)
 
 **Note:** Version bump only for package @ddcp/s3-resolver

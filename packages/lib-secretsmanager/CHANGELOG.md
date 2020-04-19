@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.9-259](https://github.com/curquhart/ddcp/compare/v1.14.8-257...v1.14.9-259) (2020-04-19)
+
+**Note:** Version bump only for package @ddcp/secretsmanager
+
+
+
+
+
 ## [1.14.8-257](https://github.com/curquhart/ddcp/compare/v1.14.7-255...v1.14.8-257) (2020-04-19)
 
 **Note:** Version bump only for package @ddcp/secretsmanager
