@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/logger",
-  "version": "1.14.6-253",
+  "version": "1.14.7-255",
   "typings": "dist/index.d.ts",
   "main": "dist/index.js",
   "license": "MIT",
@@ -27,8 +27,8 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
-    "@ddcp/eslint-config": "^1.14.6-253",
-    "@ddcp/typescript-config": "^1.14.6-253",
+    "@ddcp/eslint-config": "^1.14.7-255",
+    "@ddcp/typescript-config": "^1.14.7-255",
     "@types/node": "13.7.4",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.7-255](https://github.com/curquhart/ddcp/compare/v1.14.6-253...v1.14.7-255) (2020-04-19)
+
+
+### Bug Fixes
+
+* update lockfile ([99beb56](https://github.com/curquhart/ddcp/commit/99beb56db5fb10881619c873f43e936117f295dc))
+* upgrade @octokit/request from 5.3.2 to 5.3.4 ([48ad7b2](https://github.com/curquhart/ddcp/commit/48ad7b21e027856056ec2bb76c40e5d7c4bb3f71))
+
+
+
+
+
 ## [1.14.6-253](https://github.com/curquhart/ddcp/compare/v1.14.5-251...v1.14.6-253) (2020-04-18)
 
 
