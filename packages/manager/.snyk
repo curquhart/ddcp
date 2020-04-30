@@ -1,0 +1,12 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-567746:
+    - aws-cdk > table > lodash:
+        patched: '2020-04-30T21:19:48.613Z'
+    - aws-cdk > @aws-cdk/cloudformation-diff > table > lodash:
+        patched: '2020-04-30T21:19:48.613Z'
+    - aws-cdk > archiver > async > lodash:
+        patched: '2020-04-30T21:19:48.613Z'
