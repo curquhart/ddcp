@@ -12,7 +12,9 @@
     "lint": "eslint --ext .ts src/",
     "prepack": "parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/bundled.js dist/index.js && parcel build --target node --bundle-node-modules --no-source-maps --out-file dist/git-credentials-helper-bundled.js dist/git-credentials-helper.js",
     "pack": "npm-pack-zip --dst dist/",
-    "test": "jest"
+    "test": "jest",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -32,7 +34,8 @@
     "npm-pack-zip": "1.2.7",
     "rimraf": "3.0.2",
     "shell-escape": "0.2.0",
-    "tmp": "0.1.0"
+    "tmp": "0.1.0",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
@@ -53,5 +56,6 @@
     "parcel": "1.12.4",
     "ts-jest": "25.2.1",
     "typescript": "3.8.2"
-  }
+  },
+  "snyk": true
 }
