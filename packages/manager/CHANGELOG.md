@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.15.0-263](https://github.com/curquhart/ddcp/compare/v1.14.9-259...v1.15.0-263) (2020-06-21)
+
+
+### Bug Fixes
+
+* fix artifact linting ([c44a1ce](https://github.com/curquhart/ddcp/commit/c44a1ce333fe9dedb7199715b3609d1d47456da7))
+
+
+### Features
+
+* allow manager branch override ([714d81c](https://github.com/curquhart/ddcp/commit/714d81c55d9c2a2d5269c0b4d0929478aed0b652))
+
+
+
+
+
 ## [1.14.9-259](https://github.com/curquhart/ddcp/compare/v1.14.8-257...v1.14.9-259) (2020-04-19)
 
 **Note:** Version bump only for package @ddcp/manager
