@@ -21,8 +21,6 @@ import {throwError} from '@ddcp/errorhandling';
 import {LambdaInputArtifacts} from '@ddcp/module-collection';
 import {ManagerResources} from '@ddcp/models';
 
-const MANAGER_BRANCH = 'master';
-
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
         super(scope, id, props);
@@ -52,6 +50,9 @@ export class ManagerStack extends Stack {
         const repositoryNameParameter = new CfnParameter(this, 'RepositoryName');
         const synthPipelineNameParameter = new CfnParameter(this, 'SynthPipelineName');
         const stackNameParameter = new CfnParameter(this, 'StackName');
+        const managerBranchNameParameter = new CfnParameter(this, 'ManagerBranchName', {
+            default: 'main'
+        });
 
         const pipelineName = synthPipelineNameParameter.valueAsString;
         const pipelineArn = `arn:aws:codepipeline:${Aws.REGION}:${Aws.ACCOUNT_ID}:${pipelineName}`;
@@ -206,7 +207,7 @@ export class ManagerStack extends Stack {
                     },
                 })
             }),
-            branches: [MANAGER_BRANCH],
+            branches: [managerBranchNameParameter.valueAsString],
         });
 
         const sourceArtifact = new codepipeline.Artifact();
@@ -252,7 +253,7 @@ export class ManagerStack extends Stack {
         const managerResources: ManagerResources = {
             arn: pipelineArn,
             sourceType: 'CodeCommit',
-            sourceBranch: MANAGER_BRANCH,
+            sourceBranch: managerBranchNameParameter.valueAsString,
             sourceRepoName: inputRepo.repositoryName,
             eventBusArn: eventBus.eventBusArn,
             assetBucketName: localStorageBucketNameParameter.valueAsString,
