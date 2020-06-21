@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
-    "lerna": "3.20.2"
+    "lerna": "3.20.2",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
@@ -17,6 +18,9 @@
     "typescript": "3.8.2"
   },
   "scripts": {
-    "test": "jest"
-  }
+    "test": "jest",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "snyk": true
 }
