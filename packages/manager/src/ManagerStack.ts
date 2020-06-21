@@ -83,7 +83,8 @@ export class ManagerStack extends Stack {
                 }
             });
 
-        const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', managerLambdaBucketName);
+        const managerSourceBucket = Bucket.fromBucketName(this,'ManagerSourceBucket', managerLambdaBucketName);
+        const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', lambdaBucketName);
 
         // TODO: use custom event bus once https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/44 is completed.
         const eventBus = events.EventBus.fromEventBusArn(this, 'CustomEventBus', `arn:aws:events:${Aws.REGION}:${Aws.ACCOUNT_ID}:event-bus/default`);
@@ -96,7 +97,7 @@ export class ManagerStack extends Stack {
 
         const s3resolver = new Function(this, 'S3Resolver', {
             runtime: Runtime.NODEJS_12_X,
-            code: Code.fromBucket(sourceBucket, `${buildVersion}/@ddcps3-resolver.zip`),
+            code: Code.fromBucket(managerSourceBucket, `${buildVersion}/@ddcps3-resolver.zip`),
             handler: 'dist/bundled.handler',
             initialPolicy: [
                 new PolicyStatement({
@@ -155,7 +156,7 @@ export class ManagerStack extends Stack {
             });
 
         const selectorHandlerFunction = new Function(this, 'DDCpSelectorHandler', {
-            code: Code.fromBucket(sourceBucket, `${buildVersion}/@ddcpselector.zip`),
+            code: Code.fromBucket(managerSourceBucket, `${buildVersion}/@ddcpselector.zip`),
             handler: 'dist/bundled.handler',
             runtime: Runtime.NODEJS_12_X,
             timeout: Duration.seconds(5),
@@ -258,7 +259,7 @@ export class ManagerStack extends Stack {
         });
 
         const synthHandlerFunction = new Function(this, 'DDCpSynthHandler', {
-            code: Code.fromBucket(sourceBucket, `${buildVersion}/@ddcpsynthesizer.zip`),
+            code: Code.fromBucket(managerSourceBucket, `${buildVersion}/@ddcpsynthesizer.zip`),
             handler: 'dist/bundled.handler',
             runtime: Runtime.NODEJS_12_X,
             timeout: Duration.minutes(5),
