@@ -250,7 +250,8 @@ export class ManagerStack extends Stack {
                     actionName: 'Source',
                     repository: inputRepo,
                     output: sourceArtifact,
-                    trigger: CodeCommitTrigger.NONE
+                    trigger: CodeCommitTrigger.NONE,
+                    branch: managerBranchNameParameter.valueAsString,
                 })
             ]
         });
