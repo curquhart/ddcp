@@ -41,14 +41,26 @@ export const handler = async (event: CloudFormationCustomResourceEvent, context:
             });
         }
         else {
-            await s3.copyObject({
+            const readStream = s3.getObject({
+                Bucket: sourceBucketName,
+                Key: sourceKey,
+                RequestPayer: 'requester',
+            }).createReadStream();
+
+            const errors: Array<Error> = [];
+            readStream.on('error', (err) => {
+                errors.push(err);
+            });
+
+            await s3.putObject({
                 Bucket: destBucketName,
                 Key: destKey,
-                CopySource: `${sourceBucketName}/${sourceKey}`,
-                RequestPayer: 'requester',
-                MetadataDirective: 'REPLACE',
-                TaggingDirective: 'REPLACE',
+                Body: readStream,
             }).promise();
+
+            if (errors.length > 0) {
+                throw errors[0];
+            }
         }
 
         // all done! (successful) - use new physical resource id.
