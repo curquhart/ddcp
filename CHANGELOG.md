@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.1-271](https://github.com/curquhart/ddcp/compare/v1.15.0-263...v1.15.1-271) (2020-06-21)
+
+
+### Bug Fixes
+
+* do not fail on low priority vulnerability ([df61ebc](https://github.com/curquhart/ddcp/commit/df61ebc9871e95e7300470f6da864b6cf885ec4c))
+* package.json, package-lock.json & .snyk to reduce vulnerabilities ([4b56c5c](https://github.com/curquhart/ddcp/commit/4b56c5cbad07a6ee3d95f323bf5e351779e44047))
+* package.json, package-lock.json & .snyk to reduce vulnerabilities ([594fa89](https://github.com/curquhart/ddcp/commit/594fa89bb7196c206fa91cdb9fbe98a9480d7f6a))
+* package.json, package-lock.json & .snyk to reduce vulnerabilities ([ca4a6ae](https://github.com/curquhart/ddcp/commit/ca4a6ae13f69c8f91798ee356ac131a5c60d2172))
+* packages/github-mirror/package.json, packages/github-mirror/package-lock.json & packages/github-mirror/.snyk to reduce vulnerabilities ([2e35335](https://github.com/curquhart/ddcp/commit/2e3533535adad58e498a5fe3c29cefe00bef73c9))
+* packages/github-mirror/package.json, packages/github-mirror/package-lock.json & packages/github-mirror/.snyk to reduce vulnerabilities ([9181d4c](https://github.com/curquhart/ddcp/commit/9181d4c597dbd79b3df5e68ada8d52676ce34eff))
+* packages/github-mirror/package.json, packages/github-mirror/package-lock.json & packages/github-mirror/.snyk to reduce vulnerabilities ([fe3b695](https://github.com/curquhart/ddcp/commit/fe3b6958f84fb17d80c5485b0768ed4753d21782))
+* packages/manager/package.json, packages/manager/package-lock.json & packages/manager/.snyk to reduce vulnerabilities ([c6de3d1](https://github.com/curquhart/ddcp/commit/c6de3d1eece477f042847e18d538bb2f87b3fd8f))
+* packages/manager/package.json, packages/manager/package-lock.json & packages/manager/.snyk to reduce vulnerabilities ([84d3ef5](https://github.com/curquhart/ddcp/commit/84d3ef528fa33c4b25f2229211fe5219549e744c))
+* packages/manager/package.json, packages/manager/package-lock.json & packages/manager/.snyk to reduce vulnerabilities ([b91396a](https://github.com/curquhart/ddcp/commit/b91396a9b6a9c8ed343d1f9607412bff65fc1bc0))
+* packages/publisher/package.json, packages/publisher/package-lock.json & packages/publisher/.snyk to reduce vulnerabilities ([21ae685](https://github.com/curquhart/ddcp/commit/21ae68512fc6e4dd6adb5d6d1d915e4317a97bec))
+* packages/publisher/package.json, packages/publisher/package-lock.json & packages/publisher/.snyk to reduce vulnerabilities ([2bc4744](https://github.com/curquhart/ddcp/commit/2bc4744f8f6de4fd6a1553368947eae3f01afb4e))
+* packages/publisher/package.json, packages/publisher/package-lock.json & packages/publisher/.snyk to reduce vulnerabilities ([442905f](https://github.com/curquhart/ddcp/commit/442905f93073522eb8a18cac4635b3ded3493b9b))
+* resolve vulerability in ts-jest ([6fd0a08](https://github.com/curquhart/ddcp/commit/6fd0a08d3da493d8110c7505284745c7193739ea))
+
+
+
+
+
 # [1.15.0-263](https://github.com/curquhart/ddcp/compare/v1.14.9-259...v1.15.0-263) (2020-06-21)
 
 

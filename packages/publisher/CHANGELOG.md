@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.1-271](https://github.com/curquhart/ddcp/compare/v1.15.0-263...v1.15.1-271) (2020-06-21)
+
+
+### Bug Fixes
+
+* packages/publisher/package.json, packages/publisher/package-lock.json & packages/publisher/.snyk to reduce vulnerabilities ([21ae685](https://github.com/curquhart/ddcp/commit/21ae68512fc6e4dd6adb5d6d1d915e4317a97bec))
+* packages/publisher/package.json, packages/publisher/package-lock.json & packages/publisher/.snyk to reduce vulnerabilities ([2bc4744](https://github.com/curquhart/ddcp/commit/2bc4744f8f6de4fd6a1553368947eae3f01afb4e))
+* packages/publisher/package.json, packages/publisher/package-lock.json & packages/publisher/.snyk to reduce vulnerabilities ([442905f](https://github.com/curquhart/ddcp/commit/442905f93073522eb8a18cac4635b3ded3493b9b))
+
+
+
+
+
 # [1.15.0-263](https://github.com/curquhart/ddcp/compare/v1.14.9-259...v1.15.0-263) (2020-06-21)
 
 **Note:** Version bump only for package @ddcp/publisher

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.1-271](https://github.com/curquhart/ddcp/compare/v1.15.0-263...v1.15.1-271) (2020-06-21)
+
+
+### Bug Fixes
+
+* packages/github-mirror/package.json, packages/github-mirror/package-lock.json & packages/github-mirror/.snyk to reduce vulnerabilities ([2e35335](https://github.com/curquhart/ddcp/commit/2e3533535adad58e498a5fe3c29cefe00bef73c9))
+* packages/github-mirror/package.json, packages/github-mirror/package-lock.json & packages/github-mirror/.snyk to reduce vulnerabilities ([9181d4c](https://github.com/curquhart/ddcp/commit/9181d4c597dbd79b3df5e68ada8d52676ce34eff))
+* packages/github-mirror/package.json, packages/github-mirror/package-lock.json & packages/github-mirror/.snyk to reduce vulnerabilities ([fe3b695](https://github.com/curquhart/ddcp/commit/fe3b6958f84fb17d80c5485b0768ed4753d21782))
+
+
+
+
+
 # [1.15.0-263](https://github.com/curquhart/ddcp/compare/v1.14.9-259...v1.15.0-263) (2020-06-21)
 
 **Note:** Version bump only for package @ddcp/github-mirror
