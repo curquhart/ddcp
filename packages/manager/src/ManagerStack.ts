@@ -20,6 +20,8 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import {throwError} from '@ddcp/errorhandling';
 import {LambdaInputArtifacts} from '@ddcp/module-collection';
 import {ManagerResources} from '@ddcp/models';
+import {CfnTable} from '@aws-cdk/aws-dynamodb';
+import {CfnPipeline} from '@aws-cdk/aws-codepipeline';
 
 export class ManagerStack extends Stack {
     constructor(scope?: Construct, id?: string, props?: StackProps) {
@@ -65,6 +67,21 @@ export class ManagerStack extends Stack {
         const localBucket = Bucket.fromBucketName(this, 'S3Bucket', localStorageBucketNameParameter.valueAsString);
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', { pipelineName, artifactBucket: localBucket });
+
+        const pipelinePolicyNode = pipeline.role.node.findChild('DefaultPolicy').node.defaultChild as CfnPolicy;
+        pipelinePolicyNode.node.addInfo('cfn_nag disabled.');
+        pipelinePolicyNode
+            .addOverride('Metadata', {
+                'cfn_nag': {
+                    'rules_to_suppress': [
+                        {
+                            id: 'W76',
+                            // these CAN be simplified if it becomes an issue in the future, but for now, allowing a high SPCM.
+                            reason: 'CDK managed policies.',
+                        },
+                    ]
+                }
+            });
 
         const sourceBucket = Bucket.fromBucketName(this,'SourceBucket', managerLambdaBucketName);
 
@@ -122,6 +139,19 @@ export class ManagerStack extends Stack {
             removalPolicy: RemovalPolicy.DESTROY,
             timeToLiveAttribute: 'expiryTimestamp',
         });
+        const executionsTableNode = executionsTable.node.defaultChild as CfnTable;
+        executionsTableNode.node.addInfo('cfn_nag disabled.');
+        executionsTableNode
+            .addOverride('Metadata', {
+                'cfn_nag': {
+                    'rules_to_suppress': [
+                        {
+                            id: 'W74',
+                            reason: 'This table does not contain any super secret data.',
+                        },
+                    ]
+                }
+            });
 
         const selectorHandlerFunction = new Function(this, 'DDCpSelectorHandler', {
             code: Code.fromBucket(sourceBucket, `${buildVersion}/@ddcpselector.zip`),
