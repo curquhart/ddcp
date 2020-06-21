@@ -444,7 +444,7 @@ Pipelines:
                   build:
                     commands:
                       - export TEMPLATE_URL=$(aws --region ${AWS_REGION} serverlessrepo create-cloud-formation-template --application-id arn:aws:serverlessrepo:${AWS_REGION}:${ACCOUNT_NUMBER}:applications/ddcp --semantic-version ${BUILD_VERSION} | jq -r .TemplateUrl)
-                      - aws cloudformation update-stack --stack-name ddcp-PipelineManager-HVSH7KLRYJ9I --template-url ${TEMPLATE_URL} --parameters '[{"ParameterKey":"LocalStorageS3BucketName","UsePreviousValue":true},{"ParameterKey":"RepositoryName","UsePreviousValue":true},{"ParameterKey":"StackName","UsePreviousValue":true},{"ParameterKey":"SynthPipelineName","UsePreviousValue":true}]' --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+                      - aws cloudformation update-stack --stack-name ddcp-PipelineManager-HVSH7KLRYJ9I --template-url ${TEMPLATE_URL} --parameters '[{"ParameterKey":"LocalStorageS3BucketName","UsePreviousValue":true},{"ParameterKey":"RepositoryName","UsePreviousValue":true},{"ParameterKey":"StackName","UsePreviousValue":true},{"ParameterKey":"SynthPipelineName","UsePreviousValue":true},{"ParameterKey":"ManagerBranchName","UsePreviousValue":true}]' --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
                       - aws cloudformation wait stack-update-complete --stack-name ddcp-PipelineManager-HVSH7KLRYJ9I
   - Name: ddcp-branch-build
     GitHub:
