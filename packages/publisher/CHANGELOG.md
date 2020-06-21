@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.2-273](https://github.com/curquhart/ddcp/compare/v1.15.1-271...v1.15.2-273) (2020-06-21)
+
+**Note:** Version bump only for package @ddcp/publisher
+
+
+
+
+
 ## [1.15.1-271](https://github.com/curquhart/ddcp/compare/v1.15.0-263...v1.15.1-271) (2020-06-21)
 
 
