@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@types/debug": "4.1.5",
-    "debug": "4.1.1"
+    "debug": "4.2.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
