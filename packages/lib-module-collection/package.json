@@ -1,6 +1,6 @@
 {
   "name": "@ddcp/module-collection",
-  "version": "1.15.2-273",
+  "version": "1.15.3-275",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -23,7 +23,7 @@
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
     "@ddcp/eslint-config": "^1.1.0-91",
-    "@ddcp/typescript-config": "^1.15.2-273",
+    "@ddcp/typescript-config": "^1.15.3-275",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
     "eslint": "^7.0.0-alpha.3",
