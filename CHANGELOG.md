@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.3-274](https://github.com/curquhart/ddcp/compare/v1.15.2-273...v1.15.3-274) (2020-06-21)
+
+
+### Bug Fixes
+
+* specify branch param so reset to default does not occur on subsequent deploys ([6277ac9](https://github.com/curquhart/ddcp/commit/6277ac9ec269ca5282a1264c92105e5ee175fc60))
+
+
+
+
+
 ## [1.15.2-273](https://github.com/curquhart/ddcp/compare/v1.15.1-271...v1.15.2-273) (2020-06-21)
 
 
