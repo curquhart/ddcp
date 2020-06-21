@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.4-277](https://github.com/curquhart/ddcp/compare/v1.15.3-274...v1.15.4-277) (2020-06-21)
+
+
+### Bug Fixes
+
+* attempt fix x-acct read ([d89a2a2](https://github.com/curquhart/ddcp/commit/d89a2a214706631017efd0d9c5251089a15792ab))
+
+
+
+
+
 ## [1.15.3-274](https://github.com/curquhart/ddcp/compare/v1.15.2-273...v1.15.3-274) (2020-06-21)
 
 **Note:** Version bump only for package @ddcp/s3-resolver
