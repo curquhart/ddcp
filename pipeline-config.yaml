@@ -316,7 +316,7 @@ Pipelines:
                   build:
                     commands:
                       - npx audit-ci
-                      - npx lerna exec $PWD/node_modules/.bin/audit-ci -- --low
+                      - npx lerna exec $PWD/node_modules/.bin/audit-ci
       - Name: PublishStage
         Actions:
           - Name: Lambdas
