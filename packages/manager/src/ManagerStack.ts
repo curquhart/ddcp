@@ -111,6 +111,7 @@ export class ManagerStack extends Stack {
                     ],
                     actions: [
                         's3:PutObject',
+                        's3:AbortMultipartUpload',
                         's3:DeleteObject'
                     ],
                 })

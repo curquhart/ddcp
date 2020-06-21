@@ -52,7 +52,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent, context:
                 errors.push(err);
             });
 
-            await s3.putObject({
+            await s3.upload({
                 Bucket: destBucketName,
                 Key: destKey,
                 Body: readStream,
