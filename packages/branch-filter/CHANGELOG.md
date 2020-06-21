@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.5-279](https://github.com/curquhart/ddcp/compare/v1.15.4-277...v1.15.5-279) (2020-06-21)
+
+**Note:** Version bump only for package @ddcp/branch-filter
+
+
+
+
+
 ## [1.15.4-277](https://github.com/curquhart/ddcp/compare/v1.15.3-274...v1.15.4-277) (2020-06-21)
 
 **Note:** Version bump only for package @ddcp/branch-filter
