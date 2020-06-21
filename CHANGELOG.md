@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.6-281](https://github.com/curquhart/ddcp/compare/v1.15.5-279...v1.15.6-281) (2020-06-21)
+
+
+### Bug Fixes
+
+* perms on correct bucket ([8baa0a7](https://github.com/curquhart/ddcp/commit/8baa0a7a969c53d25b1029aced705cb579882474))
+
+
+
+
+
 ## [1.15.5-279](https://github.com/curquhart/ddcp/compare/v1.15.4-277...v1.15.5-279) (2020-06-21)
 
 
