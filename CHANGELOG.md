@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.16.0-285](https://github.com/curquhart/ddcp/compare/v1.15.6-281...v1.16.0-285) (2020-06-22)
+
+
+### Bug Fixes
+
+* fix linting ([2d6da59](https://github.com/curquhart/ddcp/commit/2d6da59641ea9a962cdc7cacca1ae630a1569422))
+* update gh validators (repository.owner.email on organizational events == null) ([c83aad1](https://github.com/curquhart/ddcp/commit/c83aad1a75a5a14796c25e94bd00de114f2076f0))
+
+
+### Features
+
+* more logging ([84a5ba8](https://github.com/curquhart/ddcp/commit/84a5ba8cee3d634c871bca9c9d0acc4ef69eef94))
+
+
+
+
+
 ## [1.15.6-281](https://github.com/curquhart/ddcp/compare/v1.15.5-279...v1.15.6-281) (2020-06-21)
 
 

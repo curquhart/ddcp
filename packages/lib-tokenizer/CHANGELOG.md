@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.16.0-285](https://github.com/curquhart/ddcp/compare/v1.15.6-281...v1.16.0-285) (2020-06-22)
+
+**Note:** Version bump only for package @ddcp/tokenizer
+
+
+
+
+
 ## [1.15.6-281](https://github.com/curquhart/ddcp/compare/v1.15.5-279...v1.15.6-281) (2020-06-21)
 
 **Note:** Version bump only for package @ddcp/tokenizer
