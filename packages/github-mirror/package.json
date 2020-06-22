@@ -30,7 +30,7 @@
     "@octokit/webhooks": "7.1.0",
     "aws-lambda": "1.0.5",
     "aws4": "1.9.1",
-    "github-webhook-validators": "1.0.3",
+    "github-webhook-validators": "1.1.0",
     "npm-pack-zip": "1.2.7",
     "rimraf": "3.0.2",
     "shell-escape": "0.2.0",
