@@ -4,7 +4,7 @@
   "license": "MIT",
   "dependencies": {
     "lerna": "3.20.2",
-    "snyk": "^1.316.1"
+    "snyk": "^1.425.4"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
