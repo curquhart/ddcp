@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@ddcp/tokenizer": "^1.16.0-285",
-    "aws-sdk": "2.640.0"
+    "aws-sdk": "2.814.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
