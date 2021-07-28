@@ -34,7 +34,7 @@
     "npm-pack-zip": "1.2.7",
     "rimraf": "3.0.2",
     "shell-escape": "0.2.0",
-    "snyk": "^1.316.1",
+    "snyk": "^1.667.0",
     "tmp": "0.1.0"
   },
   "devDependencies": {
