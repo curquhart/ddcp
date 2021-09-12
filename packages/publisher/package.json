@@ -37,7 +37,7 @@
     "@ddcp/module-collection": "^1.16.0-285",
     "aws-cdk": "1.25.0",
     "npm-pack-zip": "1.2.7",
-    "snyk": "^1.316.1"
+    "snyk": "^1.685.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.9.0",
