@@ -39,9 +39,9 @@
     "@aws-cdk/cx-api": "1.25.0",
     "@ddcp/module-collection": "^1.16.0-285",
     "@ddcp/selector": "^1.16.0-285",
-    "aws-cdk": "1.25.0",
+    "aws-cdk": "1.64.0",
     "js-yaml": "3.13.1",
-    "snyk": "^1.316.1",
+    "snyk": "^1.465.0",
     "tmp": "0.1.0"
   },
   "devDependencies": {
