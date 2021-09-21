@@ -35,7 +35,7 @@
     "@aws-cdk/cx-api": "1.25.0",
     "@ddcp/logger": "^1.16.0-285",
     "@ddcp/module-collection": "^1.16.0-285",
-    "aws-cdk": "1.25.0",
+    "aws-cdk": "1.124.0",
     "npm-pack-zip": "1.2.7",
     "snyk": "^1.316.1"
   },
