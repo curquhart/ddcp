@@ -26,7 +26,7 @@
     "@ddcp/errorhandling": "^1.16.0-285",
     "@ddcp/logger": "^1.16.0-285",
     "aws-lambda": "1.0.5",
-    "aws-sdk": "2.648.0",
+    "aws-sdk": "2.814.0",
     "debug": "4.1.1"
   },
   "devDependencies": {
